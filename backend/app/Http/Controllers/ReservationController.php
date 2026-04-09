@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Annonce;
 use App\Models\Reservation;
+use App\Notifications\ReservationAcceptee;
+use App\Notifications\ReservationRefusee;
+use App\Notifications\ReservationCompletee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,6 +37,7 @@ class ReservationController extends Controller
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'acceptée']);
+        $reservation->acheteur->notify(new ReservationAcceptee($reservation));
         return back()->with('success', 'Réservation acceptée.');
     }
 
@@ -42,6 +46,7 @@ class ReservationController extends Controller
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'refusée']);
         $reservation->annonce->update(['statut' => 'disponible']);
+        $reservation->acheteur->notify(new ReservationRefusee($reservation));
         return back()->with('success', 'Réservation refusée.');
     }
 
@@ -49,6 +54,7 @@ class ReservationController extends Controller
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'complétée']);
+        $reservation->acheteur->notify(new ReservationCompletee($reservation));
         return back()->with('success', 'Échange complété !');
     }
 

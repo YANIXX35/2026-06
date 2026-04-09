@@ -1,6 +1,16 @@
 @extends('layouts.app')
 @section('title', 'Toutes les annonces')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+#mapToggleBtn.active { background:#16a34a; color:#fff; border-color:#16a34a; }
+#annoncesMap { height:420px; border-radius:14px; overflow:hidden; }
+.leaflet-popup-content { font-size:.82rem; line-height:1.5; min-width:180px; }
+.leaflet-popup-content a { color:#16a34a; font-weight:600; text-decoration:none; }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid bg-light py-3 border-bottom">
     <div class="container">
@@ -74,6 +84,21 @@
 
             <!-- Liste annonces -->
             <div class="col-lg-9">
+
+                {{-- Carte interactive --}}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small"><i class="fas fa-map-marker-alt me-1 text-primary"></i>Carte des annonces disponibles</span>
+                        <button id="mapToggleBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="toggleMap()">
+                            <i class="fas fa-map me-1"></i> Afficher la carte
+                        </button>
+                    </div>
+                    <div id="mapWrapper" style="display:none;">
+                        <div id="annoncesMap"></div>
+                        <p class="text-muted small mt-1"><i class="fas fa-info-circle me-1"></i>Seules les annonces avec une position géolocalisée apparaissent sur la carte.</p>
+                    </div>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="mb-0">
                         <span class="badge bg-primary rounded-pill me-2">{{ $annonces->total() }}</span>
@@ -163,3 +188,103 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Données des annonces géolocalisées
+const annoncesGeo = @json(
+    $annonces->filter(fn($a) => $a->latitude && $a->longitude)->map(fn($a) => [
+        'lat'     => (float) $a->latitude,
+        'lng'     => (float) $a->longitude,
+        'titre'   => $a->titre,
+        'prix'    => $a->type_offre === 'don' ? 'GRATUIT' : number_format($a->prix, 0, ',', ' ').' FCFA',
+        'adresse' => $a->adresse_collecte,
+        'type'    => $a->type_offre,
+        'url'     => route('annonces.show', $a),
+        'photo'   => $a->photoPrincipale ? asset('storage/'.$a->photoPrincipale->url) : null,
+    ])->values()
+);
+
+let map = null;
+let mapInitialized = false;
+
+function toggleMap(){
+    const wrapper = document.getElementById('mapWrapper');
+    const btn     = document.getElementById('mapToggleBtn');
+    const visible = wrapper.style.display !== 'none';
+
+    if (visible) {
+        wrapper.style.display = 'none';
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-map me-1"></i> Afficher la carte';
+    } else {
+        wrapper.style.display = 'block';
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-map me-1"></i> Masquer la carte';
+        if (!mapInitialized) { initMap(); mapInitialized = true; }
+    }
+}
+
+function initMap(){
+    map = L.map('annoncesMap').setView([5.3484, -4.0166], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(map);
+
+    const colors = { vente:'#2563eb', don:'#16a34a', alimentation_animale:'#d97706', transformation:'#7c3aed' };
+
+    annoncesGeo.forEach(function(a){
+        const color = colors[a.type] || '#6b7280';
+
+        const icon = L.divIcon({
+            className: '',
+            html: `<div style="background:${color};width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);"></div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -34],
+        });
+
+        const photoHtml = a.photo
+            ? `<img src="${a.photo}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:8px;">`
+            : '';
+
+        const popup = `
+            <div style="min-width:200px;">
+                ${photoHtml}
+                <strong style="display:block;margin-bottom:4px;">${a.titre}</strong>
+                <span style="color:${color};font-weight:700;font-size:1rem;">${a.prix}</span>
+                ${a.adresse ? `<br><span style="color:#888;font-size:.75rem;"><i>📍 ${a.adresse}</i></span>` : ''}
+                <br><a href="${a.url}" style="display:inline-block;margin-top:8px;background:${color};color:#fff;padding:4px 12px;border-radius:20px;font-size:.75rem;">Voir l'annonce →</a>
+            </div>`;
+
+        L.marker([a.lat, a.lng], {icon}).addTo(map).bindPopup(popup);
+    });
+
+    // Bouton "Ma position"
+    const locBtn = L.control({position: 'topleft'});
+    locBtn.onAdd = function(){
+        const div = L.DomUtil.create('div', 'leaflet-bar');
+        div.innerHTML = '<a href="#" title="Ma position" style="font-size:18px;line-height:30px;text-align:center;display:block;width:30px;height:30px;">📍</a>';
+        div.onclick = function(e){
+            e.preventDefault();
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(function(pos){
+                map.setView([pos.coords.latitude, pos.coords.longitude], 14);
+                L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
+                    radius: 8, fillColor: '#3b82f6', color: '#fff', weight: 2, fillOpacity: 1
+                }).addTo(map).bindPopup('Vous êtes ici').openPopup();
+            });
+        };
+        return div;
+    };
+    locBtn.addTo(map);
+
+    if (annoncesGeo.length > 0) {
+        const group = L.featureGroup(annoncesGeo.map(a => L.marker([a.lat, a.lng])));
+        map.fitBounds(group.getBounds().pad(0.3));
+    }
+}
+</script>
+@endpush

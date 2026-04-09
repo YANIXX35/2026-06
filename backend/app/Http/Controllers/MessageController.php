@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Notifications\NouveauMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -52,7 +53,12 @@ class MessageController extends Controller
         $userId = Auth::id();
         if ($conversation->user_1_id !== $userId && $conversation->user_2_id !== $userId) abort(403);
         $request->validate(['contenu' => 'required|string|max:1000']);
-        Message::create(['conversation_id' => $conversation->id, 'user_id' => $userId, 'contenu' => $request->contenu]);
+        $msg = Message::create(['conversation_id' => $conversation->id, 'user_id' => $userId, 'contenu' => $request->contenu]);
+
+        // Notifier l'interlocuteur
+        $destinataire = $conversation->user_1_id === $userId ? $conversation->user2 : $conversation->user1;
+        $destinataire->notify(new NouveauMessage(Auth::user(), $msg));
+
         return back();
     }
 }

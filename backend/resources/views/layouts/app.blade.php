@@ -133,6 +133,59 @@
                             <a href="{{ route('contact') }}" class="nav-item nav-link me-2">Contact</a>
                         </div>
                         @auth
+                            {{-- Cloche notifications --}}
+                            @php $unread = Auth::user()->unreadNotifications->count(); @endphp
+                            <div class="position-relative me-3 d-inline-block" style="cursor:pointer;" id="notifBell">
+                                <button class="btn btn-outline-light rounded-circle p-0"
+                                    style="width:38px;height:38px;border:1.5px solid rgba(255,255,255,.5);"
+                                    onclick="toggleNotifDropdown()" title="Notifications">
+                                    <i class="fas fa-bell" style="font-size:.95rem;"></i>
+                                </button>
+                                @if($unread > 0)
+                                <span id="notifBadge"
+                                    style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:2px solid #1a73e8;">
+                                    {{ $unread > 9 ? '9+' : $unread }}
+                                </span>
+                                @endif
+                                {{-- Dropdown --}}
+                                <div id="notifDropdown"
+                                    style="display:none;position:absolute;top:46px;right:0;width:320px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9999;border:1px solid #f0f0f0;overflow:hidden;">
+                                    <div style="padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+                                        <span style="font-size:.85rem;font-weight:700;color:#1a1a2e;">🔔 Notifications</span>
+                                        @if($unread > 0)
+                                        <form method="POST" action="{{ route('notifications.markAllRead') }}" style="margin:0;">
+                                            @csrf
+                                            <button type="submit" style="background:none;border:none;font-size:.72rem;color:#16a34a;cursor:pointer;font-weight:600;padding:0;">Tout marquer lu</button>
+                                        </form>
+                                        @endif
+                                    </div>
+                                    <div style="max-height:320px;overflow-y:auto;">
+                                        @forelse(Auth::user()->notifications->take(8) as $notif)
+                                        <a href="{{ $notif->data['url'] ?? '#' }}"
+                                            onclick="markRead('{{ $notif->id }}')"
+                                            style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f9f9f9;text-decoration:none;background:{{ $notif->read_at ? '#fff' : '#f0fdf4' }};transition:background .15s;"
+                                            onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='{{ $notif->read_at ? '#fff' : '#f0fdf4' }}'">
+                                            <span style="font-size:1.2rem;flex-shrink:0;">{{ $notif->data['icone'] ?? '🔔' }}</span>
+                                            <div>
+                                                <div style="font-size:.78rem;font-weight:600;color:#1a1a2e;">{{ $notif->data['titre'] ?? '' }}</div>
+                                                <div style="font-size:.72rem;color:#666;margin-top:2px;line-height:1.4;">{{ $notif->data['message'] ?? '' }}</div>
+                                                <div style="font-size:.68rem;color:#aaa;margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
+                                            </div>
+                                        </a>
+                                        @empty
+                                        <div style="padding:24px;text-align:center;color:#aaa;font-size:.82rem;">
+                                            <i class="fas fa-bell-slash" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
+                                            Aucune notification
+                                        </div>
+                                        @endforelse
+                                    </div>
+                                    <a href="{{ route('notifications.index') }}"
+                                        style="display:block;padding:10px;text-align:center;font-size:.75rem;color:#16a34a;font-weight:600;text-decoration:none;border-top:1px solid #f0f0f0;">
+                                        Voir toutes les notifications →
+                                    </a>
+                                </div>
+                            </div>
+
                             <a href="{{ route('annonces.create') }}" class="btn btn-secondary rounded-pill py-2 px-4 mb-3 mb-lg-0">
                                 <i class="fas fa-plus-circle me-2"></i>Publier une annonce
                             </a>
@@ -222,5 +275,37 @@
     <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
     @stack('scripts')
+    @auth
+    <script>
+    // ── Cloche notifications ───────────────────────────────────────
+    function toggleNotifDropdown(){
+        const d = document.getElementById('notifDropdown');
+        d.style.display = d.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Fermer si clic hors du dropdown
+    document.addEventListener('click', function(e){
+        const bell = document.getElementById('notifBell');
+        if (bell && !bell.contains(e.target)) {
+            const d = document.getElementById('notifDropdown');
+            if (d) d.style.display = 'none';
+        }
+    });
+
+    function markRead(id){
+        fetch('{{ route("notifications.markRead", ":id") }}'.replace(':id', id), {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+        }).then(() => {
+            const badge = document.getElementById('notifBadge');
+            if (badge) {
+                let count = parseInt(badge.textContent) - 1;
+                if (count <= 0) badge.style.display = 'none';
+                else badge.textContent = count > 9 ? '9+' : count;
+            }
+        });
+    }
+    </script>
+    @endauth
 </body>
 </html>

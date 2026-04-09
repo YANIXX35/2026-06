@@ -80,6 +80,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/signaler', [SignalementController::class, 'store'])->name('signalements.store');
 });
 
+// ─── NOTIFICATIONS ─────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', function () {
+        $notifications = Auth::user()->notifications()->paginate(20);
+        Auth::user()->unreadNotifications->markAsRead();
+        return view('notifications.index', compact('notifications'));
+    })->name('notifications.index');
+
+    Route::post('/notifications/mark-all-read', function () {
+        Auth::user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('notifications.markAllRead');
+
+    Route::post('/notifications/{id}/mark-read', function ($id) {
+        $notif = Auth::user()->notifications()->find($id);
+        if ($notif) $notif->markAsRead();
+        return response()->json(['ok' => true]);
+    })->name('notifications.markRead');
+});
+
 // ─── BLOG RSS ──────────────────────────────────────────────────
 Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog');
 Route::post('/blog/refresh', [\App\Http\Controllers\BlogController::class, 'refresh'])->name('blog.refresh')->middleware('auth');

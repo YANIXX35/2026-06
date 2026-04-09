@@ -68,6 +68,8 @@ class AnnonceController extends Controller
             'prix'            => 'nullable|numeric|min:0',
             'type_offre'      => 'required|in:vente,don,alimentation_animale,transformation',
             'adresse_collecte'=> 'nullable|string|max:300',
+            'latitude'        => 'nullable|numeric|between:-90,90',
+            'longitude'       => 'nullable|numeric|between:-180,180',
             'date_expiration' => 'nullable|date',
             'photos.*'        => 'nullable|image|max:2048',
         ]);
@@ -117,6 +119,8 @@ class AnnonceController extends Controller
             'prix'            => 'nullable|numeric|min:0',
             'type_offre'      => 'required|in:vente,don,alimentation_animale,transformation',
             'adresse_collecte'=> 'nullable|string|max:300',
+            'latitude'        => 'nullable|numeric|between:-90,90',
+            'longitude'       => 'nullable|numeric|between:-180,180',
             'date_expiration' => 'nullable|date',
             'statut'          => 'required|in:disponible,reservé,expiré',
         ]);

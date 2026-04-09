@@ -103,10 +103,28 @@
                 <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
                     <div>
                         <label style="font-size:.78rem;font-weight:600;color:#444;display:block;margin-bottom:6px;">Adresse de collecte</label>
-                        <input type="text" name="adresse_collecte" value="{{ old('adresse_collecte', $annonce->adresse_collecte) }}"
-                            style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.85rem;outline:none;box-sizing:border-box;font-family:inherit;"
-                            placeholder="Ex: Marché de Cocody, Abidjan"
-                            onfocus="this.style.borderColor='#16a34a'" onblur="this.style.borderColor='#e5e7eb'">
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" name="adresse_collecte" id="adresse_collecte" value="{{ old('adresse_collecte', $annonce->adresse_collecte) }}"
+                                style="flex:1;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.85rem;outline:none;font-family:inherit;"
+                                placeholder="Ex: Marché de Cocody, Abidjan"
+                                onfocus="this.style.borderColor='#16a34a'" onblur="this.style.borderColor='#e5e7eb'">
+                            <button type="button" id="btnGeolocate" title="Utiliser ma position actuelle"
+                                style="padding:10px 14px;background:#ea580c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;flex-shrink:0;">
+                                <i class="fas fa-crosshairs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{-- Carte --}}
+                    <div>
+                        <label style="font-size:.78rem;font-weight:600;color:#444;display:block;margin-bottom:6px;">
+                            <i class="fas fa-map me-1" style="color:#3b82f6;"></i>Position sur la carte <span style="font-weight:400;color:#aaa;">(cliquez pour déplacer)</span>
+                        </label>
+                        <div id="pickMap" style="height:220px;border-radius:10px;border:1.5px solid #e5e7eb;overflow:hidden;z-index:0;"></div>
+                        <input type="hidden" name="latitude"  id="lat_input"  value="{{ old('latitude', $annonce->latitude) }}">
+                        <input type="hidden" name="longitude" id="lng_input"  value="{{ old('longitude', $annonce->longitude) }}">
+                        <p id="coordsDisplay" style="font-size:.72rem;color:#16a34a;margin-top:5px;{{ ($annonce->latitude) ? '' : 'display:none' }}">
+                            <i class="fas fa-check-circle me-1"></i> Position : <span id="coordsText">{{ $annonce->latitude ? $annonce->latitude.', '.$annonce->longitude : '' }}</span>
+                        </p>
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                         <div>
@@ -304,7 +322,64 @@
 </div>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+@endpush
+
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+    const initLat = {{ old('latitude', $annonce->latitude ?? 5.3484) }};
+    const initLng = {{ old('longitude', $annonce->longitude ?? -4.0166) }};
+    const hasCoords = {{ ($annonce->latitude) ? 'true' : 'false' }};
+
+    const map = L.map('pickMap').setView([initLat, initLng], hasCoords ? 15 : 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(map);
+
+    let marker = null;
+    if (hasCoords) {
+        marker = L.marker([initLat, initLng], {draggable: true}).addTo(map);
+        marker.on('dragend', () => setCoords(marker.getLatLng().lat, marker.getLatLng().lng));
+    }
+
+    map.on('click', function(e){
+        const { lat, lng } = e.latlng;
+        if (marker) { marker.setLatLng([lat, lng]); }
+        else {
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+            marker.on('dragend', () => setCoords(marker.getLatLng().lat, marker.getLatLng().lng));
+        }
+        setCoords(lat, lng);
+    });
+
+    function setCoords(lat, lng){
+        document.getElementById('lat_input').value = lat.toFixed(7);
+        document.getElementById('lng_input').value = lng.toFixed(7);
+        document.getElementById('coordsText').textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        document.getElementById('coordsDisplay').style.display = 'block';
+    }
+
+    document.getElementById('btnGeolocate').addEventListener('click', function(){
+        if (!navigator.geolocation) return;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        const btn = this;
+        navigator.geolocation.getCurrentPosition(function(pos){
+            const lat = pos.coords.latitude, lng = pos.coords.longitude;
+            map.setView([lat, lng], 16);
+            if (marker) { marker.setLatLng([lat, lng]); }
+            else {
+                marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+                marker.on('dragend', () => setCoords(marker.getLatLng().lat, marker.getLatLng().lng));
+            }
+            setCoords(lat, lng);
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+        }, () => { btn.innerHTML = '<i class="fas fa-crosshairs"></i>'; });
+    });
+})();
+</script>
 <script>
 // Type offre toggle prix
 document.getElementById('typeOffre').addEventListener('change', function(){

@@ -94,11 +94,31 @@
             </div>
             <div style="margin-bottom:16px;">
                 <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">Adresse de collecte *</label>
-                <input type="text" name="adresse_collecte" value="{{ old('adresse_collecte') }}"
-                    placeholder="Ex: Marché de Cocody, Abidjan"
-                    style="width:100%;padding:11px 14px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;"
-                    onfocus="this.style.borderColor='#16a34a'" onblur="this.style.borderColor='#e5e5e5'" required>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" name="adresse_collecte" id="adresse_collecte" value="{{ old('adresse_collecte') }}"
+                        placeholder="Ex: Marché de Cocody, Abidjan"
+                        style="flex:1;padding:11px 14px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;"
+                        onfocus="this.style.borderColor='#16a34a'" onblur="this.style.borderColor='#e5e5e5'" required>
+                    <button type="button" id="btnGeolocate" title="Utiliser ma position actuelle"
+                        style="padding:11px 14px;background:#ea580c;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:.9rem;flex-shrink:0;">
+                        <i class="fas fa-crosshairs"></i>
+                    </button>
+                </div>
             </div>
+
+            {{-- Carte Leaflet --}}
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">
+                    <i class="fas fa-map me-1" style="color:#3b82f6;"></i>Placer sur la carte <span style="font-weight:400;color:#aaa;">(cliquez pour positionner le marqueur)</span>
+                </label>
+                <div id="pickMap" style="height:240px;border-radius:12px;border:1.5px solid #e5e5e5;overflow:hidden;z-index:0;"></div>
+                <input type="hidden" name="latitude"  id="lat_input"  value="{{ old('latitude') }}">
+                <input type="hidden" name="longitude" id="lng_input"  value="{{ old('longitude') }}">
+                <p id="coordsDisplay" style="font-size:.72rem;color:#16a34a;margin-top:5px;display:none;">
+                    <i class="fas fa-check-circle me-1"></i> Position enregistrée : <span id="coordsText"></span>
+                </p>
+            </div>
+
             <div>
                 <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">Date d'expiration</label>
                 <input type="datetime-local" name="date_expiration" value="{{ old('date_expiration') }}"
@@ -203,7 +223,76 @@
 </div>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+@endpush
+
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── CARTE LEAFLET (sélecteur de position) ─────────────────────────────────
+(function(){
+    // Centre par défaut : Abidjan
+    const defaultLat = {{ old('latitude', 5.3484) }};
+    const defaultLng = {{ old('longitude', -4.0166) }};
+
+    const map = L.map('pickMap').setView([defaultLat, defaultLng], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+    }).addTo(map);
+
+    let marker = null;
+
+    // Si des coordonnées existantes (old())
+    if ({{ old('latitude') ? 'true' : 'false' }}) {
+        marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
+        setCoords(defaultLat, defaultLng);
+        marker.on('dragend', () => setCoords(marker.getLatLng().lat, marker.getLatLng().lng));
+    }
+
+    // Clic sur la carte → place/déplace le marqueur
+    map.on('click', function(e){
+        const { lat, lng } = e.latlng;
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+            marker.on('dragend', () => setCoords(marker.getLatLng().lat, marker.getLatLng().lng));
+        }
+        setCoords(lat, lng);
+    });
+
+    function setCoords(lat, lng){
+        document.getElementById('lat_input').value  = lat.toFixed(7);
+        document.getElementById('lng_input').value  = lng.toFixed(7);
+        document.getElementById('coordsText').textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        document.getElementById('coordsDisplay').style.display = 'block';
+    }
+
+    // Bouton géolocalisation GPS
+    document.getElementById('btnGeolocate').addEventListener('click', function(){
+        if (!navigator.geolocation) { alert("Géolocalisation non supportée par votre navigateur."); return; }
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        const btn = this;
+        navigator.geolocation.getCurrentPosition(function(pos){
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            map.setView([lat, lng], 16);
+            if (marker) { marker.setLatLng([lat, lng]); }
+            else {
+                marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+                marker.on('dragend', () => setCoords(marker.getLatLng().lat, marker.getLatLng().lng));
+            }
+            setCoords(lat, lng);
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+        }, function(){
+            alert("Impossible de récupérer votre position.");
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+        });
+    });
+})();
+</script>
 <script>
 // Type offre → cache prix si don
 document.getElementById('typeOffre').addEventListener('change', function(){
