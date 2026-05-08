@@ -27,7 +27,7 @@ class MessageController extends Controller
         $conversation->messages()->where('user_id', '!=', $userId)->update(['lu' => true]);
         $messages      = $conversation->messages()->with('auteur')->get();
         $interlocuteur = $conversation->user_1_id === $userId ? $conversation->user2 : $conversation->user1;
-        $conversations = Conversation::with(['user1', 'user2'])
+        $conversations = Conversation::with(['user1', 'user2', 'dernierMessage'])
             ->where('user_1_id', $userId)->orWhere('user_2_id', $userId)
             ->latest()->get();
         return view('messages.show', compact('conversation', 'conversations', 'messages', 'interlocuteur'));

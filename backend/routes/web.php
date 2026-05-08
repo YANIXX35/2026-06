@@ -10,6 +10,9 @@ use App\Http\Controllers\SignalementController;
 use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CommandeController;
+use App\Http\Controllers\SocialAuthController;
 
 // ─── PAGE D'ACCUEIL ────────────────────────────────────────────
 Route::get('/', fn() => view('welcome'))->name('home');
@@ -17,13 +20,14 @@ Route::get('/', fn() => view('welcome'))->name('home');
 // ─── PAGES STATIQUES ───────────────────────────────────────────
 Route::get('/comment-ca-marche', fn() => view('pages.comment-ca-marche'))->name('comment-ca-marche');
 Route::get('/contact', fn() => view('pages.contact'))->name('contact');
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('contact.send');
 
 // ─── AUTHENTIFICATION ──────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/inscription', [AuthController::class, 'showInscription'])->name('inscription');
-    Route::post('/inscription', [AuthController::class, 'inscrire'])->name('inscrire');
+    Route::post('/inscription', [AuthController::class, 'inscrire'])->name('inscrire')->middleware('throttle:10,1');
     Route::get('/connexion', [AuthController::class, 'showConnexion'])->name('connexion');
-    Route::post('/connexion', [AuthController::class, 'connecter'])->name('connecter');
+    Route::post('/connexion', [AuthController::class, 'connecter'])->name('connecter')->middleware('throttle:5,1');
 
     // ─── MOT DE PASSE OUBLIÉ (OTP) ─────────────────────────────
     Route::get('/mot-de-passe-oublie', [PasswordResetController::class, 'showEmailForm'])->name('password.email.form');
@@ -35,6 +39,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/deconnexion', [AuthController::class, 'deconnecter'])->name('deconnecter')->middleware('auth');
+
+// ─── SOCIAL AUTH ───────────────────────────────────────────────
+Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('social.redirect');
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
 
 // ─── ANNONCES (publiques + routes fixes en premier) ────────────
 Route::get('/annonces', [AnnonceController::class, 'index'])->name('annonces.index');
@@ -67,6 +75,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/reservations/{reservation}/annuler', [ReservationController::class, 'annuler'])->name('reservations.annuler');
     Route::get('/mes-reservations', [ReservationController::class, 'mesReservations'])->name('reservations.mes-reservations');
 
+    // Panier
+    Route::get('/panier', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/annonces/{annonce}/panier', [CartController::class, 'ajouter'])->name('cart.ajouter');
+    Route::patch('/panier/{cartItem}', [CartController::class, 'mettreAJour'])->name('cart.update');
+    Route::delete('/panier/{cartItem}', [CartController::class, 'supprimer'])->name('cart.remove');
+    Route::delete('/panier', [CartController::class, 'vider'])->name('cart.vider');
+
+    // Commandes
+    Route::get('/commandes', [CommandeController::class, 'index'])->name('commandes.index');
+    Route::get('/commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
+    Route::post('/commandes', [CommandeController::class, 'passer'])->name('commandes.passer');
+    Route::post('/commandes/{commande}/annuler', [CommandeController::class, 'annuler'])->name('commandes.annuler');
+
     // Messagerie
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{conversation}', [MessageController::class, 'show'])->name('messages.show');
@@ -78,6 +99,9 @@ Route::middleware('auth')->group(function () {
 
     // Signalements
     Route::post('/signaler', [SignalementController::class, 'store'])->name('signalements.store');
+
+    // Abonnements catégories (alertes)
+    Route::post('/abonnements/{categorie}', [\App\Http\Controllers\AbonnementController::class, 'toggle'])->name('abonnements.toggle');
 });
 
 // ─── NOTIFICATIONS ─────────────────────────────────────────────
@@ -105,10 +129,12 @@ Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->nam
 Route::post('/blog/refresh', [\App\Http\Controllers\BlogController::class, 'refresh'])->name('blog.refresh')->middleware('auth');
 
 // ─── CHAT IA ───────────────────────────────────────────────────
-Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'chat'])->name('chat');
+Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'chat'])
+    ->name('chat')
+    ->middleware(['throttle:30,1']);
 
 // ─── ADMIN ──────────────────────────────────────────────────────
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/utilisateurs', [AdminController::class, 'utilisateurs'])->name('utilisateurs');
     Route::post('/utilisateurs/{user}/suspendre', [AdminController::class, 'suspendre'])->name('suspendre');

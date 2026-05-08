@@ -102,40 +102,65 @@ class AuthController extends Controller
 
         if ($user->role === 'fournisseur') {
             $annonces      = $user->annonces()->with('reservations')->get();
+            $reservationsCompletes = \App\Models\Reservation::with('annonce')
+                ->whereHas('annonce', fn($q) => $q->where('user_id', $user->id))
+                ->where('statut', 'complétée')->get();
+
+            $kgSauves       = $reservationsCompletes->sum('quantite_demandee');
+            $co2Evite       = round($kgSauves * 2.5, 1);
+            $revenusGeneres = $reservationsCompletes->sum(fn($r) => $r->annonce ? $r->annonce->prix * $r->quantite_demandee : 0);
+
             $stats = [
                 'annonces_actives'   => $annonces->where('statut', 'disponible')->count(),
                 'reservations_att'   => \App\Models\Reservation::whereHas('annonce', fn($q) => $q->where('user_id', $user->id))->where('statut', 'en_attente')->count(),
-                'echanges_completes' => \App\Models\Reservation::whereHas('annonce', fn($q) => $q->where('user_id', $user->id))->where('statut', 'complétée')->count(),
+                'echanges_completes' => $reservationsCompletes->count(),
                 'note_moyenne'       => round($user->note_moyenne ?? 0, 1),
                 'total_vues'         => $annonces->sum('vues'),
                 'messages_non_lus'   => \App\Models\Message::where('user_id', '!=', $user->id)->whereHas('conversation', fn($q) => $q->where('user_1_id', $user->id)->orWhere('user_2_id', $user->id))->where('lu', false)->count(),
+            ];
+            $impact = [
+                'kg_sauves'      => round($kgSauves, 1),
+                'co2_evite'      => $co2Evite,
+                'revenus_generes'=> number_format($revenusGeneres, 0, ',', ' '),
+                'repas_equiv'    => round($kgSauves / 0.5),
             ];
             $dernieresReservations = \App\Models\Reservation::with(['annonce', 'acheteur'])
                 ->whereHas('annonce', fn($q) => $q->where('user_id', $user->id))
                 ->latest()->take(5)->get();
             $dernieresAnnonces = $user->annonces()->with('categorie')->latest()->take(5)->get();
-            // Réservations par jour (7 derniers jours)
             $annonceIds  = $annonces->pluck('id');
             $chartLabels = collect(range(6, 0))->map(fn($d) => now()->subDays($d)->format('d/m'))->toArray();
             $chartData   = collect(range(6, 0))->map(function ($d) use ($annonceIds) {
                 $date = now()->subDays($d)->toDateString();
                 return \App\Models\Reservation::whereIn('annonce_id', $annonceIds)
-                    ->whereDate('created_at', $date)
-                    ->count();
+                    ->whereDate('created_at', $date)->count();
             })->toArray();
-            return view('dashboard.fournisseur', compact('user', 'stats', 'dernieresReservations', 'dernieresAnnonces', 'chartLabels', 'chartData'));
+            return view('dashboard.fournisseur', compact('user', 'stats', 'impact', 'dernieresReservations', 'dernieresAnnonces', 'chartLabels', 'chartData'));
         }
 
         // Acheteur
+        $reservationsCompletes = $user->reservations()->with('annonce')->where('statut', 'complétée')->get();
+        $kgSauves    = $reservationsCompletes->sum('quantite_demandee');
+        $co2Evite    = round($kgSauves * 2.5, 1);
+        $argentEco   = $reservationsCompletes->sum(fn($r) => $r->annonce ? $r->annonce->prix * $r->quantite_demandee * 0.4 : 0);
+
         $stats = [
             'reservations_total'  => $user->reservations()->count(),
             'reservations_att'    => $user->reservations()->where('statut', 'en_attente')->count(),
-            'echanges_completes'  => $user->reservations()->where('statut', 'complétée')->count(),
+            'echanges_completes'  => $reservationsCompletes->count(),
             'messages_non_lus'    => \App\Models\Message::where('user_id', '!=', $user->id)->whereHas('conversation', fn($q) => $q->where('user_1_id', $user->id)->orWhere('user_2_id', $user->id))->where('lu', false)->count(),
             'annonces_disponibles'=> \App\Models\Annonce::where('statut', 'disponible')->count(),
         ];
+        $impact = [
+            'kg_sauves'    => round($kgSauves, 1),
+            'co2_evite'    => $co2Evite,
+            'argent_eco'   => number_format($argentEco, 0, ',', ' '),
+            'repas_equiv'  => round($kgSauves / 0.5),
+        ];
+        $categoriesAbonnees    = \App\Models\AbonnementCategorie::where('user_id', $user->id)->pluck('categorie_id');
         $dernieresReservations = $user->reservations()->with(['annonce', 'annonce.user'])->latest()->take(5)->get();
-        $annoncesSuggestions   = \App\Models\Annonce::with(['user', 'categorie'])->where('statut', 'disponible')->latest()->take(4)->get();
-        return view('dashboard.acheteur', compact('user', 'stats', 'dernieresReservations', 'annoncesSuggestions'));
+        $annoncesSuggestions   = \App\Models\Annonce::with(['user', 'categorie', 'photoPrincipale'])->where('statut', 'disponible')->latest()->take(4)->get();
+        $toutesCategories      = \App\Models\Categorie::all();
+        return view('dashboard.acheteur', compact('user', 'stats', 'impact', 'categoriesAbonnees', 'toutesCategories', 'dernieresReservations', 'annoncesSuggestions'));
     }
 }

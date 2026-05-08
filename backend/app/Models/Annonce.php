@@ -61,9 +61,30 @@ class Annonce extends Model
         return $this->date_expiration && $this->date_expiration->isPast();
     }
 
+    public function estUrgent(): bool
+    {
+        return $this->date_expiration
+            && !$this->date_expiration->isPast()
+            && $this->date_expiration->diffInHours(now()) <= 24;
+    }
+
+    public function heuresRestantes(): int
+    {
+        if (!$this->date_expiration || $this->date_expiration->isPast()) return 0;
+        return (int) now()->diffInHours($this->date_expiration);
+    }
+
     public function scopeDisponible($query)
     {
         return $query->where('statut', 'disponible');
+    }
+
+    public function scopeUrgent($query)
+    {
+        return $query->where('statut', 'disponible')
+            ->whereNotNull('date_expiration')
+            ->where('date_expiration', '>', now())
+            ->where('date_expiration', '<=', now()->addHours(24));
     }
 
     public function incrementerVues(): void

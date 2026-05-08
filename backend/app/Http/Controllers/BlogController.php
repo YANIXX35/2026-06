@@ -53,16 +53,22 @@ class BlogController extends Controller
     private function fetchAllFeeds(): array
     {
         $all = [];
-        $ctx = stream_context_create([
-            'http' => [
-                'timeout'    => 10,
-                'user_agent' => 'Mozilla/5.0 (compatible; AntiGaspiCI/1.0)',
-            ],
-        ]);
 
         foreach ($this->sources as $source) {
-            $xml = @file_get_contents($source['url'], false, $ctx);
-            if (!$xml) continue;
+            $ch = curl_init($source['url']);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 10,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT      => 'Mozilla/5.0 (compatible; AntiGaspiCI/1.0)',
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS      => 3,
+            ]);
+            $xml  = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if (!$xml || $code !== 200) continue;
 
             $rss = @simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
             if (!$rss || !isset($rss->channel->item)) continue;

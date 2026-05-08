@@ -12,7 +12,7 @@
                     @forelse($conversations as $conv)
                         @php
                             $autre = $conv->user_1_id === auth()->id() ? $conv->user2 : $conv->user1;
-                            $dernier = $conv->dernierMessage();
+                            $dernier = $conv->dernierMessage;
                             $nonLus = $conv->nonLus(auth()->id());
                         @endphp
                         <a href="{{ route('messages.show', $conv) }}" class="text-decoration-none">

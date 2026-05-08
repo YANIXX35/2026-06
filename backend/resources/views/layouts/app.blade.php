@@ -73,6 +73,18 @@
                     <a href="{{ route('messages.index') }}" class="text-muted me-3 position-relative">
                         <span class="rounded-circle btn-md-square border d-inline-flex align-items-center justify-content-center" style="width:38px;height:38px;"><i class="fas fa-comments"></i></span>
                     </a>
+                    {{-- Icône panier --}}
+                    @php $cartCount = \App\Models\CartItem::where('user_id', Auth::id())->count(); @endphp
+                    <a href="{{ route('cart.index') }}" class="text-muted me-3 position-relative" title="Mon panier">
+                        <span class="rounded-circle btn-md-square border d-inline-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+                            <i class="fas fa-shopping-cart"></i>
+                        </span>
+                        @if($cartCount > 0)
+                        <span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
+                            {{ $cartCount > 9 ? '9+' : $cartCount }}
+                        </span>
+                        @endif
+                    </a>
                     <a href="{{ route('annonces.create') }}" class="btn btn-primary rounded-pill py-2 px-4">
                         <i class="fas fa-plus me-1"></i>Publier
                     </a>

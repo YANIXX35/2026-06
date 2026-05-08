@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Annonce;
+use App\Models\AbonnementCategorie;
 use App\Models\Categorie;
 use App\Models\Photo;
+use App\Notifications\NouvelleAnnonceCategorie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -30,10 +32,29 @@ class AnnonceController extends Controller
             $query->where('adresse_collecte', 'like', '%' . $request->ville . '%');
         }
 
-        $annonces   = $query->latest()->paginate(12);
+        // Urgents (expire dans 24h) remontés en premier
+        $annonces = $query->orderByRaw("
+            CASE
+                WHEN date_expiration IS NOT NULL
+                     AND date_expiration > NOW()
+                     AND date_expiration <= DATE_ADD(NOW(), INTERVAL 24 HOUR)
+                THEN 0 ELSE 1
+            END ASC
+        ")->latest()->paginate(12);
         $categories = Categorie::all();
 
-        return view('annonces.index', compact('annonces', 'categories'));
+        $annoncesGeo = $annonces->filter(fn($a) => $a->latitude && $a->longitude)->map(fn($a) => [
+            'lat'     => (float) $a->latitude,
+            'lng'     => (float) $a->longitude,
+            'titre'   => $a->titre,
+            'prix'    => $a->type_offre === 'don' ? 'GRATUIT' : number_format($a->prix, 0, ',', ' ').' FCFA',
+            'adresse' => $a->adresse_collecte,
+            'type'    => $a->type_offre,
+            'url'     => route('annonces.show', $a),
+            'photo'   => $a->photoPrincipale ? asset('storage/'.$a->photoPrincipale->url) : null,
+        ])->values();
+
+        return view('annonces.index', compact('annonces', 'categories', 'annoncesGeo'));
     }
 
     public function show(Annonce $annonce)
@@ -94,6 +115,16 @@ class AnnonceController extends Controller
                     'is_principale'=> $index === 0,
                 ]);
             }
+        }
+
+        // Alertes aux abonnés de cette catégorie
+        $annonce->load('categorie');
+        $abonnes = AbonnementCategorie::with('user')
+            ->where('categorie_id', $annonce->categorie_id)
+            ->where('user_id', '!=', Auth::id())
+            ->get();
+        foreach ($abonnes as $abo) {
+            $abo->user->notify(new NouvelleAnnonceCategorie($annonce));
         }
 
         return redirect()->route('annonces.show', $annonce)->with('success', 'Annonce publiée avec succès !');

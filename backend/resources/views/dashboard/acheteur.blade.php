@@ -194,6 +194,59 @@
     </div>
 </div>
 
+{{-- ── IMPACT ÉCOLOGIQUE ── --}}
+<div style="background:linear-gradient(135deg,#052e16 0%,#14532d 100%);border-radius:20px;padding:28px 32px;margin-bottom:24px;color:#fff;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-size:1.4rem;">🌍</span>
+        <div>
+            <div style="font-weight:800;font-size:1rem;">Mon impact écologique & social</div>
+            <div style="font-size:.78rem;opacity:.7;">Calculé sur tous vos échanges complétés</div>
+        </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#4ade80;">{{ $impact['kg_sauves'] }} kg</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">🥦 Nourriture sauvée</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#86efac;">{{ $impact['co2_evite'] }} kg</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">💨 CO₂ évité</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#fde68a;">{{ $impact['repas_equiv'] }}</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">🍽️ Repas équivalents</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#6ee7b7;">{{ $impact['argent_eco'] }} F</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">💸 Économies estimées</div>
+        </div>
+    </div>
+</div>
+
+{{-- ── ALERTES CATÉGORIES ── --}}
+<div style="background:#fff;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.07);padding:24px;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-weight:800;font-size:.95rem;color:#1a1a2e;">
+            🔔 Mes alertes de surplus
+        </div>
+        <span style="font-size:.75rem;color:#aaa;">Recevez une notification dès qu'une annonce paraît</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        @foreach($toutesCategories as $cat)
+        @php $abonne = $categoriesAbonnees->contains($cat->id); @endphp
+        <form action="{{ route('abonnements.toggle', $cat) }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-sm rounded-pill {{ $abonne ? 'btn-success' : 'btn-outline-secondary' }}" style="font-size:.8rem;">
+                {{ $cat->icone ?? '' }} {{ $cat->nom }}
+                @if($abonne) <i class="fas fa-bell ms-1" style="font-size:.7rem;"></i>
+                @else <i class="far fa-bell ms-1" style="font-size:.7rem;"></i>
+                @endif
+            </button>
+        </form>
+        @endforeach
+    </div>
+</div>
+
 {{-- ── 3 METRIC CARDS ── --}}
 <div class="metric-row">
     <div class="metric-card">
@@ -343,8 +396,15 @@
     <div class="surplus-grid">
         @forelse($annoncesSuggestions as $a)
         <a href="{{ route('annonces.show',$a) }}" class="surplus-card">
-            <div style="height:70px;background:#f9fafb;display:flex;align-items:center;justify-content:center;font-size:2rem;">
-                {{ $a->categorie->icone ?? '🌿' }}
+            <div style="height:70px;background:#f0fdf4;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                @if($a->photoPrincipale)
+                    <img src="{{ asset('storage/'.$a->photoPrincipale->url) }}" alt="{{ $a->titre }}"
+                        style="width:100%;height:70px;object-fit:cover;"
+                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <span style="display:none;width:100%;height:70px;align-items:center;justify-content:center;font-size:2rem;">{{ $a->categorie->icone ?? '🌿' }}</span>
+                @else
+                    {{ $a->categorie->icone ?? '🌿' }}
+                @endif
             </div>
             <div style="padding:10px;">
                 <div style="font-size:.78rem;font-weight:700;color:#1a1a2e;margin-bottom:3px;">{{ Str::limit($a->titre, 20) }}</div>

@@ -191,6 +191,35 @@
     </div>
 </div>
 
+{{-- ── IMPACT ÉCOLOGIQUE ── --}}
+<div style="background:linear-gradient(135deg,#052e16 0%,#14532d 100%);border-radius:20px;padding:28px 32px;margin-bottom:24px;color:#fff;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-size:1.4rem;">🌍</span>
+        <div>
+            <div style="font-weight:800;font-size:1rem;">Votre impact écologique & social</div>
+            <div style="font-size:.78rem;opacity:.7;">Calculé sur la totalité de vos échanges complétés</div>
+        </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#4ade80;">{{ $impact['kg_sauves'] }} kg</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">🥦 Nourriture sauvée</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#86efac;">{{ $impact['co2_evite'] }} kg</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">💨 CO₂ évité</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#fde68a;">{{ $impact['repas_equiv'] }}</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">🍽️ Repas équivalents</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
+            <div style="font-size:1.8rem;font-weight:900;color:#6ee7b7;">{{ $impact['revenus_generes'] }} F</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">💰 Revenus générés</div>
+        </div>
+    </div>
+</div>
+
 {{-- ── 3 METRIC CARDS ── --}}
 <div class="metric-row">
     <div class="metric-card">

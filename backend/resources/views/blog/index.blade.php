@@ -1,282 +1,289 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <title>Blog Santé & Alimentation — AntiGaspiCI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#f8fafc; color:#111; }
+@extends('layouts.front')
+@section('title','Blog Santé & Alimentation')
+@section('description','Actualités nutrition, santé et alimentation durable — agrégées en temps réel depuis les meilleures sources.')
 
-        /* NAVBAR */
-        .navbar {
-            position:fixed; top:0; left:0; right:0; z-index:100;
-            display:flex; align-items:center; justify-content:space-between;
-            padding:0 48px; height:64px;
-            background:rgba(255,255,255,.95); backdrop-filter:blur(12px);
-            border-bottom:1px solid #f0f0f0;
-        }
-        .navbar-logo { font-weight:800; font-size:1.1rem; color:#16a34a; text-decoration:none; }
-        .navbar-links { display:flex; gap:28px; list-style:none; }
-        .navbar-links a { text-decoration:none; color:#555; font-size:.875rem; font-weight:500; transition:color .2s; }
-        .navbar-links a:hover, .navbar-links a.active { color:#16a34a; }
-        .navbar-cta { background:#111; color:#fff; border:none; padding:9px 22px; border-radius:50px; font-size:.85rem; font-weight:700; cursor:pointer; text-decoration:none; }
+@push('styles')
+<style>
+/* ── SOURCES BAR ── */
+.sources-bar{
+    background:#fff;border-bottom:1px solid var(--border);
+    padding:14px 48px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    position:sticky;top:82px;z-index:100;
+}
+.sources-label{font-size:.72rem;font-weight:800;color:var(--muted-2);text-transform:uppercase;
+    letter-spacing:1.5px;margin-right:4px;}
+.source-pill{
+    display:inline-flex;align-items:center;gap:6px;padding:6px 15px;
+    border-radius:50px;border:1.5px solid var(--border);font-size:.76rem;
+    font-weight:700;cursor:pointer;transition:all .2s;background:#fff;
+    color:var(--muted);text-decoration:none;
+}
+.source-pill:hover{border-color:currentColor;}
+.source-pill.active{border-color:currentColor;background:var(--surface);}
+.source-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.refresh-btn{margin-left:auto;background:none;border:1.5px solid var(--border);border-radius:50px;
+    padding:7px 16px;font-size:.76rem;color:var(--muted);cursor:pointer;font-family:'Nunito Sans',sans-serif;
+    display:flex;align-items:center;gap:5px;transition:all .2s;}
+.refresh-btn:hover{border-color:var(--green);color:var(--green);}
 
-        /* HERO */
-        .hero {
-            margin-top:64px; padding:56px 0 40px;
-            background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);
-            text-align:center;
-        }
-        .hero-tag { display:inline-block; background:#16a34a; color:#fff; font-size:.7rem; font-weight:700; padding:4px 12px; border-radius:50px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px; }
-        .hero h1 { font-size:2.2rem; font-weight:800; color:#111; margin-bottom:12px; }
-        .hero p { color:#555; font-size:1rem; max-width:520px; margin:0 auto 24px; }
-        .hero-meta { display:flex; gap:24px; justify-content:center; align-items:center; flex-wrap:wrap; }
-        .hero-stat { font-size:.8rem; color:#666; display:flex; align-items:center; gap:6px; }
-        .hero-stat strong { color:#16a34a; font-weight:700; }
+/* ── MAIN ── */
+.blog-section{padding:56px 48px 80px;background:var(--surface);}
+.blog-inner{max-width:1100px;margin:0 auto;}
 
-        /* SOURCES */
-        .sources-bar {
-            background:#fff; border-bottom:1px solid #f0f0f0;
-            padding:12px 48px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-        }
-        .source-pill {
-            display:inline-flex; align-items:center; gap:6px;
-            padding:5px 14px; border-radius:50px; border:1.5px solid #e5e7eb;
-            font-size:.78rem; font-weight:600; cursor:pointer; transition:all .2s;
-            background:#fff; color:#555; text-decoration:none;
-        }
-        .source-pill:hover, .source-pill.active { border-color:currentColor; }
-        .source-pill .dot { width:8px; height:8px; border-radius:50%; }
-        .sources-label { font-size:.78rem; color:#999; font-weight:600; margin-right:4px; }
+/* ── FEATURED ── */
+.featured-card{
+    display:grid;grid-template-columns:420px 1fr;gap:0;
+    background:#fff;border-radius:20px;border:1px solid var(--border);
+    overflow:hidden;margin-bottom:32px;transition:all .3s;
+}
+.featured-card:hover{box-shadow:0 16px 48px rgba(0,0,0,.1);transform:translateY(-3px);}
+.featured-img{width:100%;height:100%;object-fit:cover;min-height:260px;display:block;}
+.featured-placeholder{width:100%;min-height:260px;display:flex;align-items:center;
+    justify-content:center;font-size:4rem;
+    background:linear-gradient(135deg,var(--green-50),var(--green-100));}
+.featured-body{padding:36px 32px;display:flex;flex-direction:column;justify-content:center;}
+.featured-badge{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;
+    font-weight:800;padding:4px 12px;border-radius:50px;color:#fff;margin-bottom:14px;width:fit-content;}
+.featured-tag{display:inline-block;background:var(--green-50);color:var(--green);
+    font-size:.66rem;font-weight:800;padding:3px 10px;border-radius:50px;
+    letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.featured-title{font-family:'Rubik',sans-serif;font-size:1.35rem;font-weight:900;
+    color:var(--text);line-height:1.3;margin-bottom:10px;}
+.featured-desc{font-size:.86rem;color:var(--muted);line-height:1.7;margin-bottom:20px;flex:1;}
+.featured-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.featured-date{font-size:.73rem;color:var(--muted-2);display:flex;align-items:center;gap:5px;}
+.btn-read{background:var(--green);color:#fff;padding:9px 22px;border-radius:50px;
+    font-size:.8rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+    transition:all .2s;}
+.btn-read:hover{background:var(--green-dark);color:#fff;transform:translateY(-1px);}
 
-        /* MAIN */
-        .main { max-width:1200px; margin:0 auto; padding:40px 24px 80px; }
+/* ── GRID ── */
+.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.blog-card{
+    background:#fff;border-radius:16px;border:1px solid var(--border);
+    overflow:hidden;display:flex;flex-direction:column;transition:all .3s;
+}
+.blog-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.08);}
+.bc-img{width:100%;height:168px;object-fit:cover;display:block;}
+.bc-placeholder{width:100%;height:168px;display:flex;align-items:center;justify-content:center;
+    font-size:2.8rem;background:linear-gradient(135deg,var(--green-50),var(--green-100));}
+.bc-body{padding:18px 18px 14px;flex:1;display:flex;flex-direction:column;}
+.bc-source{display:inline-flex;align-items:center;gap:5px;font-size:.67rem;font-weight:800;
+    padding:3px 10px;border-radius:50px;color:#fff;margin-bottom:10px;width:fit-content;}
+.bc-title{font-family:'Rubik',sans-serif;font-size:.9rem;font-weight:800;color:var(--text);
+    line-height:1.4;margin-bottom:7px;}
+.bc-desc{font-size:.78rem;color:var(--muted);line-height:1.65;flex:1;margin-bottom:12px;}
+.bc-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;}
+.bc-date{font-size:.7rem;color:var(--muted-2);display:flex;align-items:center;gap:4px;}
+.bc-link{font-size:.74rem;font-weight:700;color:var(--green);text-decoration:none;
+    display:flex;align-items:center;gap:4px;transition:gap .2s;}
+.bc-link:hover{gap:8px;}
 
-        /* GRID */
-        .blog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-bottom:40px; }
-        @media(max-width:900px){ .blog-grid{ grid-template-columns:repeat(2,1fr); } }
-        @media(max-width:580px){ .blog-grid{ grid-template-columns:1fr; } }
+/* ── PAGINATION ── */
+.pag-wrap{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:40px;flex-wrap:wrap;}
+.pag-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);
+    background:#fff;color:var(--text);font-size:.82rem;font-weight:600;
+    text-decoration:none;display:flex;align-items:center;justify-content:center;
+    transition:all .2s;cursor:pointer;}
+.pag-btn:hover{border-color:var(--green);color:var(--green);}
+.pag-btn.active{background:var(--green);border-color:var(--green);color:#fff;}
+.pag-btn.disabled{opacity:.35;pointer-events:none;}
+.pag-info{font-size:.76rem;color:var(--muted);padding:0 8px;}
 
-        /* CARD */
-        .blog-card {
-            background:#fff; border-radius:16px; overflow:hidden;
-            box-shadow:0 1px 4px rgba(0,0,0,.06); border:1px solid #f0f0f0;
-            transition:transform .2s, box-shadow .2s; display:flex; flex-direction:column;
-        }
-        .blog-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,0,0,.1); }
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:80px 24px;background:#fff;border-radius:16px;border:1px solid var(--border);}
+.empty-state .empty-ico{font-size:3rem;margin-bottom:14px;display:block;}
+.empty-state h4{font-family:'Rubik',sans-serif;font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:6px;}
+.empty-state p{font-size:.84rem;color:var(--muted);}
 
-        .card-img {
-            width:100%; height:180px; object-fit:cover;
-            background:linear-gradient(135deg,#f0fdf4,#dcfce7);
-        }
-        .card-img-placeholder {
-            width:100%; height:180px;
-            display:flex; align-items:center; justify-content:center;
-            font-size:2.5rem; background:linear-gradient(135deg,#f0fdf4,#dcfce7);
-        }
-        .card-body { padding:18px; flex:1; display:flex; flex-direction:column; }
-        .card-source {
-            display:inline-flex; align-items:center; gap:5px;
-            font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:50px;
-            color:#fff; margin-bottom:10px; width:fit-content;
-        }
-        .card-title { font-size:.9rem; font-weight:700; color:#111; line-height:1.4; margin-bottom:8px; }
-        .card-desc { font-size:.78rem; color:#666; line-height:1.6; flex:1; margin-bottom:12px; }
-        .card-footer-row { display:flex; align-items:center; justify-content:space-between; }
-        .card-date { font-size:.7rem; color:#aaa; display:flex; align-items:center; gap:4px; }
-        .card-link {
-            font-size:.75rem; font-weight:700; color:#16a34a; text-decoration:none;
-            display:flex; align-items:center; gap:4px; transition:gap .2s;
-        }
-        .card-link:hover { gap:7px; }
+/* ── FLASH ── */
+.flash-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;
+    border-radius:12px;padding:13px 18px;margin-bottom:24px;
+    display:flex;align-items:center;gap:9px;font-size:.86rem;font-weight:600;}
 
-        /* FEATURED (première carte) */
-        .blog-card.featured { grid-column:1/-1; flex-direction:row; }
-        .blog-card.featured .card-img { width:380px; height:auto; flex-shrink:0; }
-        .blog-card.featured .card-img-placeholder { width:380px; height:auto; min-height:220px; flex-shrink:0; }
-        .blog-card.featured .card-title { font-size:1.15rem; }
-        .blog-card.featured .card-desc { font-size:.85rem; }
-        @media(max-width:700px){ .blog-card.featured{ flex-direction:column; } .blog-card.featured .card-img, .blog-card.featured .card-img-placeholder { width:100%; height:200px; } }
+@media(max-width:900px){
+    .featured-card{grid-template-columns:1fr;}
+    .featured-img,.featured-placeholder{min-height:220px;}
+    .blog-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:768px){
+    .sources-bar{padding:12px 16px;top:auto;position:static;}
+    .blog-section{padding:36px 16px 60px;}
+    .blog-grid{grid-template-columns:1fr;}
+    .featured-body{padding:22px 18px;}
+}
+</style>
+@endpush
 
-        /* PAGINATION */
-        .pagination-wrap { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:32px; }
-        .page-btn {
-            padding:8px 16px; border-radius:10px; border:1.5px solid #e5e7eb;
-            background:#fff; color:#555; font-size:.8rem; font-weight:600;
-            cursor:pointer; text-decoration:none; transition:all .2s;
-        }
-        .page-btn:hover { border-color:#16a34a; color:#16a34a; }
-        .page-btn.active { background:#16a34a; color:#fff; border-color:#16a34a; }
-        .page-btn.disabled { color:#ccc; cursor:default; pointer-events:none; }
+@section('content')
 
-        /* REFRESH */
-        .refresh-btn {
-            background:none; border:1.5px solid #e5e7eb; border-radius:10px;
-            padding:6px 14px; font-size:.78rem; color:#666; cursor:pointer;
-            display:flex; align-items:center; gap:6px; transition:all .2s;
-        }
-        .refresh-btn:hover { border-color:#16a34a; color:#16a34a; }
-
-        /* FLASH */
-        .flash { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:10px 18px; border-radius:10px; margin-bottom:20px; font-size:.85rem; }
-
-        /* EMPTY */
-        .empty { text-align:center; padding:60px 20px; color:#999; }
-        .empty .icon { font-size:3rem; margin-bottom:12px; }
-    </style>
-</head>
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar">
-    <a href="{{ route('home') }}" class="navbar-logo">🌿 AntiGaspiCI</a>
-    <ul class="navbar-links">
-        <li><a href="{{ route('home') }}">Accueil</a></li>
-        <li><a href="{{ route('annonces.index') }}">Annonces</a></li>
-        <li><a href="{{ route('blog') }}" class="active">Blog</a></li>
-        <li><a href="{{ route('comment-ca-marche') }}">Fonctionnement</a></li>
-    </ul>
-    @auth
-        <a href="{{ route('dashboard') }}" class="navbar-cta">Mon espace</a>
-    @else
-        <a href="{{ route('connexion') }}" class="navbar-cta">Connexion</a>
-    @endauth
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-    <div class="hero-tag">Blog</div>
-    <h1>Santé & Alimentation</h1>
-    <p>Les dernières actualités sur la nutrition, la santé et l'alimentation durable, agrégées en temps réel.</p>
-    <div class="hero-meta">
-        <div class="hero-stat"><i class="fas fa-rss" style="color:#16a34a;"></i> <strong>4</strong> sources RSS</div>
-        <div class="hero-stat"><i class="fas fa-newspaper" style="color:#16a34a;"></i> <strong>{{ count($articles) }}</strong> articles</div>
-        <div class="hero-stat"><i class="fas fa-sync-alt" style="color:#16a34a;"></i> Mis à jour toutes les heures</div>
+{{-- HERO --}}
+<div class="page-hero">
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-glow"></div>
+    <div class="page-hero-inner">
+        <div class="page-hero-tag">
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#4ade80"/></svg>
+            Mis à jour toutes les heures
+        </div>
+        <h1>Blog <span>Santé</span> &amp; Alimentation</h1>
+        <p>Actualités nutrition, alimentation durable et santé — agrégées en temps réel depuis les meilleures sources internationales.</p>
     </div>
-</section>
-
-<!-- SOURCES BAR -->
-<div class="sources-bar">
-    <span class="sources-label">Sources :</span>
-    <a href="{{ route('blog') }}" class="source-pill active" id="pill-all">
-        Toutes
-    </a>
-    @foreach([['OMS','#1d4ed8'],['Le Monde Santé','#dc2626'],['Futura Santé','#7c3aed'],['Santé Magazine','#059669']] as [$nom,$couleur])
-    <a href="{{ route('blog') }}?source={{ urlencode($nom) }}" class="source-pill" style="color:{{ $couleur }}" id="pill-{{ Str::slug($nom) }}">
-        <span class="dot" style="background:{{ $couleur }}"></span>{{ $nom }}
-    </a>
-    @endforeach
-
-    <div style="margin-left:auto;">
-        @auth
-        <form action="{{ route('blog.refresh') }}" method="POST" style="display:inline;">
-            @csrf
-            <button class="refresh-btn"><i class="fas fa-sync-alt"></i> Actualiser</button>
-        </form>
-        @endauth
-    </div>
+    <svg class="page-hero-wave" viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,32 C360,56 1080,0 1440,32 L1440,56 L0,56 Z" fill="#f8fafc"/>
+    </svg>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+{{-- SOURCES BAR --}}
+<div class="sources-bar">
+    <span class="sources-label">Sources :</span>
+    <a href="{{ route('blog') }}" class="source-pill" id="pill-all">Toutes</a>
+    @foreach([['OMS','#1d4ed8'],['Le Monde Santé','#dc2626'],['Futura Santé','#7c3aed'],['Santé Magazine','#059669']] as [$nom,$couleur])
+    <a href="{{ route('blog') }}?source={{ urlencode($nom) }}" class="source-pill" style="color:{{ $couleur }};" id="pill-{{ Str::slug($nom) }}">
+        <span class="source-dot" style="background:{{ $couleur }};"></span>{{ $nom }}
+    </a>
+    @endforeach
+    @auth
+    <form action="{{ route('blog.refresh') }}" method="POST" style="margin-left:auto;">
+        @csrf
+        <button class="refresh-btn"><i class="fas fa-sync-alt"></i> Actualiser les flux</button>
+    </form>
+    @endauth
+</div>
 
-    @if(session('success'))
-    <div class="flash">✅ {{ session('success') }}</div>
-    @endif
+{{-- MAIN --}}
+<section class="blog-section">
+    <div class="blog-inner">
 
-    @php
-        $source = request('source');
-        $filtered = $source ? array_filter($articles, fn($a) => $a['source'] === $source) : $articles;
-        $filtered  = array_values($filtered);
+        @if(session('success'))
+        <div class="flash-ok"><i class="fas fa-check-circle"></i>{{ session('success') }}</div>
+        @endif
 
-        $perPage  = 12;
-        $page     = max(1, (int) request('page', 1));
-        $total    = count($filtered);
-        $pages    = (int) ceil($total / $perPage);
-        $offset   = ($page - 1) * $perPage;
-        $current  = array_slice($filtered, $offset, $perPage);
-    @endphp
+        @php
+            $source   = request('source');
+            $filtered = $source ? array_values(array_filter($articles, fn($a) => $a['source'] === $source)) : $articles;
+            $perPage  = 12;
+            $page     = max(1, (int) request('page', 1));
+            $total    = count($filtered);
+            $pages    = max(1, (int) ceil($total / $perPage));
+            $offset   = ($page - 1) * $perPage;
+            $current  = array_slice($filtered, $offset, $perPage);
+        @endphp
 
-    @if(empty($current))
-    <div class="empty">
-        <div class="icon">📭</div>
-        <p>Aucun article disponible pour le moment.</p>
-        <p style="font-size:.8rem;margin-top:8px;">Les flux RSS seront rechargés dans moins d'une heure.</p>
-    </div>
-    @else
-    <div class="blog-grid">
-        @foreach($current as $i => $article)
-        <article class="blog-card {{ $i === 0 && $page === 1 && !$source ? 'featured' : '' }}">
-            @if($article['image'])
-                <img src="{{ $article['image'] }}" alt="" class="card-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                <div class="card-img-placeholder" style="display:none;">{{ $article['icone'] }}</div>
+        @if(empty($current))
+        <div class="empty-state">
+            <span class="empty-ico">📭</span>
+            <h4>Aucun article disponible</h4>
+            <p>Les flux RSS seront rechargés dans moins d'une heure.</p>
+        </div>
+        @else
+
+        {{-- FEATURED (1er article, page 1, pas de filtre source) --}}
+        @if($page === 1 && !$source && isset($current[0]))
+        @php $featured = $current[0]; $rest = array_slice($current, 1); @endphp
+        <div class="featured-card reveal">
+            @if($featured['image'])
+                <img src="{{ $featured['image'] }}" alt="" class="featured-img" loading="eager"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="featured-placeholder" style="display:none;">{{ $featured['icone'] }}</div>
             @else
-                <div class="card-img-placeholder">{{ $article['icone'] }}</div>
+                <div class="featured-placeholder">{{ $featured['icone'] }}</div>
             @endif
-            <div class="card-body">
-                <span class="card-source" style="background:{{ $article['couleur'] }}">
-                    {{ $article['icone'] }} {{ $article['source'] }}
+            <div class="featured-body">
+                <span class="featured-tag">À la une</span>
+                <span class="featured-badge" style="background:{{ $featured['couleur'] }};">
+                    {{ $featured['icone'] }} {{ $featured['source'] }}
                 </span>
-                <div class="card-title">{{ $article['titre'] }}</div>
-                @if($article['description'])
-                <div class="card-desc">{{ $article['description'] }}</div>
+                <h2 class="featured-title">{{ $featured['titre'] }}</h2>
+                @if($featured['description'])
+                <p class="featured-desc">{{ $featured['description'] }}</p>
                 @endif
-                <div class="card-footer-row">
-                    <span class="card-date"><i class="fas fa-calendar-alt"></i>{{ $article['date_fmt'] }}</span>
-                    <a href="{{ $article['lien'] }}" target="_blank" rel="noopener" class="card-link">
-                        Lire <i class="fas fa-arrow-right"></i>
+                <div class="featured-foot">
+                    <div class="featured-date"><i class="fas fa-calendar-alt"></i>{{ $featured['date_fmt'] }}</div>
+                    <a href="{{ $featured['lien'] }}" target="_blank" rel="noopener" class="btn-read">
+                        Lire l'article <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
             </div>
-        </article>
-        @endforeach
-    </div>
-
-    @if($pages > 1)
-    <div class="pagination-wrap">
-        @if($page > 1)
-        <a href="?{{ http_build_query(array_merge(request()->except('page'), ['page' => $page - 1])) }}" class="page-btn">‹ Préc.</a>
+        </div>
         @else
-        <span class="page-btn disabled">‹ Préc.</span>
+        @php $rest = $current; @endphp
         @endif
 
-        @for($p = max(1, $page - 2); $p <= min($pages, $page + 2); $p++)
-        <a href="?{{ http_build_query(array_merge(request()->except('page'), ['page' => $p])) }}"
-           class="page-btn {{ $p === $page ? 'active' : '' }}">{{ $p }}</a>
-        @endfor
+        {{-- GRID --}}
+        @if(!empty($rest))
+        <div class="blog-grid">
+            @foreach($rest as $article)
+            <article class="blog-card reveal">
+                @if($article['image'])
+                    <img src="{{ $article['image'] }}" alt="" class="bc-img" loading="lazy"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="bc-placeholder" style="display:none;">{{ $article['icone'] }}</div>
+                @else
+                    <div class="bc-placeholder">{{ $article['icone'] }}</div>
+                @endif
+                <div class="bc-body">
+                    <span class="bc-source" style="background:{{ $article['couleur'] }};">
+                        {{ $article['icone'] }} {{ $article['source'] }}
+                    </span>
+                    <div class="bc-title">{{ $article['titre'] }}</div>
+                    @if($article['description'])
+                    <div class="bc-desc">{{ Str::limit($article['description'], 110) }}</div>
+                    @endif
+                    <div class="bc-foot">
+                        <span class="bc-date"><i class="fas fa-calendar-alt"></i>{{ $article['date_fmt'] }}</span>
+                        <a href="{{ $article['lien'] }}" target="_blank" rel="noopener" class="bc-link">
+                            Lire <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            @endforeach
+        </div>
+        @endif
 
-        @if($page < $pages)
-        <a href="?{{ http_build_query(array_merge(request()->except('page'), ['page' => $page + 1])) }}" class="page-btn">Suiv. ›</a>
-        @else
-        <span class="page-btn disabled">Suiv. ›</span>
+        {{-- PAGINATION --}}
+        @if($pages > 1)
+        <div class="pag-wrap">
+            @if($page > 1)
+                <a href="?{{ http_build_query(array_merge(request()->except('page'),['page'=>$page-1])) }}" class="pag-btn">‹</a>
+            @else
+                <span class="pag-btn disabled">‹</span>
+            @endif
+
+            @for($p = max(1,$page-2); $p <= min($pages,$page+2); $p++)
+                <a href="?{{ http_build_query(array_merge(request()->except('page'),['page'=>$p])) }}"
+                   class="pag-btn {{ $p===$page?'active':'' }}">{{ $p }}</a>
+            @endfor
+
+            @if($page < $pages)
+                <a href="?{{ http_build_query(array_merge(request()->except('page'),['page'=>$page+1])) }}" class="pag-btn">›</a>
+            @else
+                <span class="pag-btn disabled">›</span>
+            @endif
+
+            <span class="pag-info">Page {{ $page }}/{{ $pages }} — {{ $total }} articles</span>
+        </div>
+        @endif
+
         @endif
     </div>
-    <p style="text-align:center;font-size:.75rem;color:#aaa;margin-top:12px;">
-        Page {{ $page }} sur {{ $pages }} — {{ $total }} articles
-    </p>
-    @endif
+</section>
 
-    @endif
-</div>
+@endsection
 
-<!-- Footer simple -->
-<footer style="text-align:center;padding:24px;color:#aaa;font-size:.8rem;border-top:1px solid #f0f0f0;">
-    © {{ date('Y') }} AntiGaspiCI — Sources : OMS, Le Monde Santé, Futura Sciences, Santé Magazine
-</footer>
-
+@push('scripts')
 <script>
-// Surligne la source active
-const source = new URLSearchParams(window.location.search).get('source');
-if (source) {
-    document.getElementById('pill-all')?.classList.remove('active');
-    const slug = source.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    document.getElementById('pill-' + slug)?.classList.add('active');
-}
+// Highlight active source pill
+(function(){
+    const src = new URLSearchParams(window.location.search).get('source');
+    if(src){
+        document.getElementById('pill-all')?.classList.remove('active');
+        const slug = src.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+        document.getElementById('pill-'+slug)?.classList.add('active');
+    } else {
+        document.getElementById('pill-all')?.classList.add('active');
+    }
+})();
 </script>
-
-</body>
-</html>
+@endpush

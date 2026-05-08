@@ -118,10 +118,41 @@
             @if($annonce->statut === 'disponible' && !$annonce->estExpire())
                 @auth
                     @if(Auth::id() !== $annonce->user_id)
+
+                    {{-- Flash panier --}}
+                    @if(session('cart_success'))
+                    <div class="alert alert-success rounded-3 mb-3 d-flex align-items-center gap-2 py-2 px-3">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="flex-grow-1" style="font-size:.85rem;">{{ session('cart_success') }}</span>
+                        <a href="{{ route('cart.index') }}" class="btn btn-sm btn-success rounded-pill px-3">Voir panier</a>
+                    </div>
+                    @endif
+
+                    {{-- Ajouter au panier --}}
+                    <div class="card border-0 shadow-sm rounded-3 mb-3">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="fas fa-shopping-cart text-warning"></i>
+                                <span class="fw-semibold" style="font-size:.9rem;">Ajouter au panier</span>
+                            </div>
+                            <form action="{{ route('cart.ajouter', $annonce) }}" method="POST" class="d-flex gap-2 align-items-start">
+                                @csrf
+                                <div class="flex-grow-1">
+                                    <input type="number" name="quantite" class="form-control form-control-sm" step="0.01" min="0.01" max="{{ $annonce->quantite }}" value="{{ min(1, $annonce->quantite) }}" required>
+                                    <small class="text-muted">Dispo : {{ $annonce->quantite }} {{ $annonce->unite }}</small>
+                                </div>
+                                <button type="submit" class="btn btn-warning rounded-pill fw-semibold px-3" style="white-space:nowrap;">
+                                    <i class="fas fa-cart-plus me-1"></i>Ajouter
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {{-- Réservation directe --}}
                     <div class="card border-0 shadow-sm rounded-3 mb-4">
                         <div class="card-header bg-primary text-white rounded-top-3">
                             <h6 class="mb-0"><i class="fas fa-hand-holding-heart me-2"></i>
-                                {{ $annonce->type_offre === 'don' ? 'Demander ce don' : 'Réserver ce produit' }}
+                                {{ $annonce->type_offre === 'don' ? 'Demander ce don' : 'Réserver directement' }}
                             </h6>
                         </div>
                         <div class="card-body p-4">

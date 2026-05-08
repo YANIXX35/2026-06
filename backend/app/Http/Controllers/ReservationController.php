@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Annonce;
 use App\Models\Reservation;
+use App\Mail\NouvelleReservationMail;
+use App\Mail\ReservationAccepteeMail;
+use App\Mail\ReservationRefuseeMail;
 use App\Notifications\ReservationAcceptee;
 use App\Notifications\ReservationRefusee;
 use App\Notifications\ReservationCompletee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class ReservationController extends Controller
 {
@@ -20,7 +24,7 @@ class ReservationController extends Controller
             'date_collecte_souhaitee' => 'nullable|date|after:now',
         ]);
 
-        Reservation::create([
+        $reservation = Reservation::create([
             'annonce_id'              => $annonce->id,
             'user_id'                 => Auth::id(),
             'quantite_demandee'       => $request->quantite_demandee,
@@ -30,6 +34,11 @@ class ReservationController extends Controller
         ]);
 
         $annonce->update(['statut' => 'reservé']);
+
+        // Envoyer un email au fournisseur
+        $reservation->load(['annonce.user', 'acheteur']);
+        Mail::to($annonce->user->email)->send(new NouvelleReservationMail($reservation));
+
         return redirect()->route('annonces.show', $annonce)->with('success', 'Réservation envoyée !');
     }
 
@@ -37,7 +46,9 @@ class ReservationController extends Controller
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'acceptée']);
+        $reservation->load(['annonce', 'acheteur']);
         $reservation->acheteur->notify(new ReservationAcceptee($reservation));
+        Mail::to($reservation->acheteur->email)->send(new ReservationAccepteeMail($reservation));
         return back()->with('success', 'Réservation acceptée.');
     }
 
@@ -46,7 +57,9 @@ class ReservationController extends Controller
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'refusée']);
         $reservation->annonce->update(['statut' => 'disponible']);
+        $reservation->load(['annonce', 'acheteur']);
         $reservation->acheteur->notify(new ReservationRefusee($reservation));
+        Mail::to($reservation->acheteur->email)->send(new ReservationRefuseeMail($reservation));
         return back()->with('success', 'Réservation refusée.');
     }
 

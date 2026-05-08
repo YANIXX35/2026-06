@@ -17,6 +17,7 @@ class User extends Authenticatable
         'role', 'statut', 'photo', 'adresse', 'latitude', 'longitude',
         'type_structure', 'nom_structure', 'description_structure', 'note_moyenne',
         'type_acheteur', 'nom_organisation',
+        'social_provider', 'social_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
