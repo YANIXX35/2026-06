@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: antigaspi-2026
+    runtime: image
+    repo: https://github.com/YANIXX35/2026-06
+    rootDir: backend
+    buildCommand: ""
+    startCommand: bash start.sh
+    envVars:
+      - key: APP_NAME
+        value: AntiGaspiCI
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://antigaspi-2026.onrender.com
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: antigaspi-2026-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: antigaspi-2026-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: antigaspi-2026-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: antigaspi-2026-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: antigaspi-2026-db
+          property: password
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_STORE
+        value: array
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: public
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MAIL_MAILER
+        value: log
+
+databases:
+  - name: antigaspi-2026-db
+    databaseName: antigaspi2026
+    user: antigaspi
+    plan: free
