@@ -1,11 +1,9 @@
 services:
   - type: web
     name: antigaspi-2026
-    runtime: image
-    repo: https://github.com/YANIXX35/2026-06
     rootDir: backend
-    buildCommand: ""
-    startCommand: bash start.sh
+    buildCommand: "composer install --no-dev --optimize-autoloader --no-interaction && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+    startCommand: "bash start.sh"
     envVars:
       - key: APP_NAME
         value: AntiGaspiCI
