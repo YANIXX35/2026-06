@@ -3,7 +3,7 @@ services:
     name: antigaspi-2026
     env: native
     rootDir: backend
-    buildCommand: "composer install --no-dev --optimize-autoloader --no-interaction && php artisan config:cache && php artisan route:cache && php artisan view:cache"
+    buildCommand: "composer install --no-dev --optimize-autoloader --no-interaction"
     startCommand: "bash start.sh"
     envVars:
       - key: APP_NAME
