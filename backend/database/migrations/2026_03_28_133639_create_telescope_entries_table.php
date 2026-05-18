@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function getConnection(): ?string
     {
+        // En production, utiliser null = connexion par défaut (évite 127.0.0.1)
+        if (app()->isProduction()) {
+            return null;
+        }
         return config('telescope.storage.database.connection', config('database.default'));
     }
 
@@ -28,7 +32,6 @@ return new class extends Migration
             $table->string('type', 20);
             $table->longText('content');
             $table->dateTime('created_at')->nullable();
-
             $table->unique('uuid');
             $table->index('batch_id');
             $table->index('family_hash');
@@ -39,10 +42,8 @@ return new class extends Migration
         $schema->create('telescope_entries_tags', function (Blueprint $table) {
             $table->uuid('entry_uuid');
             $table->string('tag');
-
             $table->primary(['entry_uuid', 'tag']);
             $table->index('tag');
-
             $table->foreign('entry_uuid')
                 ->references('uuid')
                 ->on('telescope_entries')
@@ -61,7 +62,6 @@ return new class extends Migration
         }
 
         $schema = Schema::connection($this->getConnection());
-
         $schema->dropIfExists('telescope_entries_tags');
         $schema->dropIfExists('telescope_entries');
         $schema->dropIfExists('telescope_monitoring');
