@@ -1,4 +1,4 @@
-services:
+﻿services:
   - type: web
     name: antigaspi-2026
     env: docker
@@ -8,7 +8,7 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: "false"
+        value: "true"
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
@@ -55,3 +55,4 @@ databases:
     databaseName: antigaspi2026
     user: antigaspi
     plan: free
+
