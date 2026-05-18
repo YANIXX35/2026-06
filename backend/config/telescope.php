@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
@@ -59,7 +59,7 @@ return [
 
     'storage' => [
         'database' => [
-            'connection' => env('DB_CONNECTION', 'mysql'),
+            'connection' => env('TELESCOPE_DB_CONNECTION', null),
             'chunk' => 1000,
         ],
     ],
@@ -210,3 +210,4 @@ return [
         Watchers\ViewWatcher::class => env('TELESCOPE_VIEW_WATCHER', true),
     ],
 ];
+
