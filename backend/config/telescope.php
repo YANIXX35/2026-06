@@ -59,7 +59,7 @@ return [
 
     'storage' => [
         'database' => [
-            'connection' => env('TELESCOPE_DB_CONNECTION', null),
+            'connection' => env('TELESCOPE_DB_CONNECTION', 'pgsql'),
             'chunk' => 1000,
         ],
     ],
@@ -210,4 +210,5 @@ return [
         Watchers\ViewWatcher::class => env('TELESCOPE_VIEW_WATCHER', true),
     ],
 ];
+
 
