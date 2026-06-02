@@ -1,12 +1,9 @@
 #!/bin/bash
 set -e
 
-# Verifier que APP_KEY est un vrai cle Laravel (format base64:...)
+# Verifier APP_KEY
 if [ -z "$APP_KEY" ] || [[ "$APP_KEY" != base64:* ]]; then
-    echo '==> ERREUR : APP_KEY manquant ou invalide.'
-    echo '==> Generez une cle avec : php artisan key:generate --show'
-    echo '==> Puis ajoutez-la dans Render > Environment > APP_KEY'
-    echo '==> Generation automatique d une cle temporaire...'
+    echo '==> WARNING : APP_KEY absent ou invalide, generation automatique...'
     php artisan key:generate --force || true
 fi
 
@@ -17,7 +14,11 @@ echo '==> Cache vues...'
 php artisan view:cache
 
 echo '==> Migration base de donnees...'
-php artisan migrate --force
+if php artisan migrate --force; then
+    echo '==> Migrations OK.'
+else
+    echo '==> WARNING : Migration echouee (DB non disponible ?). Le serveur demarre quand meme.'
+fi
 
 echo '==> Lien symbolique storage...'
 php artisan storage:link 2>/dev/null || echo 'Storage link deja present.'
