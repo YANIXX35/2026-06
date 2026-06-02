@@ -32,12 +32,12 @@ class AnnonceController extends Controller
             $query->where('adresse_collecte', 'like', '%' . $request->ville . '%');
         }
 
-        // Urgents (expire dans 24h) remontés en premier
+        // Urgents (expire dans 24h) remontés en premier (syntaxe PostgreSQL)
         $annonces = $query->orderByRaw("
             CASE
                 WHEN date_expiration IS NOT NULL
                      AND date_expiration > NOW()
-                     AND date_expiration <= DATE_ADD(NOW(), INTERVAL 24 HOUR)
+                     AND date_expiration <= NOW() + INTERVAL '24 hours'
                 THEN 0 ELSE 1
             END ASC
         ")->latest()->paginate(12);
