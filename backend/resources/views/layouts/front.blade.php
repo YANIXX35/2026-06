@@ -253,6 +253,130 @@
     </div>
 </footer>
 
+{{-- ── FLOATING CART ── --}}
+@auth
+@php
+    $floatCartItems = \App\Models\CartItem::with(['annonce.photoPrincipale'])
+        ->where('user_id', Auth::id())->get();
+    $floatCartCount = $floatCartItems->count();
+    $floatCartTotal = $floatCartItems->sum(fn($i) =>
+        $i->annonce->type_offre === 'don' ? 0 : (float)$i->annonce->prix * (float)$i->quantite
+    );
+@endphp
+<style>
+.fc-wrap{position:fixed;bottom:28px;right:28px;z-index:9990;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
+.fc-btn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);
+    color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:1.35rem;box-shadow:0 6px 24px rgba(22,163,74,.45);transition:all .25s;position:relative;}
+.fc-btn:hover{transform:scale(1.1);box-shadow:0 10px 32px rgba(22,163,74,.55);}
+.fc-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:.65rem;
+    font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;border:2px solid #fff;animation:fcPop .3s ease;}
+@keyframes fcPop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.fc-popup{width:300px;background:#fff;border-radius:18px;box-shadow:0 16px 48px rgba(0,0,0,.16);
+    overflow:hidden;display:none;flex-direction:column;transform-origin:bottom right;animation:fcSlide .2s ease;}
+@keyframes fcSlide{0%{opacity:0;transform:scale(.9) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.fc-popup.open{display:flex;}
+.fc-head{background:linear-gradient(135deg,#16a34a,#15803d);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.fc-head h6{color:#fff;font-weight:800;font-size:.88rem;margin:0;display:flex;align-items:center;gap:7px;}
+.fc-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
+.fc-close:hover{background:rgba(255,255,255,.35);}
+.fc-body{max-height:240px;overflow-y:auto;padding:10px 14px;}
+.fc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;}
+.fc-item:last-child{border-bottom:none;}
+.fc-item-img{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#f1f5f9;display:flex;align-items:center;justify-content:center;}
+.fc-item-info{flex:1;min-width:0;}
+.fc-item-name{font-size:.78rem;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fc-item-qty{font-size:.72rem;color:#64748b;}
+.fc-item-price{font-size:.78rem;font-weight:800;color:#16a34a;white-space:nowrap;}
+.fc-empty{text-align:center;padding:24px 0;color:#94a3b8;font-size:.82rem;}
+.fc-empty i{font-size:1.8rem;display:block;margin-bottom:8px;color:#cbd5e1;}
+.fc-foot{padding:12px 14px;border-top:1px solid #f1f5f9;background:#f8fafc;}
+.fc-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.fc-total span{font-size:.8rem;color:#64748b;font-weight:600;}
+.fc-total strong{font-size:.95rem;font-weight:900;color:#16a34a;}
+.fc-actions{display:flex;gap:8px;}
+.fc-btn-voir{flex:1;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;
+    padding:9px;border-radius:50px;font-size:.78rem;font-weight:700;text-align:center;
+    text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;}
+.fc-btn-voir:hover{opacity:.9;color:#fff;}
+.fc-btn-vider{background:#fee2e2;color:#ef4444;border:none;padding:9px 13px;border-radius:50px;
+    font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.fc-btn-vider:hover{background:#fecaca;}
+</style>
+
+<div class="fc-wrap">
+    <div class="fc-popup" id="fcPopup">
+        <div class="fc-head">
+            <h6><i class="fas fa-shopping-cart"></i> Mon panier
+                @if($floatCartCount > 0)
+                <span style="background:rgba(255,255,255,.25);padding:1px 8px;border-radius:50px;font-size:.72rem;">
+                    {{ $floatCartCount }} article{{ $floatCartCount > 1 ? 's' : '' }}
+                </span>
+                @endif
+            </h6>
+            <button class="fc-close" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="fc-body">
+            @if($floatCartItems->isEmpty())
+                <div class="fc-empty"><i class="fas fa-shopping-cart"></i>Votre panier est vide</div>
+            @else
+                @foreach($floatCartItems as $ci)
+                <div class="fc-item">
+                    @if($ci->annonce->photoPrincipale)
+                        <img src="{{ Storage::url($ci->annonce->photoPrincipale->url) }}" class="fc-item-img" alt="">
+                    @else
+                        <div class="fc-item-img"><i class="fas fa-image" style="color:#cbd5e1;"></i></div>
+                    @endif
+                    <div class="fc-item-info">
+                        <div class="fc-item-name">{{ $ci->annonce->titre }}</div>
+                        <div class="fc-item-qty">{{ $ci->quantite }} {{ $ci->annonce->unite }}</div>
+                    </div>
+                    <div class="fc-item-price">
+                        @if($ci->annonce->type_offre === 'don') Gratuit
+                        @else {{ number_format((float)$ci->annonce->prix * (float)$ci->quantite, 0, ',', ' ') }} F
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            @endif
+        </div>
+        @if($floatCartItems->isNotEmpty())
+        <div class="fc-foot">
+            <div class="fc-total">
+                <span>Total estimé</span>
+                <strong>{{ number_format($floatCartTotal, 0, ',', ' ') }} FCFA</strong>
+            </div>
+            <div class="fc-actions">
+                <a href="{{ route('cart.index') }}" class="fc-btn-voir"><i class="fas fa-eye"></i> Voir le panier</a>
+                <form action="{{ route('cart.vider') }}" method="POST" style="display:inline">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="fc-btn-vider" onclick="return confirm('Vider le panier ?')">
+                        <i class="fas fa-trash-alt"></i> Vider
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    <button class="fc-btn" onclick="toggleCart()" title="Mon panier">
+        <i class="fas fa-shopping-cart"></i>
+        @if($floatCartCount > 0)
+            <span class="fc-badge">{{ $floatCartCount > 9 ? '9+' : $floatCartCount }}</span>
+        @endif
+    </button>
+</div>
+
+<script>
+function toggleCart(){document.getElementById('fcPopup').classList.toggle('open');}
+document.addEventListener('click',function(e){
+    const w=document.querySelector('.fc-wrap');
+    if(w&&!w.contains(e.target))document.getElementById('fcPopup').classList.remove('open');
+});
+</script>
+@endauth
+
 <script>
 window.addEventListener('scroll',()=>{
     document.getElementById('frontNav').classList.toggle('scrolled',window.scrollY>50);

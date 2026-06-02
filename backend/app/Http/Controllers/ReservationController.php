@@ -33,7 +33,10 @@ class ReservationController extends Controller
             'statut'                  => 'en_attente',
         ]);
 
-        $annonce->update(['statut' => 'reservé']);
+        // Passe l'annonce en réservé uniquement si elle était disponible
+        if ($annonce->statut === 'disponible') {
+            $annonce->update(['statut' => 'reservé']);
+        }
 
         // Envoyer un email au fournisseur
         $reservation->load(['annonce.user', 'acheteur']);
@@ -56,7 +59,16 @@ class ReservationController extends Controller
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'refusée']);
-        $reservation->annonce->update(['statut' => 'disponible']);
+
+        // Remet disponible seulement si aucune autre réservation active sur cette annonce
+        $autresActives = $reservation->annonce->reservations()
+            ->whereNotIn('statut', ['refusée', 'annulée'])
+            ->where('id', '!=', $reservation->id)
+            ->exists();
+        if (!$autresActives) {
+            $reservation->annonce->update(['statut' => 'disponible']);
+        }
+
         $reservation->load(['annonce', 'acheteur']);
         $reservation->acheteur->notify(new ReservationRefusee($reservation));
         Mail::to($reservation->acheteur->email)->send(new ReservationRefuseeMail($reservation));
@@ -75,7 +87,16 @@ class ReservationController extends Controller
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
         $reservation->update(['statut' => 'annulée']);
-        $reservation->annonce->update(['statut' => 'disponible']);
+
+        // Remet disponible seulement si aucune autre réservation active
+        $autresActives = $reservation->annonce->reservations()
+            ->whereNotIn('statut', ['refusée', 'annulée'])
+            ->where('id', '!=', $reservation->id)
+            ->exists();
+        if (!$autresActives) {
+            $reservation->annonce->update(['statut' => 'disponible']);
+        }
+
         return back()->with('success', 'Réservation annulée.');
     }
 

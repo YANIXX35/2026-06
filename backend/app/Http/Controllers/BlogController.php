@@ -52,21 +52,40 @@ class BlogController extends Controller
 
     private function fetchAllFeeds(): array
     {
-        $all = [];
+        // Téléchargement parallèle via curl_multi (toutes sources simultanées)
+        $multiHandle = curl_multi_init();
+        $handles     = [];
 
-        foreach ($this->sources as $source) {
+        foreach ($this->sources as $key => $source) {
             $ch = curl_init($source['url']);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT        => 10,
+                CURLOPT_TIMEOUT        => 8,
+                CURLOPT_CONNECTTIMEOUT => 4,
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_USERAGENT      => 'Mozilla/5.0 (compatible; AntiGaspiCI/1.0)',
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_MAXREDIRS      => 3,
             ]);
-            $xml  = curl_exec($ch);
+            curl_multi_add_handle($multiHandle, $ch);
+            $handles[$key] = $ch;
+        }
+
+        // Exécuter toutes les requêtes en parallèle
+        do {
+            $status = curl_multi_exec($multiHandle, $active);
+            if ($active) curl_multi_select($multiHandle, 1.0);
+        } while ($active && $status === CURLM_OK);
+
+        $all = [];
+
+        foreach ($handles as $key => $ch) {
+            $xml  = curl_multi_getcontent($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_multi_remove_handle($multiHandle, $ch);
             curl_close($ch);
+
+            $source = $this->sources[$key];
 
             if (!$xml || $code !== 200) continue;
 
@@ -81,8 +100,7 @@ class BlogController extends Controller
 
                 $date = strtotime((string) ($item->pubDate ?? '')) ?: 0;
 
-                // Récupère l'image si disponible
-                $image = null;
+                $image     = null;
                 $enclosure = $item->enclosure ?? null;
                 if ($enclosure) {
                     $type = (string) ($enclosure['type'] ?? '');
@@ -90,7 +108,6 @@ class BlogController extends Controller
                         $image = (string) ($enclosure['url'] ?? null);
                     }
                 }
-                // Cherche aussi dans media:content ou media:thumbnail
                 $media = $item->children('media', true);
                 if (!$image && isset($media->thumbnail)) {
                     $image = (string) ($media->thumbnail['url'] ?? '');
@@ -113,7 +130,8 @@ class BlogController extends Controller
             }
         }
 
-        // Tri par date décroissante
+        curl_multi_close($multiHandle);
+
         usort($all, fn($a, $b) => $b['date'] - $a['date']);
 
         return $all;

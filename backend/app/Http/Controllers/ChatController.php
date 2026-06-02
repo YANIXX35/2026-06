@@ -48,38 +48,52 @@ class ChatController extends Controller
 
         return response()->stream(function () use ($url, $body) {
 
-            $client = new \GuzzleHttp\Client();
+            try {
+                $client = new \GuzzleHttp\Client();
 
-            $response = $client->post($url, [
-                'json'    => $body,
-                'stream'  => true,
-                'timeout' => 60,
-            ]);
+                $response = $client->post($url, [
+                    'json'    => $body,
+                    'stream'  => true,
+                    'timeout' => 60,
+                ]);
 
-            $stream = $response->getBody();
-            $buffer = '';
+                $stream = $response->getBody();
+                $buffer = '';
 
-            while (!$stream->eof()) {
-                $chunk  = $stream->read(1024);
-                $buffer .= $chunk;
-                $lines  = explode("\n", $buffer);
-                $buffer = array_pop($lines); // garde le dernier fragment incomplet
+                while (!$stream->eof()) {
+                    $chunk  = $stream->read(1024);
+                    $buffer .= $chunk;
+                    $lines  = explode("\n", $buffer);
+                    $buffer = array_pop($lines);
 
-                foreach ($lines as $line) {
-                    $line = trim($line);
-                    if (!str_starts_with($line, 'data: ')) continue;
+                    foreach ($lines as $line) {
+                        $line = trim($line);
+                        if (!str_starts_with($line, 'data: ')) continue;
 
-                    $json = substr($line, 6);
-                    $data = json_decode($json, true);
-                    if (!$data) continue;
+                        $json = substr($line, 6);
+                        $data = json_decode($json, true);
+                        if (!$data) continue;
 
-                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-                    if ($text !== null) {
-                        echo 'data: ' . json_encode(['text' => $text]) . "\n\n";
-                        ob_flush();
-                        flush();
+                        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                        if ($text !== null) {
+                            echo 'data: ' . json_encode(['text' => $text]) . "\n\n";
+                            ob_flush();
+                            flush();
+                        }
                     }
                 }
+            } catch (\GuzzleHttp\Exception\ConnectException $e) {
+                echo 'data: ' . json_encode(['error' => 'Impossible de joindre le service IA. Vérifiez votre connexion.']) . "\n\n";
+                ob_flush(); flush();
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+                $msg = $e->getResponse()->getStatusCode() === 429
+                    ? 'Limite de requêtes atteinte. Réessayez dans quelques secondes.'
+                    : 'Clé API invalide ou accès refusé.';
+                echo 'data: ' . json_encode(['error' => $msg]) . "\n\n";
+                ob_flush(); flush();
+            } catch (\Exception $e) {
+                echo 'data: ' . json_encode(['error' => 'Le service IA est temporairement indisponible. Réessayez dans quelques instants.']) . "\n\n";
+                ob_flush(); flush();
             }
 
             echo "data: [DONE]\n\n";

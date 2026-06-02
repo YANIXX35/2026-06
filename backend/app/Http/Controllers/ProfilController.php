@@ -25,7 +25,7 @@ class ProfilController extends Controller
         ];
 
         if ($request->filled('password')) {
-            $rules['password'] = 'string|min:8|confirmed';
+            $rules['password'] = 'required|string|min:8|confirmed';
         }
 
         $validated = $request->validate($rules);

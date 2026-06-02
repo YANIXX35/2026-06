@@ -11,16 +11,18 @@ class SignalementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'raison'      => 'required|string|max:200',
-            'description' => 'nullable|string|max:500',
-            'annonce_id'  => 'nullable|exists:annonces,id',
+            'raison'          => 'required|string|max:200',
+            'description'     => 'nullable|string|max:500',
+            'annonce_id'      => 'nullable|exists:annonces,id',
+            'signale_user_id' => 'nullable|exists:users,id',
         ]);
 
         Signalement::create([
-            'user_id'    => Auth::id(),
-            'annonce_id' => $request->annonce_id,
-            'raison'     => $request->raison,
-            'description'=> $request->description,
+            'user_id'         => Auth::id(),
+            'annonce_id'      => $request->annonce_id,
+            'signale_user_id' => $request->signale_user_id,
+            'raison'          => $request->raison,
+            'description'     => $request->description,
         ]);
 
         return back()->with('success', 'Signalement envoyé à l\'administration.');

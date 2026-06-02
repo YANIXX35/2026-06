@@ -10,7 +10,7 @@
       - key: APP_DEBUG
         value: "true"
       - key: APP_KEY
-        generateValue: true
+        sync: false
       - key: APP_URL
         value: https://antigaspi-2026.onrender.com
       - key: DB_CONNECTION

@@ -147,6 +147,20 @@
     text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .2s;}
 .btn-ann-outline:hover{background:var(--green-50);border-color:var(--green);color:var(--green);}
 
+/* ── CART WIDGET ── */
+.cart-widget{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.qty-ctrl{display:flex;align-items:center;background:#f8fafc;border:1.5px solid var(--border);border-radius:50px;overflow:hidden;}
+.qty-btn{background:none;border:none;width:28px;height:28px;font-size:1.1rem;font-weight:700;color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;line-height:1;}
+.qty-btn:hover{background:#dcfce7;}
+.qty-input{width:46px;border:none;background:none;text-align:center;font-size:.8rem;font-weight:700;color:var(--text);outline:none;padding:0;}
+.btn-cart-add{background:var(--green);color:#fff;border:none;padding:6px 13px;border-radius:50px;font-size:.75rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .2s;white-space:nowrap;}
+.btn-cart-add:hover{background:var(--green-dark);transform:translateY(-1px);}
+.btn-cart-upd{background:#f59e0b;color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.75rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;}
+.btn-cart-upd:hover{background:#d97706;}
+.btn-cart-del{background:#ef4444;color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.73rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s;}
+.btn-cart-del:hover{background:#dc2626;}
+.in-cart-badge{background:#dcfce7;color:#16a34a;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:50px;display:inline-flex;align-items:center;gap:3px;}
+
 /* ── EMPTY STATE ── */
 .empty-state{text-align:center;padding:64px 24px;background:#fff;border-radius:16px;border:1px solid var(--border);}
 .empty-state i{font-size:2.5rem;color:var(--muted-2);margin-bottom:16px;display:block;}
@@ -346,6 +360,59 @@
                             @endif
                         @endauth
                     </div>
+
+                    {{-- ── WIDGET PANIER ── --}}
+                    @auth
+                    @if($annonce->statut === 'disponible' && !$annonce->estExpire() && Auth::id() !== $annonce->user_id)
+                    @php $item = $cartItems[$annonce->id] ?? null; @endphp
+                    <div class="cart-widget">
+                        @if($item)
+                            {{-- Déjà dans le panier → modifier / supprimer --}}
+                            <span class="in-cart-badge"><i class="fas fa-check-circle"></i> Dans le panier</span>
+                            <form action="{{ route('cart.update', ['cartItem' => $item->id]) }}" method="POST"
+                                  class="d-flex align-items-center gap-1" id="upd-{{ $annonce->id }}">
+                                @csrf @method('PATCH')
+                                <div class="qty-ctrl">
+                                    <button type="button" class="qty-btn"
+                                        onclick="changeQty('upd-{{ $annonce->id }}',{{ $annonce->quantite }},-1)">−</button>
+                                    <input type="number" name="quantite" class="qty-input"
+                                        value="{{ $item->quantite }}"
+                                        min="0.01" max="{{ $annonce->quantite }}" step="0.01">
+                                    <button type="button" class="qty-btn"
+                                        onclick="changeQty('upd-{{ $annonce->id }}',{{ $annonce->quantite }},1)">+</button>
+                                </div>
+                                <button type="submit" class="btn-cart-upd" title="Mettre à jour">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            <form action="{{ route('cart.remove', ['cartItem' => $item->id]) }}" method="POST" style="display:inline">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn-cart-del" title="Retirer du panier">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        @else
+                            {{-- Pas dans le panier → ajouter --}}
+                            <form action="{{ route('cart.ajouter', $annonce) }}" method="POST"
+                                  class="d-flex align-items-center gap-1" id="add-{{ $annonce->id }}">
+                                @csrf
+                                <div class="qty-ctrl">
+                                    <button type="button" class="qty-btn"
+                                        onclick="changeQty('add-{{ $annonce->id }}',{{ $annonce->quantite }},-1)">−</button>
+                                    <input type="number" name="quantite" class="qty-input"
+                                        value="{{ min(1, $annonce->quantite) }}"
+                                        min="0.01" max="{{ $annonce->quantite }}" step="0.01">
+                                    <button type="button" class="qty-btn"
+                                        onclick="changeQty('add-{{ $annonce->id }}',{{ $annonce->quantite }},1)">+</button>
+                                </div>
+                                <button type="submit" class="btn-cart-add">
+                                    <i class="fas fa-cart-plus"></i> Panier
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                    @endif
+                    @endauth
                 </div>
             </div>
             @empty
@@ -371,6 +438,16 @@
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ── Quantité +/- ──
+function changeQty(formId, max, delta) {
+    const form = document.getElementById(formId);
+    const input = form.querySelector('input[type="number"]');
+    let val = Math.round((parseFloat(input.value) + delta) * 100) / 100;
+    if (val < 0.01) val = 0.01;
+    if (val > max)  val = max;
+    input.value = val;
+}
+
 const annoncesGeo = @json($annoncesGeo);
 let map = null, mapInitialized = false;
 

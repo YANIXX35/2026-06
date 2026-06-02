@@ -54,7 +54,13 @@ class AnnonceController extends Controller
             'photo'   => $a->photoPrincipale ? asset('storage/'.$a->photoPrincipale->url) : null,
         ])->values();
 
-        return view('annonces.index', compact('annonces', 'categories', 'annoncesGeo'));
+        $cartItems = collect();
+        if (Auth::check()) {
+            $cartItems = \App\Models\CartItem::where('user_id', Auth::id())
+                ->get()->keyBy('annonce_id');
+        }
+
+        return view('annonces.index', compact('annonces', 'categories', 'annoncesGeo', 'cartItems'));
     }
 
     public function show(Annonce $annonce)

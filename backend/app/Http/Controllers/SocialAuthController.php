@@ -45,10 +45,20 @@ class SocialAuthController extends Controller
         if (!$user) {
             // Création automatique du compte
             $nameParts = explode(' ', $socialUser->getName() ?? 'Utilisateur', 2);
+
+            // Email de secours unique si le provider ne le fournit pas
+            $email = $socialUser->getEmail()
+                ?? ($socialUser->getId() . '+' . $provider . '@noemail.social');
+
+            // Évite un conflit si cet email fantôme existe déjà (cas rare)
+            if (User::where('email', $email)->exists()) {
+                $email = $socialUser->getId() . '+' . $provider . '+' . uniqid() . '@noemail.social';
+            }
+
             $user = User::create([
                 'prenom'          => $nameParts[0],
                 'nom'             => $nameParts[1] ?? '',
-                'email'           => $socialUser->getEmail() ?? $socialUser->getId().'@social.local',
+                'email'           => $email,
                 'password'        => bcrypt(\Illuminate\Support\Str::random(32)),
                 'role'            => 'acheteur',
                 'statut'          => 'actif',
