@@ -11,6 +11,7 @@ echo '==> Cache configuration...'
 php artisan config:cache
 
 echo '==> Cache vues...'
+php artisan view:clear
 php artisan view:cache
 
 echo '==> Migration base de donnees...'
