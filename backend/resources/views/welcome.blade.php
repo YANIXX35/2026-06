@@ -687,16 +687,7 @@
 
 <!-- ── STATS ── -->
 <section class="stats-sec">
-    @php
-        try {
-            $nbAnnonces    = \App\Models\Annonce::where('statut','disponible')->count();
-            $nbFournisseurs = \App\Models\User::where('role','fournisseur')->count();
-            $nbEchanges    = \App\Models\Reservation::where('statut','complétée')->count();
-            $nbCategories  = \App\Models\Categorie::count();
-        } catch (\Exception $e) {
-            $nbAnnonces = $nbFournisseurs = $nbEchanges = $nbCategories = 0;
-        }
-    @endphp
+    @php /* stats injectees par WelcomeController */ @endphp
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-ico">📦</div>
@@ -767,13 +758,7 @@
 </section>
 
 <!-- ── BOUTIQUE ── -->
-@php
-    try {
-        $shopAnnonces = \App\Models\Annonce::with(['categorie','photoPrincipale','user'])->where('statut','disponible')->latest()->limit(8)->get();
-    } catch (\Exception $e) {
-        $shopAnnonces = collect();
-    }
-@endphp
+@php /* shopAnnonces injecte par WelcomeController */ @endphp
 <section class="shop-sec">
     <div class="shop-inner">
         <div class="shop-hdr reveal">
@@ -881,13 +866,6 @@
             <p class="sec-sub">Trouvez exactement ce que vous cherchez parmi toutes les catégories de surplus alimentaires disponibles.</p>
         </div>
         <div class="cats-grid">
-            @php
-                try {
-                    $allCats = \App\Models\Categorie::withCount(['annonces'=>fn($q)=>$q->where('statut','disponible')])->get();
-                } catch (\Exception $e) {
-                    $allCats = collect();
-                }
-            @endphp
             @foreach($allCats as $cat)
             <a href="{{ route('annonces.index',['categorie'=>$cat->id]) }}" class="cat-card reveal">
                 <div class="cat-ico">{{ $cat->icone }}</div>

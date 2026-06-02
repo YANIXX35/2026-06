@@ -15,7 +15,7 @@ use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\SocialAuthController;
 
 // ─── PAGE D'ACCUEIL ────────────────────────────────────────────
-Route::get('/', fn() => view('welcome'))->name('home');
+Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('home');
 
 // ─── PAGES STATIQUES ───────────────────────────────────────────
 Route::get('/comment-ca-marche', fn() => view('pages.comment-ca-marche'))->name('comment-ca-marche');

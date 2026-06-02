@@ -30,7 +30,7 @@
       - key: SESSION_DRIVER
         value: cookie
       - key: CACHE_STORE
-        value: array
+        value: file
       - key: QUEUE_CONNECTION
         value: sync
       - key: FILESYSTEM_DISK
