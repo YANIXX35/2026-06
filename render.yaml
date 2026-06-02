@@ -16,25 +16,17 @@
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        fromDatabase:
-          name: antigaspi-2026-db
-          property: host
+        value: pg-1735a10e-yao91k-a724.h.aivencloud.com
       - key: DB_PORT
-        fromDatabase:
-          name: antigaspi-2026-db
-          property: port
+        value: "17354"
       - key: DB_DATABASE
-        fromDatabase:
-          name: antigaspi-2026-db
-          property: database
+        value: defaultdb
       - key: DB_USERNAME
-        fromDatabase:
-          name: antigaspi-2026-db
-          property: user
+        value: avnadmin
       - key: DB_PASSWORD
-        fromDatabase:
-          name: antigaspi-2026-db
-          property: password
+        sync: false
+      - key: DB_SSLMODE
+        value: require
       - key: SESSION_DRIVER
         value: cookie
       - key: CACHE_STORE
@@ -50,9 +42,6 @@
       - key: TELESCOPE_ENABLED
         value: "false"
 
-databases:
-  - name: antigaspi-2026-db
-    databaseName: antigaspi2026
-    user: antigaspi
-    plan: free
+# Base de donnees : Aiven PostgreSQL (externe)
+# Credentials a definir dans Render > Environment
 
