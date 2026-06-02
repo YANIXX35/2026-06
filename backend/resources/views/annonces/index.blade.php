@@ -321,9 +321,16 @@
             <div class="ann-card reveal">
                 <div class="ann-img">
                     @if($annonce->photoPrincipale)
-                        <img src="{{ Storage::url($annonce->photoPrincipale->url) }}" alt="{{ $annonce->titre }}">
+                        <img src="{{ Storage::url($annonce->photoPrincipale->url) }}"
+                             alt="{{ $annonce->titre }}"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                        <div class="ann-img-placeholder" style="display:none">
+                            <span style="font-size:2.5rem">{{ $annonce->categorie->icone ?? '📦' }}</span>
+                        </div>
                     @else
-                        <div class="ann-img-placeholder"><i class="fas fa-image"></i></div>
+                        <div class="ann-img-placeholder">
+                            <span style="font-size:2.5rem">{{ $annonce->categorie->icone ?? '📦' }}</span>
+                        </div>
                     @endif
                     <span class="ann-badge" style="background:{{ $bgColor }};">{{ $badgeLabel }}</span>
                     @if($annonce->estUrgent())
