@@ -1,57 +1,60 @@
 #!/bin/bash
 set -e
 
-# ── Ecrire les variables d'environnement Render dans .env ─────────────────────
-# Ceci garantit que config:cache utilise les vraies valeurs Render
-echo "==> Injection des variables d environnement..."
+echo "==> Construction du fichier .env depuis les variables Render..."
 
-cat > .env << EOF
-APP_NAME="${APP_NAME:-AntiGaspiCI}"
-APP_ENV="${APP_ENV:-production}"
-APP_KEY="${APP_KEY}"
-APP_DEBUG="${APP_DEBUG:-false}"
-APP_URL="${APP_URL:-http://localhost}"
+# Utilise printf pour eviter les problemes de caracteres speciaux dans les mots de passe
+{
+printf 'APP_NAME=%s\n'    "${APP_NAME:-AntiGaspiCI}"
+printf 'APP_ENV=%s\n'     "${APP_ENV:-production}"
+printf 'APP_KEY=%s\n'     "${APP_KEY}"
+printf 'APP_DEBUG=%s\n'   "${APP_DEBUG:-true}"
+printf 'APP_URL=%s\n'     "${APP_URL:-http://localhost}"
+printf 'APP_LOCALE=fr\n'
+printf 'APP_FALLBACK_LOCALE=fr\n'
+printf 'LOG_CHANNEL=stack\n'
+printf 'LOG_LEVEL=error\n'
+printf 'DB_CONNECTION=%s\n'  "${DB_CONNECTION:-pgsql}"
+printf 'DB_HOST=%s\n'        "${DB_HOST}"
+printf 'DB_PORT=%s\n'        "${DB_PORT:-5432}"
+printf 'DB_DATABASE=%s\n'    "${DB_DATABASE}"
+printf 'DB_USERNAME=%s\n'    "${DB_USERNAME}"
+printf 'DB_PASSWORD=%s\n'    "${DB_PASSWORD}"
+printf 'DB_SSLMODE=%s\n'     "${DB_SSLMODE:-require}"
+printf 'SESSION_DRIVER=database\n'
+printf 'SESSION_LIFETIME=120\n'
+printf 'BROADCAST_CONNECTION=log\n'
+printf 'FILESYSTEM_DISK=public\n'
+printf 'QUEUE_CONNECTION=sync\n'
+printf 'CACHE_STORE=file\n'
+printf 'MAIL_MAILER=%s\n'        "${MAIL_MAILER:-log}"
+printf 'MAIL_FROM_ADDRESS=%s\n'  "${MAIL_FROM_ADDRESS:-noreply@antigaspi-ci.com}"
+printf 'MAIL_FROM_NAME=%s\n'     "${MAIL_FROM_NAME:-AntiGaspiCI}"
+printf 'GEMINI_API_KEY=%s\n'     "${GEMINI_API_KEY}"
+printf 'GOOGLE_CLIENT_ID=%s\n'   "${GOOGLE_CLIENT_ID}"
+printf 'GOOGLE_CLIENT_SECRET=%s\n' "${GOOGLE_CLIENT_SECRET}"
+printf 'GOOGLE_REDIRECT_URI=%s\n'  "${GOOGLE_REDIRECT_URI}"
+printf 'FACEBOOK_CLIENT_ID=%s\n'   "${FACEBOOK_CLIENT_ID}"
+printf 'FACEBOOK_CLIENT_SECRET=%s\n' "${FACEBOOK_CLIENT_SECRET}"
+printf 'TELESCOPE_ENABLED=false\n'
+} > .env
 
-APP_LOCALE=fr
-APP_FALLBACK_LOCALE=fr
+echo "==> Valeurs DB detectees :"
+echo "    DB_HOST     = ${DB_HOST:-[VIDE - AJOUTER DANS RENDER ENV]}"
+echo "    DB_DATABASE = ${DB_DATABASE:-[VIDE]}"
+echo "    DB_USERNAME = ${DB_USERNAME:-[VIDE]}"
+echo "    APP_KEY     = ${APP_KEY:0:20}..."
 
-LOG_CHANNEL=stack
-LOG_LEVEL=error
-
-DB_CONNECTION="${DB_CONNECTION:-pgsql}"
-DB_HOST="${DB_HOST}"
-DB_PORT="${DB_PORT:-5432}"
-DB_DATABASE="${DB_DATABASE}"
-DB_USERNAME="${DB_USERNAME}"
-DB_PASSWORD="${DB_PASSWORD}"
-DB_SSLMODE="${DB_SSLMODE:-require}"
-
-SESSION_DRIVER=database
-SESSION_LIFETIME=120
-
-BROADCAST_CONNECTION=log
-FILESYSTEM_DISK=public
-QUEUE_CONNECTION=sync
-CACHE_STORE=file
-
-MAIL_MAILER="${MAIL_MAILER:-log}"
-MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS:-noreply@antigaspi-ci.com}"
-MAIL_FROM_NAME="${MAIL_FROM_NAME:-AntiGaspiCI}"
-
-GEMINI_API_KEY="${GEMINI_API_KEY}"
-GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"
-GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}"
-GOOGLE_REDIRECT_URI="${GOOGLE_REDIRECT_URI}"
-FACEBOOK_CLIENT_ID="${FACEBOOK_CLIENT_ID}"
-FACEBOOK_CLIENT_SECRET="${FACEBOOK_CLIENT_SECRET}"
-
-TELESCOPE_ENABLED=false
-EOF
-
-# ── Verifier APP_KEY ───────────────────────────────────────────────────────────
+# Verifier APP_KEY
 if [ -z "$APP_KEY" ] || [[ "$APP_KEY" != base64:* ]]; then
     echo '==> WARNING : APP_KEY absent, generation automatique...'
     php artisan key:generate --force || true
+fi
+
+# Verifier DB
+if [ -z "$DB_HOST" ]; then
+    echo '==> ERREUR CRITIQUE : DB_HOST vide !'
+    echo '==> Ajoutez DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD dans Render > Environment'
 fi
 
 echo '==> Cache configuration...'
