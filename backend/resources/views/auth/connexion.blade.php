@@ -116,6 +116,18 @@
     .auth-wrap{grid-template-columns:1fr;}
     .auth-deco{display:none;}
     .auth-form-panel{padding:32px 24px;}
+    .auth-page{padding:70px 16px 32px;}
+}
+@media(max-width:480px){
+    .auth-form-panel{padding:24px 18px;}
+    .auth-form-panel h1{font-size:1.5rem;}
+    .social-row{flex-direction:column;}
+    .btn-soc{justify-content:center;}
+    .auth-wrap{border-radius:16px;}
+}
+@media(max-width:360px){
+    .auth-form-panel{padding:20px 14px;}
+    .auth-form-panel h1{font-size:1.3rem;}
 }
 </style>
 @endpush

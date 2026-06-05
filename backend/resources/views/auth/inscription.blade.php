@@ -123,6 +123,19 @@
     .fields-grid{grid-template-columns:1fr;}
     .field.full{grid-column:auto;}
 }
+@media(max-width:480px){
+    .auth-page{padding:70px 12px 32px;}
+    .auth-form-panel{padding:22px 16px;}
+    .auth-form-panel h1{font-size:1.4rem;}
+    .role-grid{grid-template-columns:1fr;}
+    .role-card{flex-direction:row;gap:12px;text-align:left;}
+    .social-row{flex-direction:column;}
+    .btn-soc{justify-content:center;}
+    .auth-wrap{border-radius:16px;}
+}
+@media(max-width:360px){
+    .auth-form-panel{padding:18px 12px;}
+}
 </style>
 @endpush
 

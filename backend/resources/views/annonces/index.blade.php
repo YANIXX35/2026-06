@@ -177,12 +177,37 @@
 .pag-wrap .page-item .page-link:hover{border-color:var(--green);color:var(--green);}
 .pag-wrap .page-item.disabled .page-link{opacity:.4;cursor:default;}
 
-@media(max-width:900px){.ann-inner{grid-template-columns:1fr;}.filter-sidebar{position:static;}}
+@media(max-width:900px){
+    .ann-inner{grid-template-columns:1fr;}
+    .filter-sidebar{position:static;}
+}
 @media(max-width:768px){
-    .search-hero{padding:90px 20px 60px;}
-    .ann-section{padding:32px 16px;}
-    .ann-img{width:120px;}
-    .ann-body{padding:14px;}
+    .search-hero{padding:90px 16px 48px;}
+    .search-hero h1{font-size:1.8rem;}
+    .search-bar{flex-direction:column;gap:8px;border-radius:14px;padding:10px;}
+    .search-bar input{font-size:.9rem;}
+    .search-bar button{width:100%;justify-content:center;border-radius:10px;}
+    .ann-section{padding:24px 12px;}
+    .ann-img{width:110px;}
+    .ann-body{padding:12px;}
+    .ann-title{font-size:.92rem;}
+    .ann-price{font-size:1rem;}
+    .ann-meta{flex-wrap:wrap;gap:4px;}
+    .ann-actions{flex-wrap:wrap;gap:6px;}
+    .filter-toggle-btn{display:flex;}
+    #annoncesMap{height:260px;}
+}
+@media(max-width:480px){
+    .search-hero h1{font-size:1.5rem;}
+    .ann-card{flex-direction:column;}
+    .ann-img{width:100%;height:160px;border-radius:12px 12px 0 0;}
+    .ann-img img{border-radius:12px 12px 0 0;}
+    .ann-body{padding:12px 14px;}
+    .ann-actions .btn-reserve,.ann-actions .btn-contact,.ann-actions .btn-cart{
+        font-size:.75rem;padding:7px 10px;
+    }
+    .qty-wrap{gap:6px;}
+    .qty-btn{width:28px;height:28px;font-size:.85rem;}
 }
 </style>
 @endpush

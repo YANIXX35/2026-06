@@ -550,6 +550,22 @@
             .shop-grid{grid-template-columns:1fr;}
             .cats-grid{grid-template-columns:repeat(2,1fr);}
             .stats-grid{grid-template-columns:1fr 1fr;}
+            .hero-title{font-size:1.9rem;letter-spacing:-.5px;}
+            .hero-cta{flex-direction:column;gap:10px;align-items:center;}
+            .hero-cta a,.hero-cta button{width:100%;max-width:320px;text-align:center;justify-content:center;}
+            .how-sec,.shop-sec,.cats-sec,.testi-sec,.cta-sec,.impact-sec{padding:48px 16px;}
+            .stats-sec{padding:28px 16px;}
+            .sec-title{font-size:1.5rem;}
+            .shop-card{border-radius:14px;}
+            .stat-num{font-size:2rem;}
+            .navbar-custom{padding:0 14px;}
+            .navbar-actions .btn-ghost{display:none;}
+            .navbar-actions .btn-dark{padding:7px 14px;font-size:.78rem;}
+        }
+        @media(max-width:360px){
+            .hero-title{font-size:1.65rem;}
+            .cats-grid{grid-template-columns:repeat(2,1fr);}
+            .step-card{padding:20px 14px;}
         }
     </style>
 </head>

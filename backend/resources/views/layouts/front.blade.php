@@ -163,12 +163,22 @@
 
         /* ── MOBILE ── */
         @media(max-width:768px){
-            .front-nav{width:calc(100% - 28px);padding:0 16px;}
+            .front-nav{width:calc(100% - 28px);padding:0 14px;height:52px;}
             .fn-links{display:none;}
-            .page-hero{padding:100px 20px 48px;}
-            .front-footer{padding:40px 20px 24px;}
+            .fn-logo{font-size:.9rem;}
+            .fn-actions .btn-ghost{display:none;}
+            .fn-actions .btn-dark{padding:7px 14px;font-size:.78rem;}
+            .page-hero{padding:90px 16px 40px;}
+            .front-footer{padding:36px 16px 20px;}
             .ff-grid{grid-template-columns:1fr;}
-            .ff-bot{flex-direction:column;text-align:center;}
+            .ff-bot{flex-direction:column;text-align:center;gap:10px;}
+        }
+        @media(max-width:480px){
+            .fn-actions .notif-btn{width:34px;height:34px;font-size:.8rem;}
+            .fn-actions .btn-dark{padding:6px 12px;font-size:.75rem;}
+            .fc-popup{width:calc(100vw - 24px);right:0;bottom:70px;}
+            .fc-wrap{right:12px;bottom:16px;}
+            .fc-btn{width:50px;height:50px;font-size:1.2rem;}
         }
     </style>
 </head>

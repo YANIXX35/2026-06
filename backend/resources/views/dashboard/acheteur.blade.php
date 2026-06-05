@@ -124,6 +124,24 @@
     transition: all .2s; display: block;
 }
 .surplus-card:hover { border-color: #bbf7d0; box-shadow: 0 4px 16px rgba(22,163,74,.08); transform: translateY(-1px); }
+
+@media(max-width:768px){
+    .dash-body{padding:80px 14px 32px;}
+    .hero-card{padding:24px 18px;border-radius:18px;}
+    .hero-value{font-size:2rem;}
+    .metric-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+    .cashflow-grid{grid-template-columns:1fr;}
+    .section-head{flex-wrap:wrap;gap:8px;}
+    .filters-row{flex-wrap:wrap;gap:6px;}
+    .btn-filter{font-size:.75rem;padding:5px 10px;}
+}
+@media(max-width:480px){
+    .metric-row{grid-template-columns:1fr 1fr;}
+    .surplus-grid{grid-template-columns:1fr;}
+    .hero-card{padding:18px 14px;}
+    .hero-value{font-size:1.7rem;}
+    .metric-card{padding:14px;}
+}
 </style>
 @endpush
 
