@@ -86,9 +86,12 @@ class ChatController extends Controller
                 echo 'data: ' . json_encode(['error' => 'Impossible de joindre le service IA. Vérifiez votre connexion.']) . "\n\n";
                 ob_flush(); flush();
             } catch (\GuzzleHttp\Exception\ClientException $e) {
-                $msg = $e->getResponse()->getStatusCode() === 429
+                $code = $e->getResponse()->getStatusCode();
+                $body = (string) $e->getResponse()->getBody();
+                \Illuminate\Support\Facades\Log::error("Gemini {$code}: {$body}");
+                $msg = $code === 429
                     ? 'Limite de requêtes atteinte. Réessayez dans quelques secondes.'
-                    : 'Clé API invalide ou accès refusé.';
+                    : "Erreur Gemini (HTTP {$code}) — vérifiez la clé API dans Render.";
                 echo 'data: ' . json_encode(['error' => $msg]) . "\n\n";
                 ob_flush(); flush();
             } catch (\Exception $e) {

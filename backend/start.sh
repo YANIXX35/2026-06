@@ -53,6 +53,8 @@ echo "==> Valeurs MAIL detectees :"
 echo "    MAIL_MAILER   = ${MAIL_MAILER:-log}"
 echo "    MAIL_HOST     = ${MAIL_HOST:-[VIDE]}"
 echo "    MAIL_USERNAME = ${MAIL_USERNAME:-[VIDE - emails ne seront pas envoyes]}"
+echo "==> Valeurs IA detectees :"
+echo "    GEMINI_API_KEY = ${GEMINI_API_KEY:0:10}... (longueur: ${#GEMINI_API_KEY} chars)"
 
 # Verifier APP_KEY
 if [ -z "$APP_KEY" ] || [[ "$APP_KEY" != base64:* ]]; then
