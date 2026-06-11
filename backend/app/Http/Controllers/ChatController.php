@@ -10,11 +10,9 @@ class ChatController extends Controller
 {
     public function chat(Request $request): StreamedResponse
     {
-        Log::debug('========== CHAT START ==========');
-        Log::debug('REQUEST DATA', [
-            'message'       => $request->input('message'),
+        Log::debug('CHAT START', [
+            'message_len'   => strlen($request->input('message', '')),
             'history_count' => count($request->input('history', [])),
-            'ip'            => $request->ip(),
         ]);
 
         $request->validate([
@@ -30,24 +28,15 @@ class ChatController extends Controller
             'key_exists'  => !empty($apiKey),
             'key_length'  => strlen($apiKey ?? ''),
             'key_prefix'  => substr($apiKey ?? '', 0, 8) . '...',
-            'env_direct'  => !empty(env('GEMINI_API_KEY')) ? 'SET (len=' . strlen(env('GEMINI_API_KEY')) . ')' : 'VIDE',
-            'model'       => 'gemini-2.5-flash-lite',
         ]);
 
-        // Construit l'historique au format Gemini (user/model)
         $contents = [];
         foreach ($history as $h) {
             if (!isset($h['role'], $h['content'])) continue;
-            $role = $h['role'] === 'assistant' ? 'model' : 'user';
-            $contents[] = [
-                'role'  => $role,
-                'parts' => [['text' => (string) $h['content']]],
-            ];
+            $role       = $h['role'] === 'assistant' ? 'model' : 'user';
+            $contents[] = ['role' => $role, 'parts' => [['text' => (string) $h['content']]]];
         }
-        $contents[] = [
-            'role'  => 'user',
-            'parts' => [['text' => $userMessage]],
-        ];
+        $contents[] = ['role' => 'user', 'parts' => [['text' => $userMessage]]];
 
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&key={$apiKey}";
 
@@ -61,21 +50,21 @@ class ChatController extends Controller
             'generationConfig' => ['maxOutputTokens' => 1024],
         ];
 
-        Log::debug('BODY PREPARED', [
-            'contents_count' => count($contents),
-            'body_json_len'  => strlen(json_encode($body)),
-        ]);
-
         return response()->stream(function () use ($url, $body) {
 
-            Log::debug('STREAM CLOSURE STARTED');
+            // Flush sécurisé : ne lève pas d'exception si aucun buffer n'est actif.
+            // ob_flush() échoue avec ErrorException sur Render (pas de buffer PHP).
+            $safeFlush = static function (): void {
+                if (ob_get_level() > 0) {
+                    ob_flush();
+                }
+                flush();
+            };
 
             try {
                 $client = new \GuzzleHttp\Client();
 
-                Log::debug('BEFORE GEMINI CALL', [
-                    'url_without_key' => preg_replace('/key=[^&]+/', 'key=***', $url),
-                ]);
+                Log::debug('BEFORE GEMINI CALL');
 
                 $response = $client->post($url, [
                     'json'    => $body,
@@ -84,18 +73,16 @@ class ChatController extends Controller
                 ]);
 
                 Log::debug('AFTER GEMINI CALL', [
-                    'http_status' => $response->getStatusCode(),
+                    'http_status'  => $response->getStatusCode(),
                     'content_type' => $response->getHeaderLine('Content-Type'),
                 ]);
 
                 $stream     = $response->getBody();
                 $buffer     = '';
-                $chunksRead = 0;
                 $textTokens = 0;
 
                 while (!$stream->eof()) {
                     $chunk  = $stream->read(1024);
-                    $chunksRead++;
                     $buffer .= $chunk;
                     $lines  = explode("\n", $buffer);
                     $buffer = array_pop($lines);
@@ -108,17 +95,13 @@ class ChatController extends Controller
                         $data = json_decode($json, true);
                         if (!$data) continue;
 
-                        // Erreur JSON dans le corps SSE (HTTP 200 + erreur body)
+                        // Erreur JSON dans le corps SSE (HTTP 200 avec error body)
                         if (isset($data['error'])) {
                             $errMsg  = $data['error']['message'] ?? 'Erreur inconnue';
                             $errCode = $data['error']['code']    ?? 0;
-                            Log::error('GEMINI SSE BODY ERROR', [
-                                'code'    => $errCode,
-                                'message' => $errMsg,
-                                'full'    => json_encode($data['error']),
-                            ]);
+                            Log::error('GEMINI SSE BODY ERROR', ['code' => $errCode, 'message' => $errMsg]);
                             echo 'data: ' . json_encode(['error' => "Gemini {$errCode} : {$errMsg}"]) . "\n\n";
-                            ob_flush(); flush();
+                            $safeFlush();
                             break 2;
                         }
 
@@ -126,16 +109,12 @@ class ChatController extends Controller
                         if ($text !== null) {
                             $textTokens++;
                             echo 'data: ' . json_encode(['text' => $text]) . "\n\n";
-                            ob_flush();
-                            flush();
+                            $safeFlush();
                         }
                     }
                 }
 
-                Log::debug('STREAM FINISHED', [
-                    'chunks_read'  => $chunksRead,
-                    'text_tokens'  => $textTokens,
-                ]);
+                Log::debug('STREAM FINISHED', ['text_tokens' => $textTokens]);
 
             } catch (\Throwable $e) {
                 Log::error('CHATBOT CRASH', [
@@ -147,17 +126,16 @@ class ChatController extends Controller
                 ]);
 
                 $errDisplay = get_class($e) . ': ' . $e->getMessage()
-                    . ' in ' . basename($e->getFile()) . ':' . $e->getLine();
+                    . ' (' . basename($e->getFile()) . ':' . $e->getLine() . ')';
 
                 echo 'data: ' . json_encode(['error' => 'CRASH — ' . $errDisplay]) . "\n\n";
-                ob_flush(); flush();
+                $safeFlush();
             }
 
             echo "data: [DONE]\n\n";
-            ob_flush();
-            flush();
+            $safeFlush();
 
-            Log::debug('========== CHAT END ==========');
+            Log::debug('CHAT END');
 
         }, 200, [
             'Content-Type'      => 'text/event-stream',
