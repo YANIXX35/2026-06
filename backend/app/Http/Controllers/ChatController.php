@@ -83,19 +83,29 @@ class ChatController extends Controller
                     }
                 }
             } catch (\GuzzleHttp\Exception\ConnectException $e) {
-                echo 'data: ' . json_encode(['error' => 'Impossible de joindre le service IA. Vérifiez votre connexion.']) . "\n\n";
+                \Illuminate\Support\Facades\Log::error('Gemini ConnectException: ' . $e->getMessage());
+                echo 'data: ' . json_encode(['error' => 'Impossible de joindre le service IA (réseau).']) . "\n\n";
                 ob_flush(); flush();
-            } catch (\GuzzleHttp\Exception\ClientException $e) {
+            } catch (\GuzzleHttp\Exception\BadResponseException $e) {
+                // Catch 4xx ET 5xx (ClientException + ServerException)
                 $code = $e->getResponse()->getStatusCode();
                 $body = (string) $e->getResponse()->getBody();
-                \Illuminate\Support\Facades\Log::error("Gemini {$code}: {$body}");
-                $msg = $code === 429
-                    ? 'Limite de requêtes atteinte. Réessayez dans quelques secondes.'
-                    : "Erreur Gemini (HTTP {$code}) — vérifiez la clé API dans Render.";
+                \Illuminate\Support\Facades\Log::error("Gemini HTTP {$code}: {$body}");
+                if ($code === 429) {
+                    $msg = 'Limite de requêtes atteinte. Réessayez dans quelques secondes.';
+                } elseif ($code === 400) {
+                    $msg = "Requête invalide (HTTP 400) — clé ou modèle incorrect.";
+                } elseif ($code === 403) {
+                    $msg = "Accès refusé (HTTP 403) — vérifiez GEMINI_API_KEY dans Render.";
+                } else {
+                    $msg = "Erreur Gemini HTTP {$code}.";
+                }
                 echo 'data: ' . json_encode(['error' => $msg]) . "\n\n";
                 ob_flush(); flush();
             } catch (\Exception $e) {
-                echo 'data: ' . json_encode(['error' => 'Le service IA est temporairement indisponible. Réessayez dans quelques instants.']) . "\n\n";
+                \Illuminate\Support\Facades\Log::error('Gemini Exception: ' . get_class($e) . ': ' . $e->getMessage());
+                $debug = config('app.debug') ? ' [' . get_class($e) . ': ' . $e->getMessage() . ']' : '';
+                echo 'data: ' . json_encode(['error' => 'Service IA indisponible.' . $debug]) . "\n\n";
                 ob_flush(); flush();
             }
 

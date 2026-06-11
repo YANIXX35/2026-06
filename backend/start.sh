@@ -69,6 +69,7 @@ if [ -z "$DB_HOST" ]; then
 fi
 
 echo '==> Cache configuration...'
+php artisan config:clear
 php artisan config:cache
 
 echo '==> Cache vues...'
