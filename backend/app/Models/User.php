@@ -58,7 +58,7 @@ class User extends Authenticatable
         return $this->hasMany(Signalement::class);
     }
 
-    public function conversations()
+    public function conversations(): \Illuminate\Database\Eloquent\Builder
     {
         return Conversation::where('user_1_id', $this->id)
             ->orWhere('user_2_id', $this->id);

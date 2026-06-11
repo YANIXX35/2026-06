@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Headers de sécurité HTTP sur toutes les réponses web
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\CheckUserActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

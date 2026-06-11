@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Annonce;
 use App\Models\CartItem;
 use App\Models\Commande;
 use App\Models\CommandeItem;
@@ -38,57 +39,70 @@ class CommandeController extends Controller
             'message'           => 'nullable|string|max:500',
         ]);
 
-        $items = CartItem::with(['annonce.user'])
-            ->where('user_id', Auth::id())
-            ->get();
+        $userId    = Auth::id();
+        $cartItems = CartItem::with('annonce')->where('user_id', $userId)->get();
 
-        if ($items->isEmpty()) {
+        if ($cartItems->isEmpty()) {
             return back()->with('error', 'Votre panier est vide.');
         }
 
-        // Vérifier que toutes les annonces sont encore disponibles
-        foreach ($items as $item) {
-            if (!$item->annonce || $item->annonce->statut !== 'disponible' || $item->annonce->estExpire()) {
-                return back()->with('error', '« ' . ($item->annonce->titre ?? 'Article') . ' » n\'est plus disponible. Veuillez le retirer du panier.');
-            }
-        }
+        $erreur = null;
 
-        DB::transaction(function () use ($items, $request) {
-            $total = $items->sum(fn($i) => $i->sousTotal());
+        DB::transaction(function () use ($cartItems, $request, $userId, &$erreur) {
+            // Verrouiller les annonces pour éviter la race condition
+            // (deux acheteurs commandant le même article simultanément)
+            $annonceIds = $cartItems->pluck('annonce_id');
+            $annonces   = Annonce::with('user')
+                ->whereIn('id', $annonceIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($cartItems as $item) {
+                $annonce = $annonces->get($item->annonce_id);
+                if (!$annonce || $annonce->statut !== 'disponible' || $annonce->estExpire()) {
+                    $erreur = '« ' . ($item->annonce->titre ?? 'Article') . ' » n\'est plus disponible. Veuillez le retirer du panier.';
+                    return;
+                }
+            }
+
+            $total = $cartItems->sum(fn($i) => $i->sousTotal());
 
             $commande = Commande::create([
-                'user_id'           => Auth::id(),
+                'user_id'           => $userId,
                 'statut'            => 'en_attente',
                 'montant_total'     => $total,
                 'adresse_livraison' => $request->adresse_livraison,
                 'message'           => $request->message,
             ]);
 
-            // Grouper les items par fournisseur pour les notifier
-            $parFournisseur = $items->groupBy(fn($i) => $i->annonce->user_id);
+            $parFournisseur = $cartItems->groupBy(fn($i) => $annonces->get($i->annonce_id)?->user_id);
 
-            foreach ($items as $item) {
+            foreach ($cartItems as $item) {
+                $annonce = $annonces->get($item->annonce_id);
                 CommandeItem::create([
-                    'commande_id'   => $commande->id,
-                    'annonce_id'    => $item->annonce_id,
-                    'fournisseur_id'=> $item->annonce->user_id,
-                    'quantite'      => $item->quantite,
-                    'prix_unitaire' => $item->annonce->type_offre === 'don' ? 0 : $item->annonce->prix,
-                    'statut'        => 'en_attente',
+                    'commande_id'    => $commande->id,
+                    'annonce_id'     => $item->annonce_id,
+                    'fournisseur_id' => $annonce->user_id,
+                    'quantite'       => $item->quantite,
+                    'prix_unitaire'  => $annonce->type_offre === 'don' ? 0 : $annonce->prix,
+                    'statut'         => 'en_attente',
                 ]);
             }
 
-            // Notifier chaque fournisseur concerné
             foreach ($parFournisseur as $fournisseurId => $fournisseurItems) {
-                $fournisseur = $fournisseurItems->first()->annonce->user;
+                $fournisseur = $annonces->get($fournisseurItems->first()->annonce_id)?->user;
                 if ($fournisseur) {
-                    $fournisseur->notify(new NouvelleCommande($commande, $fournisseurItems->pluck('annonce')->all()));
+                    $fournisseur->notify(new NouvelleCommande($commande, $fournisseurItems->map(fn($i) => $annonces->get($i->annonce_id))->filter()->values()->all()));
                 }
             }
 
-            // Vider le panier
-            CartItem::where('user_id', Auth::id())->delete();
+            CartItem::where('user_id', $userId)->delete();
         });
+
+        if ($erreur) {
+            return back()->with('error', $erreur);
+        }
 
         return redirect()->route('commandes.index')->with('success', 'Commande passée avec succès ! Les fournisseurs ont été notifiés.');
     }
@@ -99,7 +113,11 @@ class CommandeController extends Controller
         if (!in_array($commande->statut, ['en_attente'])) {
             return back()->with('error', 'Cette commande ne peut plus être annulée.');
         }
-        $commande->update(['statut' => 'annulée']);
+
+        DB::transaction(function () use ($commande) {
+            $commande->update(['statut' => 'annulée']);
+        });
+
         return back()->with('success', 'Commande annulée.');
     }
 
@@ -121,7 +139,11 @@ class CommandeController extends Controller
         if ($item->statut !== 'en_attente') {
             return back()->with('error', 'Cet article a déjà été traité.');
         }
-        $item->update(['statut' => 'accepté']);
+
+        DB::transaction(function () use ($item) {
+            $item->update(['statut' => 'accepté']);
+        });
+
         return back()->with('success', 'Article accepté.');
     }
 
@@ -131,7 +153,11 @@ class CommandeController extends Controller
         if ($item->statut !== 'en_attente') {
             return back()->with('error', 'Cet article a déjà été traité.');
         }
-        $item->update(['statut' => 'refusé']);
+
+        DB::transaction(function () use ($item) {
+            $item->update(['statut' => 'refusé']);
+        });
+
         return back()->with('success', 'Article refusé.');
     }
 }

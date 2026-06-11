@@ -13,7 +13,7 @@ printf 'APP_URL=%s\n'     "${APP_URL:-http://localhost}"
 printf 'APP_LOCALE=fr\n'
 printf 'APP_FALLBACK_LOCALE=fr\n'
 printf 'LOG_CHANNEL=stderr\n'
-printf 'LOG_LEVEL=debug\n'
+printf 'LOG_LEVEL=info\n'
 printf 'DB_CONNECTION=%s\n'  "${DB_CONNECTION:-pgsql}"
 printf 'DB_HOST=%s\n'        "${DB_HOST}"
 printf 'DB_PORT=%s\n'        "${DB_PORT:-5432}"
@@ -88,6 +88,9 @@ php artisan db:seed --class=CategorieSeeder --force || echo 'WARNING: Seeder cat
 
 echo '==> Lien symbolique storage...'
 php artisan storage:link 2>/dev/null || echo 'Storage link deja present.'
+
+echo '==> Demarrage du scheduler (expiration annonces, etc.)...'
+php artisan schedule:work --no-interaction > /dev/null 2>&1 &
 
 echo '==> Demarrage du serveur PHP...'
 exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}

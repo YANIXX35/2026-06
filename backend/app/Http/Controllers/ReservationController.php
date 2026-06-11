@@ -12,6 +12,7 @@ use App\Notifications\ReservationRefusee;
 use App\Notifications\ReservationCompletee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class ReservationController extends Controller
@@ -24,21 +25,24 @@ class ReservationController extends Controller
             'date_collecte_souhaitee' => 'nullable|date|after:now',
         ]);
 
-        $reservation = Reservation::create([
-            'annonce_id'              => $annonce->id,
-            'user_id'                 => Auth::id(),
-            'quantite_demandee'       => $request->quantite_demandee,
-            'message'                 => $request->message,
-            'date_collecte_souhaitee' => $request->date_collecte_souhaitee,
-            'statut'                  => 'en_attente',
-        ]);
+        $reservation = null;
 
-        // Passe l'annonce en réservé uniquement si elle était disponible
-        if ($annonce->statut === 'disponible') {
-            $annonce->update(['statut' => 'reservé']);
-        }
+        DB::transaction(function () use ($request, $annonce, &$reservation) {
+            $reservation = Reservation::create([
+                'annonce_id'              => $annonce->id,
+                'user_id'                 => Auth::id(),
+                'quantite_demandee'       => $request->quantite_demandee,
+                'message'                 => $request->message,
+                'date_collecte_souhaitee' => $request->date_collecte_souhaitee,
+                'statut'                  => 'en_attente',
+            ]);
 
-        // Envoyer un email au fournisseur
+            if ($annonce->statut === 'disponible') {
+                $annonce->update(['statut' => 'reservé']);
+            }
+        });
+
+        // Email envoyé hors transaction (appel réseau, non rollbackable)
         $reservation->load(['annonce.user', 'acheteur']);
         Mail::to($annonce->user->email)->send(new NouvelleReservationMail($reservation));
 
@@ -48,54 +52,71 @@ class ReservationController extends Controller
     public function accepter(Reservation $reservation)
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
-        $reservation->update(['statut' => 'acceptée']);
+
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'acceptée']);
+        });
+
         $reservation->load(['annonce', 'acheteur']);
         $reservation->acheteur->notify(new ReservationAcceptee($reservation));
         Mail::to($reservation->acheteur->email)->send(new ReservationAccepteeMail($reservation));
+
         return back()->with('success', 'Réservation acceptée.');
     }
 
     public function refuser(Reservation $reservation)
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
-        $reservation->update(['statut' => 'refusée']);
 
-        // Remet disponible seulement si aucune autre réservation active sur cette annonce
-        $autresActives = $reservation->annonce->reservations()
-            ->whereNotIn('statut', ['refusée', 'annulée'])
-            ->where('id', '!=', $reservation->id)
-            ->exists();
-        if (!$autresActives) {
-            $reservation->annonce->update(['statut' => 'disponible']);
-        }
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'refusée']);
+
+            $autresActives = $reservation->annonce->reservations()
+                ->whereNotIn('statut', ['refusée', 'annulée'])
+                ->where('id', '!=', $reservation->id)
+                ->exists();
+
+            if (!$autresActives) {
+                $reservation->annonce->update(['statut' => 'disponible']);
+            }
+        });
 
         $reservation->load(['annonce', 'acheteur']);
         $reservation->acheteur->notify(new ReservationRefusee($reservation));
         Mail::to($reservation->acheteur->email)->send(new ReservationRefuseeMail($reservation));
+
         return back()->with('success', 'Réservation refusée.');
     }
 
     public function completer(Reservation $reservation)
     {
         if ($reservation->annonce->user_id !== Auth::id()) abort(403);
-        $reservation->update(['statut' => 'complétée']);
+
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'complétée']);
+        });
+
         $reservation->acheteur->notify(new ReservationCompletee($reservation));
+
         return back()->with('success', 'Échange complété !');
     }
 
     public function annuler(Reservation $reservation)
     {
         if ($reservation->user_id !== Auth::id()) abort(403);
-        $reservation->update(['statut' => 'annulée']);
 
-        // Remet disponible seulement si aucune autre réservation active
-        $autresActives = $reservation->annonce->reservations()
-            ->whereNotIn('statut', ['refusée', 'annulée'])
-            ->where('id', '!=', $reservation->id)
-            ->exists();
-        if (!$autresActives) {
-            $reservation->annonce->update(['statut' => 'disponible']);
-        }
+        DB::transaction(function () use ($reservation) {
+            $reservation->update(['statut' => 'annulée']);
+
+            $autresActives = $reservation->annonce->reservations()
+                ->whereNotIn('statut', ['refusée', 'annulée'])
+                ->where('id', '!=', $reservation->id)
+                ->exists();
+
+            if (!$autresActives) {
+                $reservation->annonce->update(['statut' => 'disponible']);
+            }
+        });
 
         return back()->with('success', 'Réservation annulée.');
     }
