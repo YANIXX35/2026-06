@@ -80,6 +80,9 @@ else
     echo '==> WARNING : Migration echouee. Le serveur demarre quand meme.'
 fi
 
+echo '==> Seeding categories (firstOrCreate - idempotent)...'
+php artisan db:seed --class=CategorieSeeder --force || echo 'WARNING: Seeder categories echoue.'
+
 echo '==> Lien symbolique storage...'
 php artisan storage:link 2>/dev/null || echo 'Storage link deja present.'
 
