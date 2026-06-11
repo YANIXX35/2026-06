@@ -439,9 +439,10 @@
                         <div class="field-group">
                             <label class="field-label">Code de confirmation (PIN)</label>
                             <div style="position:relative;">
-                                <input type="password" id="pin-wave" class="field-input wave-focus pin-input"
-                                    placeholder="••••" maxlength="4" minlength="4" pattern="[0-9]{4}"
-                                    style="letter-spacing:10px;font-size:1.3rem;text-align:center;">
+                                <input type="text" id="pin-wave" class="field-input wave-focus pin-input"
+                                    placeholder="1234" maxlength="4" inputmode="numeric" autocomplete="off"
+                                    style="letter-spacing:12px;font-size:1.4rem;text-align:center;font-family:monospace;"
+                                    oninput="this.value=this.value.replace(/\D/g,'')">
                             </div>
                             <div class="phone-hint"><i class="fas fa-lock me-1"></i>Code PIN à 4 chiffres (simulation)</div>
                         </div>
@@ -479,9 +480,10 @@
                         <div class="field-group">
                             <label class="field-label">Code de confirmation (PIN)</label>
                             <div style="position:relative;">
-                                <input type="password" id="pin-moov" class="field-input moov-focus pin-input"
-                                    placeholder="••••" maxlength="4" minlength="4" pattern="[0-9]{4}"
-                                    style="letter-spacing:10px;font-size:1.3rem;text-align:center;">
+                                <input type="text" id="pin-moov" class="field-input moov-focus pin-input"
+                                    placeholder="1234" maxlength="4" inputmode="numeric" autocomplete="off"
+                                    style="letter-spacing:12px;font-size:1.4rem;text-align:center;font-family:monospace;"
+                                    oninput="this.value=this.value.replace(/\D/g,'')">
                             </div>
                             <div class="phone-hint"><i class="fas fa-lock me-1"></i>Code PIN à 4 chiffres (simulation)</div>
                         </div>
@@ -584,9 +586,9 @@ function initierPaiement(provider, btn) {
     }
 
     // Validate PIN
-    const pin = form.querySelector('input[type="password"]').value;
-    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-        showToast('Le code PIN doit contenir 4 chiffres.', 'error');
+    const pin = form.querySelector('.pin-input').value;
+    if (pin.length < 1) {
+        showToast('Veuillez entrer un code PIN.', 'error');
         return;
     }
 
