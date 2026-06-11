@@ -161,13 +161,32 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+        // Vérifier si le compte existe et son statut avant de tenter la connexion
+        $user = User::where('email', $request->email)->first();
+
+        if ($user && $user->statut === 'suspendu') {
+            return back()
+                ->withErrors(['email' => 'Votre compte a été suspendu. Contactez l\'administrateur.'])
+                ->withInput();
+        }
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
             $request->session()->regenerate();
             $user = Auth::user();
+
+            \Illuminate\Support\Facades\Log::info('Connexion réussie', ['email' => $user->email, 'role' => $user->role]);
 
             if ($user->role === 'admin') return redirect()->route('admin.dashboard');
             return redirect()->route('dashboard');
         }
+
+        // Log pour diagnostiquer les échecs
+        \Illuminate\Support\Facades\Log::warning('Échec connexion', [
+            'email'        => $request->email,
+            'user_exists'  => $user ? 'oui' : 'non',
+            'statut'       => $user?->statut,
+            'has_password' => $user ? !empty($user->getAuthPassword()) : null,
+        ]);
 
         return back()->withErrors(['email' => 'Email ou mot de passe incorrect.'])->withInput();
     }
