@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Mail\BienvenueMail;
+use App\Mail\OtpInscriptionMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -18,49 +20,133 @@ class AuthController extends Controller
 
     public function inscrire(Request $request)
     {
-        $request->validate([
+        $rules = [
             'nom'       => 'required|string|max:100',
             'prenom'    => 'required|string|max:100',
             'email'     => 'required|email|unique:users',
             'telephone' => 'nullable|string|max:20',
             'password'  => 'required|string|min:8|confirmed',
             'role'      => 'required|in:fournisseur,acheteur',
-        ]);
-
-        $data = [
-            'nom'       => $request->nom,
-            'prenom'    => $request->prenom,
-            'email'     => $request->email,
-            'telephone' => $request->filled('telephone') ? $request->telephone : null,
-            'password'  => Hash::make($request->password),
-            'role'      => $request->role,
-            'statut'    => 'actif',
         ];
 
         if ($request->role === 'fournisseur') {
-            $request->validate([
-                'type_structure' => 'required|string',
-                'nom_structure'  => 'required|string|max:200',
-            ]);
-            $data['type_structure'] = $request->type_structure;
-            $data['nom_structure']  = $request->nom_structure;
-        } else {
-            $data['type_acheteur'] = $request->type_acheteur ?? 'particulier';
+            $rules['type_structure'] = 'required|string';
+            $rules['nom_structure']  = 'required|string|max:200';
         }
 
-        $user = User::create($data);
+        $request->validate($rules);
 
-        // Envoi de l'email de bienvenue
+        // Stocker les données en session (mot de passe haché, jamais en clair)
+        $pending = [
+            'nom'           => $request->nom,
+            'prenom'        => $request->prenom,
+            'email'         => $request->email,
+            'telephone'     => $request->filled('telephone') ? $request->telephone : null,
+            'password_hash' => Hash::make($request->password),
+            'role'          => $request->role,
+            'type_structure'=> $request->type_structure ?? null,
+            'nom_structure' => $request->nom_structure ?? null,
+            'type_acheteur' => $request->type_acheteur ?? 'particulier',
+        ];
+
+        session(['inscription_pending' => $pending, 'inscription_email' => $request->email]);
+
+        // Générer et envoyer l'OTP
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_otps')->where('email', $request->email)->delete();
+        DB::table('password_reset_otps')->insert([
+            'email'      => $request->email,
+            'otp'        => $otp,
+            'expires_at' => now()->addMinutes(10),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $mailSent = false;
+        try {
+            Mail::to($request->email)->send(new OtpInscriptionMail($otp, $request->prenom));
+            $mailSent = true;
+        } catch (\Exception $e) {
+            \Log::error('OTP inscription mail failed: ' . $e->getMessage());
+        }
+
+        if (!$mailSent && config('app.debug')) {
+            return redirect()->route('inscription.otp.form')
+                ->with('warning', "⚠️ Email non envoyé (SMTP non configuré). Votre code OTP de test : <strong>{$otp}</strong>");
+        }
+
+        return redirect()->route('inscription.otp.form')
+            ->with('success', 'Un code à 6 chiffres a été envoyé à ' . $request->email . '. Entrez-le pour activer votre compte.');
+    }
+
+    public function showOtpInscriptionForm()
+    {
+        if (!session('inscription_pending')) {
+            return redirect()->route('inscription');
+        }
+        return view('auth.verifier-otp-inscription');
+    }
+
+    public function verifierOtpInscription(Request $request)
+    {
+        $request->validate(['otp' => 'required|digits:6']);
+
+        $pending = session('inscription_pending');
+        $email   = session('inscription_email');
+
+        if (!$pending || !$email) {
+            return redirect()->route('inscription');
+        }
+
+        $record = DB::table('password_reset_otps')
+            ->where('email', $email)
+            ->where('otp', $request->otp)
+            ->first();
+
+        if (!$record) {
+            return back()->withErrors(['otp' => 'Code incorrect. Veuillez réessayer.']);
+        }
+
+        if (now()->isAfter($record->expires_at)) {
+            DB::table('password_reset_otps')->where('email', $email)->delete();
+            return back()->withErrors(['otp' => 'Ce code a expiré. Recommencez l\'inscription.']);
+        }
+
+        // OTP valide → créer le compte
+        DB::table('password_reset_otps')->where('email', $email)->delete();
+
+        $userData = [
+            'nom'      => $pending['nom'],
+            'prenom'   => $pending['prenom'],
+            'email'    => $pending['email'],
+            'telephone'=> $pending['telephone'],
+            'password' => $pending['password_hash'],
+            'role'     => $pending['role'],
+            'statut'   => 'actif',
+        ];
+
+        if ($pending['role'] === 'fournisseur') {
+            $userData['type_structure'] = $pending['type_structure'];
+            $userData['nom_structure']  = $pending['nom_structure'];
+        } else {
+            $userData['type_acheteur'] = $pending['type_acheteur'];
+        }
+
+        $user = User::create($userData);
+
+        session()->forget(['inscription_pending', 'inscription_email']);
+
+        // Email de bienvenue
         try {
             Mail::to($user->email)->send(new BienvenueMail($user));
         } catch (\Exception $e) {
-            // L'email échoue silencieusement — le compte est créé quand même
             \Log::warning('Email bienvenue non envoyé : ' . $e->getMessage());
         }
 
         Auth::login($user);
 
-        return redirect()->route('dashboard')->with('success', 'Bienvenue sur AntiGaspiCI ! Un email de confirmation a été envoyé.');
+        return redirect()->route('dashboard')->with('success', '🎉 Bienvenue sur AntiGaspiCI ! Votre email a été confirmé.');
     }
 
     public function showConnexion()

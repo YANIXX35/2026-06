@@ -26,6 +26,8 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 Route::middleware('guest')->group(function () {
     Route::get('/inscription', [AuthController::class, 'showInscription'])->name('inscription');
     Route::post('/inscription', [AuthController::class, 'inscrire'])->name('inscrire')->middleware('throttle:10,1');
+    Route::get('/inscription/verifier-email', [AuthController::class, 'showOtpInscriptionForm'])->name('inscription.otp.form');
+    Route::post('/inscription/verifier-email', [AuthController::class, 'verifierOtpInscription'])->name('inscription.otp.verify');
     Route::get('/connexion', [AuthController::class, 'showConnexion'])->name('connexion');
     Route::post('/connexion', [AuthController::class, 'connecter'])->name('connecter')->middleware('throttle:5,1');
 
