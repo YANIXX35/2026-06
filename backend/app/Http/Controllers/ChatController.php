@@ -34,7 +34,7 @@ class ChatController extends Controller
         ];
 
         $apiKey = config('services.gemini.key');
-        $url    = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key={$apiKey}";
+        $url    = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&key={$apiKey}";
 
         $body = [
             'system_instruction' => [
