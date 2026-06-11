@@ -23,6 +23,7 @@ class SignalementController extends Controller
             'signale_user_id' => $request->signale_user_id,
             'raison'          => $request->raison,
             'description'     => $request->description,
+            'statut'          => 'en_attente',
         ]);
 
         return back()->with('success', 'Signalement envoyé à l\'administration.');

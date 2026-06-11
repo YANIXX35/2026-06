@@ -14,6 +14,9 @@
 <a href="{{ route('admin.annonces') }}" class="nav-item">
     <span class="nav-icon"><i class="fas fa-bullhorn"></i></span> Annonces
 </a>
+<a href="{{ route('admin.categories.index') }}" class="nav-item">
+    <span class="nav-icon"><i class="fas fa-tags"></i></span> Catégories
+</a>
 <a href="{{ route('admin.signalements') }}" class="nav-item active">
     <span class="nav-icon"><i class="fas fa-flag"></i></span> Signalements
     @php $pending = $signalements->where('statut','en_attente')->count(); @endphp

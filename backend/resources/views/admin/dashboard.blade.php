@@ -16,6 +16,9 @@
     <span class="nav-icon"><i class="fas fa-bullhorn"></i></span> Annonces
     <span class="nav-badge" style="background:#16a34a;">{{ $stats['annonces'] }}</span>
 </a>
+<a href="{{ route('admin.categories.index') }}" class="nav-item">
+    <span class="nav-icon"><i class="fas fa-tags"></i></span> Catégories
+</a>
 <a href="{{ route('admin.signalements') }}" class="nav-item">
     <span class="nav-icon"><i class="fas fa-flag"></i></span> Signalements
     @if($stats['signalements'] > 0)

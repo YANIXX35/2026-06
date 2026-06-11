@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CommandeController;
+use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\SocialAuthController;
 
 // ─── PAGE D'ACCUEIL ────────────────────────────────────────────
@@ -45,6 +46,9 @@ Route::post('/deconnexion', [AuthController::class, 'deconnecter'])->name('decon
 // ─── SOCIAL AUTH ───────────────────────────────────────────────
 Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('social.redirect');
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
+
+// ─── PROFIL PUBLIC FOURNISSEUR ─────────────────────────────────
+Route::get('/fournisseurs/{user}', [ProfilController::class, 'show'])->name('profil.show');
 
 // ─── ANNONCES (publiques + routes fixes en premier) ────────────
 Route::get('/annonces', [AnnonceController::class, 'index'])->name('annonces.index');
@@ -89,6 +93,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/commandes/{commande}', [CommandeController::class, 'show'])->name('commandes.show');
     Route::post('/commandes', [CommandeController::class, 'passer'])->name('commandes.passer');
     Route::post('/commandes/{commande}/annuler', [CommandeController::class, 'annuler'])->name('commandes.annuler');
+    // Commandes — espace fournisseur
+    Route::get('/fournisseur/commandes', [CommandeController::class, 'indexFournisseur'])->name('commandes.fournisseur');
+    Route::post('/commandes/items/{item}/accepter', [CommandeController::class, 'accepterItem'])->name('commandes.items.accepter');
+    Route::post('/commandes/items/{item}/refuser', [CommandeController::class, 'refuserItem'])->name('commandes.items.refuser');
 
     // Messagerie
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
@@ -145,4 +153,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/annonces/{annonce}', [AdminController::class, 'supprimerAnnonce'])->name('supprimer-annonce');
     Route::get('/signalements', [AdminController::class, 'signalements'])->name('signalements');
     Route::post('/signalements/{signalement}/traiter', [AdminController::class, 'traiterSignalement'])->name('traiter-signalement');
+    // Catégories
+    Route::get('/categories', [CategorieController::class, 'index'])->name('categories.index');
+    Route::get('/categories/create', [CategorieController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategorieController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{categorie}/edit', [CategorieController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{categorie}', [CategorieController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{categorie}', [CategorieController::class, 'destroy'])->name('categories.destroy');
 });

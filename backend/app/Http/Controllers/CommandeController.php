@@ -102,4 +102,36 @@ class CommandeController extends Controller
         $commande->update(['statut' => 'annulée']);
         return back()->with('success', 'Commande annulée.');
     }
+
+    // ── ESPACE FOURNISSEUR ────────────────────────────────────────
+
+    public function indexFournisseur()
+    {
+        $items = CommandeItem::with(['commande.acheteur', 'annonce.photoPrincipale'])
+            ->where('fournisseur_id', Auth::id())
+            ->orderByDesc('created_at')
+            ->paginate(15);
+
+        return view('commandes.fournisseur', compact('items'));
+    }
+
+    public function accepterItem(CommandeItem $item)
+    {
+        if ($item->fournisseur_id !== Auth::id()) abort(403);
+        if ($item->statut !== 'en_attente') {
+            return back()->with('error', 'Cet article a déjà été traité.');
+        }
+        $item->update(['statut' => 'accepté']);
+        return back()->with('success', 'Article accepté.');
+    }
+
+    public function refuserItem(CommandeItem $item)
+    {
+        if ($item->fournisseur_id !== Auth::id()) abort(403);
+        if ($item->statut !== 'en_attente') {
+            return back()->with('error', 'Cet article a déjà été traité.');
+        }
+        $item->update(['statut' => 'refusé']);
+        return back()->with('success', 'Article refusé.');
+    }
 }
