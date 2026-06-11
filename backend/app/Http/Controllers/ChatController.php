@@ -74,6 +74,16 @@ class ChatController extends Controller
                         $data = json_decode($json, true);
                         if (!$data) continue;
 
+                        // Erreur JSON renvoyée dans le corps SSE (HTTP 200 mais avec erreur)
+                        if (isset($data['error'])) {
+                            $errMsg  = $data['error']['message'] ?? 'Erreur inconnue';
+                            $errCode = $data['error']['code']    ?? 0;
+                            \Illuminate\Support\Facades\Log::error("Gemini SSE body error {$errCode}: {$errMsg}");
+                            echo 'data: ' . json_encode(['error' => "Gemini {$errCode} : {$errMsg}"]) . "\n\n";
+                            ob_flush(); flush();
+                            break 2;
+                        }
+
                         $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
                         if ($text !== null) {
                             echo 'data: ' . json_encode(['text' => $text]) . "\n\n";
@@ -97,10 +107,18 @@ class ChatController extends Controller
                     $msg = "Requête invalide (HTTP 400) — clé ou modèle incorrect.";
                 } elseif ($code === 403) {
                     $msg = "Accès refusé (HTTP 403) — vérifiez GEMINI_API_KEY dans Render.";
+                } elseif ($code === 404) {
+                    $msg = "Modèle introuvable (HTTP 404). Vérifiez le nom du modèle Gemini.";
                 } else {
                     $msg = "Erreur Gemini HTTP {$code}.";
                 }
                 echo 'data: ' . json_encode(['error' => $msg]) . "\n\n";
+                ob_flush(); flush();
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                // Toute autre exception Guzzle (sans réponse HTTP)
+                \Illuminate\Support\Facades\Log::error('Gemini RequestException: ' . $e->getMessage());
+                $debug = config('app.debug') ? ' [RequestException: ' . $e->getMessage() . ']' : '';
+                echo 'data: ' . json_encode(['error' => 'Erreur requête Gemini.' . $debug]) . "\n\n";
                 ob_flush(); flush();
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Gemini Exception: ' . get_class($e) . ': ' . $e->getMessage());
