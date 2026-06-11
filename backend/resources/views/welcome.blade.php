@@ -1210,7 +1210,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeAuth(); });
                     if(!line.startsWith('data: ')) continue;
                     const raw=line.slice(6).trim();
                     if(raw==='[DONE]') break;
-                    try{const d=JSON.parse(raw);if(d.text){full+=d.text;botEl.textContent=full;botEl.classList.remove('typing');scrollChat();}}catch{}
+                    try{const d=JSON.parse(raw);if(d.text){full+=d.text;botEl.textContent=full;botEl.classList.remove('typing');scrollChat();}else if(d.error){botEl.textContent='⚠️ '+d.error;botEl.classList.remove('typing');botEl.style.color='#ef4444';scrollChat();}}catch{}
                 }
             }
             if(full) history.push({role:'assistant',content:full});
