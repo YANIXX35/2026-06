@@ -147,6 +147,10 @@ Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'chat'])
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/utilisateurs', [AdminController::class, 'utilisateurs'])->name('utilisateurs');
+    Route::post('/utilisateurs', [AdminController::class, 'storeUtilisateur'])->name('utilisateurs.store');
+    Route::put('/utilisateurs/{user}', [AdminController::class, 'updateUtilisateur'])->name('utilisateurs.update');
+    Route::delete('/utilisateurs/{user}', [AdminController::class, 'destroyUtilisateur'])->name('utilisateurs.destroy');
+    Route::post('/utilisateurs/{user}/reset-password', [AdminController::class, 'resetPasswordUtilisateur'])->name('utilisateurs.reset-password');
     Route::post('/utilisateurs/{user}/suspendre', [AdminController::class, 'suspendre'])->name('suspendre');
     Route::post('/utilisateurs/{user}/activer', [AdminController::class, 'activer'])->name('activer');
     Route::get('/annonces', [AdminController::class, 'annonces'])->name('annonces');

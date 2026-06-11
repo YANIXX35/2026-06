@@ -8,6 +8,8 @@ use App\Models\Signalement;
 use App\Models\User;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
@@ -33,9 +35,90 @@ class AdminController extends Controller
     {
         $query = User::where('role', '!=', 'admin');
         if ($request->filled('role')) $query->where('role', $request->role);
-        if ($request->filled('q'))    $query->where('nom', 'like', '%'.$request->q.'%')->orWhere('email', 'like', '%'.$request->q.'%');
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(fn($sq) => $sq->where('nom', 'like', "%$q%")->orWhere('prenom', 'like', "%$q%")->orWhere('email', 'like', "%$q%"));
+        }
         $utilisateurs = $query->latest()->paginate(15);
         return view('admin.utilisateurs', compact('utilisateurs'));
+    }
+
+    public function storeUtilisateur(Request $request)
+    {
+        $request->validate([
+            'nom'      => 'required|string|max:100',
+            'prenom'   => 'required|string|max:100',
+            'email'    => 'required|email|unique:users,email',
+            'telephone'=> 'nullable|string|max:20',
+            'role'     => 'required|in:fournisseur,acheteur,admin',
+            'password' => 'required|string|min:8',
+        ], [
+            'email.unique'    => 'Cet email est déjà utilisé.',
+            'password.min'    => 'Le mot de passe doit contenir au moins 8 caractères.',
+        ]);
+
+        User::create([
+            'nom'       => $request->nom,
+            'prenom'    => $request->prenom,
+            'email'     => $request->email,
+            'telephone' => $request->telephone,
+            'role'      => $request->role,
+            'password'  => $request->password,
+            'statut'    => 'actif',
+        ]);
+
+        return redirect()->route('admin.utilisateurs')->with('success', "Utilisateur {$request->prenom} {$request->nom} créé avec succès.");
+    }
+
+    public function updateUtilisateur(Request $request, User $user)
+    {
+        $request->validate([
+            'nom'      => 'required|string|max:100',
+            'prenom'   => 'required|string|max:100',
+            'email'    => 'required|email|unique:users,email,'.$user->id,
+            'telephone'=> 'nullable|string|max:20',
+            'role'     => 'required|in:fournisseur,acheteur,admin',
+            'statut'   => 'required|in:actif,suspendu,en_attente',
+        ], [
+            'email.unique' => 'Cet email est déjà utilisé par un autre compte.',
+        ]);
+
+        $user->update([
+            'nom'       => $request->nom,
+            'prenom'    => $request->prenom,
+            'email'     => $request->email,
+            'telephone' => $request->telephone,
+            'role'      => $request->role,
+            'statut'    => $request->statut,
+        ]);
+
+        return redirect()->route('admin.utilisateurs')->with('success', "Compte de {$user->prenom} {$user->nom} mis à jour.");
+    }
+
+    public function destroyUtilisateur(User $user)
+    {
+        if ($user->id === Auth::id()) {
+            return redirect()->route('admin.utilisateurs')->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+        }
+
+        $nom = $user->prenom.' '.$user->nom;
+        $user->delete();
+
+        return redirect()->route('admin.utilisateurs')->with('success', "Utilisateur {$nom} supprimé.");
+    }
+
+    public function resetPasswordUtilisateur(Request $request, User $user)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8',
+        ], [
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+        ]);
+
+        $user->password = $request->password;
+        $user->save();
+
+        return redirect()->route('admin.utilisateurs')->with('success', "Mot de passe de {$user->prenom} {$user->nom} réinitialisé.");
     }
 
     public function suspendre(User $user)
