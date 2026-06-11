@@ -86,6 +86,9 @@ fi
 echo '==> Seeding categories (firstOrCreate - idempotent)...'
 php artisan db:seed --class=CategorieSeeder --force || echo 'WARNING: Seeder categories echoue.'
 
+echo '==> Seeding admin (firstOrCreate - idempotent)...'
+php artisan db:seed --class=AdminSeeder --force || echo 'WARNING: Seeder admin echoue.'
+
 echo '==> Lien symbolique storage...'
 php artisan storage:link 2>/dev/null || echo 'Storage link deja present.'
 

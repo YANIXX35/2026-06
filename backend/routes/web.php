@@ -30,7 +30,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/inscription/verifier-email', [AuthController::class, 'showOtpInscriptionForm'])->name('inscription.otp.form');
     Route::post('/inscription/verifier-email', [AuthController::class, 'verifierOtpInscription'])->name('inscription.otp.verify');
     Route::get('/connexion', [AuthController::class, 'showConnexion'])->name('connexion');
-    Route::post('/connexion', [AuthController::class, 'connecter'])->name('connecter')->middleware('throttle:5,1');
+    Route::post('/connexion', [AuthController::class, 'connecter'])->name('connecter')->middleware('throttle:20,1');
 
     // ─── MOT DE PASSE OUBLIÉ (OTP) ─────────────────────────────
     Route::get('/mot-de-passe-oublie', [PasswordResetController::class, 'showEmailForm'])->name('password.email.form');
