@@ -346,7 +346,7 @@
             <div class="ann-card reveal">
                 <div class="ann-img">
                     @if($annonce->photoPrincipale)
-                        <img src="{{ asset('storage/'.$annonce->photoPrincipale->url) }}"
+                        <img src="{{ $annonce->photoPrincipale->url }}"
                              alt="{{ $annonce->titre }}"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                         <div class="ann-img-placeholder" style="display:none">

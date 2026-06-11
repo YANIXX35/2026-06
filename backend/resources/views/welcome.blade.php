@@ -796,7 +796,7 @@
             <div class="shop-card reveal">
                 <div class="s-img">
                     @if($annonce->photoPrincipale)
-                        <img src="{{ asset('storage/'.$annonce->photoPrincipale->url) }}" alt="{{ $annonce->titre }}" onerror="this.parentElement.innerHTML='<div class=\'s-emoji\'>{{ $annonce->categorie->icone ?? '🌿' }}</div>'">
+                        <img src="{{ $annonce->photoPrincipale->url }}" alt="{{ $annonce->titre }}" onerror="this.parentElement.innerHTML='<div class=\'s-emoji\'>{{ $annonce->categorie->icone ?? '🌿' }}</div>'">
                     @else
                         <div class="s-emoji">{{ $annonce->categorie->icone ?? '🌿' }}</div>
                     @endif

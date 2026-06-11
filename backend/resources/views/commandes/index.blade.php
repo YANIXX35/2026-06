@@ -76,7 +76,7 @@
         <div class="commande-body">
             @foreach($displayItems as $item)
                 @if($item->annonce && $item->annonce->photoPrincipale)
-                    <img src="{{ asset('storage/'.$item->annonce->photoPrincipale->url) }}" class="item-thumb" alt="{{ $item->annonce->titre }}" title="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
+                    <img src="{{ $item->annonce->photoPrincipale->url }}" class="item-thumb" alt="{{ $item->annonce->titre }}" title="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
                 @else
                     <div class="item-thumb-placeholder" title="{{ $item->annonce->titre ?? '—' }}">
                         <i class="fas fa-box" style="color:#9ca3af;"></i>

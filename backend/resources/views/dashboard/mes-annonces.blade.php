@@ -75,7 +75,7 @@
         <tr>
             <td>
                 @if($annonce->photoPrincipale)
-                <img src="{{ asset('storage/'.$annonce->photoPrincipale->url) }}"
+                <img src="{{ $annonce->photoPrincipale->url }}"
                     style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:1.5px solid #f0f0f0;"
                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                 <div style="display:none;width:40px;height:40px;background:#f9fafb;border-radius:8px;align-items:center;justify-content:center;font-size:1.1rem;">{{ $annonce->categorie->icone ?? '📦' }}</div>

@@ -8,7 +8,9 @@ use App\Models\Categorie;
 use App\Models\Photo;
 use App\Notifications\NouvelleAnnonceCategorie;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AnnonceController extends Controller
@@ -51,7 +53,7 @@ class AnnonceController extends Controller
             'adresse' => $a->adresse_collecte,
             'type'    => $a->type_offre,
             'url'     => route('annonces.show', $a),
-            'photo'   => $a->photoPrincipale ? asset('storage/'.$a->photoPrincipale->url) : null,
+            'photo'   => $a->photoPrincipale?->url,
         ])->values();
 
         $cartItems = collect();
@@ -114,11 +116,21 @@ class AnnonceController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $file) {
-                $path = $file->store('annonces', 'public');
+                try {
+                    $uploaded = Cloudinary::upload($file->getRealPath(), [
+                        'folder'          => 'antigasci/annonces',
+                        'resource_type'   => 'image',
+                        'transformation'  => [['quality' => 'auto', 'fetch_format' => 'auto']],
+                    ]);
+                    $url = $uploaded->getSecurePath();
+                } catch (\Throwable $e) {
+                    Log::warning('Cloudinary upload failed, fallback local', ['error' => $e->getMessage()]);
+                    $url = $file->store('annonces', 'public');
+                }
                 Photo::create([
-                    'annonce_id'   => $annonce->id,
-                    'url'          => $path,
-                    'is_principale'=> $index === 0,
+                    'annonce_id'    => $annonce->id,
+                    'url'           => $url,
+                    'is_principale' => $index === 0,
                 ]);
             }
         }

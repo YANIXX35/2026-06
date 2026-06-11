@@ -63,7 +63,7 @@
     @endphp
     <div class="item-card">
         @if($item->annonce && $item->annonce->photoPrincipale)
-            <img src="{{ asset('storage/'.$item->annonce->photoPrincipale->url) }}" class="item-img"
+            <img src="{{ $item->annonce->photoPrincipale->url }}" class="item-img"
                  alt="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
         @else
             <div class="item-img-ph"><i class="fas fa-box" style="color:#9ca3af;"></i></div>

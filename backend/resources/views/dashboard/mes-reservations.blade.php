@@ -28,7 +28,7 @@
                 {{-- Photo --}}
                 <div class="col-auto">
                     @if($reservation->annonce && $reservation->annonce->photoPrincipale)
-                        <img src="{{ asset('storage/'.$reservation->annonce->photoPrincipale->url) }}" class="rounded" style="width:72px;height:72px;object-fit:cover;" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
+                        <img src="{{ $reservation->annonce->photoPrincipale->url }}" class="rounded" style="width:72px;height:72px;object-fit:cover;" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
                     @else
                         <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:72px;height:72px;">
                             <i class="fas fa-box text-muted fa-xl"></i>

@@ -54,7 +54,7 @@
         @foreach($commande->items as $item)
         <div class="item-row">
             @if($item->annonce && $item->annonce->photoPrincipale)
-                <img src="{{ asset('storage/'.$item->annonce->photoPrincipale->url) }}" class="item-row-img" alt="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
+                <img src="{{ $item->annonce->photoPrincipale->url }}" class="item-row-img" alt="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
             @else
                 <div class="item-row-img-ph"><i class="fas fa-box" style="color:#9ca3af;"></i></div>
             @endif

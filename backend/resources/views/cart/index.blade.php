@@ -85,7 +85,7 @@
             @foreach($items as $item)
             <div class="cart-item">
                 @if($item->annonce->photoPrincipale)
-                    <img src="{{ asset('storage/'.$item->annonce->photoPrincipale->url) }}" class="cart-item-img" alt="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
+                    <img src="{{ $item->annonce->photoPrincipale->url }}" class="cart-item-img" alt="{{ $item->annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
                 @else
                     <div class="cart-item-img-placeholder">
                         <i class="fas fa-box" style="color:#9ca3af;font-size:1.5rem;"></i>

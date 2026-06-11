@@ -334,7 +334,7 @@
                 @foreach($floatCartItems as $ci)
                 <div class="fc-item">
                     @if($ci->annonce->photoPrincipale)
-                        <img src="{{ asset('storage/'.$ci->annonce->photoPrincipale->url) }}" class="fc-item-img" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <img src="{{ $ci->annonce->photoPrincipale->url }}" class="fc-item-img" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                         <div class="fc-item-img" style="display:none"><i class="fas fa-image" style="color:#cbd5e1;"></i></div>
                     @else
                         <div class="fc-item-img"><i class="fas fa-image" style="color:#cbd5e1;"></i></div>

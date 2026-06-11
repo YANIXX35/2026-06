@@ -200,7 +200,7 @@
                 <div style="padding:16px;display:flex;gap:10px;flex-wrap:wrap;">
                     @foreach($annonce->photos as $i => $photo)
                     <div style="position:relative;">
-                        <img src="{{ asset('storage/'.$photo->url) }}" alt=""
+                        <img src="{{ $photo->url }}" alt=""
                             style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid {{ $i===0?'#16a34a':'#e5e7eb' }};"
                             onerror="this.parentElement.style.display='none'">
                         @if($i === 0)

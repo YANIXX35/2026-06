@@ -23,7 +23,7 @@
                     @if($annonce->photos->count())
                         <div class="owl-carousel" id="photoCarousel">
                             @foreach($annonce->photos as $photo)
-                                <img src="{{ asset('storage/'.$photo->url) }}" class="img-fluid w-100 rounded-top" style="max-height:400px;object-fit:cover;" alt="{{ $annonce->titre }}" onerror="this.style.display='none'">
+                                <img src="{{ $photo->url }}" class="img-fluid w-100 rounded-top" style="max-height:400px;object-fit:cover;" alt="{{ $annonce->titre }}" onerror="this.style.display='none'">
                             @endforeach
                         </div>
                     @else

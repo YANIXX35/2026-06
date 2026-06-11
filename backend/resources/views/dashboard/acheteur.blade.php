@@ -416,7 +416,7 @@
         <a href="{{ route('annonces.show',$a) }}" class="surplus-card">
             <div style="height:70px;background:#f0fdf4;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2rem;">
                 @if($a->photoPrincipale)
-                    <img src="{{ asset('storage/'.$a->photoPrincipale->url) }}" alt="{{ $a->titre }}"
+                    <img src="{{ $a->photoPrincipale->url }}" alt="{{ $a->titre }}"
                         style="width:100%;height:70px;object-fit:cover;"
                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                     <span style="display:none;width:100%;height:70px;align-items:center;justify-content:center;font-size:2rem;">{{ $a->categorie->icone ?? '🌿' }}</span>

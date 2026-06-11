@@ -82,7 +82,7 @@
                     @foreach($annonces as $annonce)
                     <a href="{{ route('annonces.show', $annonce) }}" class="annonce-card">
                         @if($annonce->photoPrincipale)
-                            <img src="{{ asset('storage/'.$annonce->photoPrincipale->url) }}" class="annonce-img"
+                            <img src="{{ $annonce->photoPrincipale->url }}" class="annonce-img"
                                  alt="{{ $annonce->titre }}" onerror="this.src='{{ asset('img/no-image.jpg') }}'">
                         @else
                             <div class="annonce-img-ph">{{ $annonce->categorie->icone ?? '📦' }}</div>
