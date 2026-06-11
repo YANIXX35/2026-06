@@ -28,6 +28,11 @@ printf 'FILESYSTEM_DISK=public\n'
 printf 'QUEUE_CONNECTION=sync\n'
 printf 'CACHE_STORE=file\n'
 printf 'MAIL_MAILER=%s\n'        "${MAIL_MAILER:-log}"
+printf 'MAIL_HOST=%s\n'          "${MAIL_HOST:-smtp.gmail.com}"
+printf 'MAIL_PORT=%s\n'          "${MAIL_PORT:-587}"
+printf 'MAIL_USERNAME=%s\n'      "${MAIL_USERNAME}"
+printf 'MAIL_PASSWORD=%s\n'      "${MAIL_PASSWORD}"
+printf 'MAIL_ENCRYPTION=%s\n'    "${MAIL_ENCRYPTION:-tls}"
 printf 'MAIL_FROM_ADDRESS=%s\n'  "${MAIL_FROM_ADDRESS:-noreply@antigaspi-ci.com}"
 printf 'MAIL_FROM_NAME=%s\n'     "${MAIL_FROM_NAME:-AntiGaspiCI}"
 printf 'GEMINI_API_KEY=%s\n'     "${GEMINI_API_KEY}"
@@ -40,10 +45,14 @@ printf 'TELESCOPE_ENABLED=false\n'
 } > .env
 
 echo "==> Valeurs DB detectees :"
-echo "    DB_HOST     = ${DB_HOST:-[VIDE - AJOUTER DANS RENDER ENV]}"
-echo "    DB_DATABASE = ${DB_DATABASE:-[VIDE]}"
-echo "    DB_USERNAME = ${DB_USERNAME:-[VIDE]}"
-echo "    APP_KEY     = ${APP_KEY:0:20}..."
+echo "    DB_HOST       = ${DB_HOST:-[VIDE - AJOUTER DANS RENDER ENV]}"
+echo "    DB_DATABASE   = ${DB_DATABASE:-[VIDE]}"
+echo "    DB_USERNAME   = ${DB_USERNAME:-[VIDE]}"
+echo "    APP_KEY       = ${APP_KEY:0:20}..."
+echo "==> Valeurs MAIL detectees :"
+echo "    MAIL_MAILER   = ${MAIL_MAILER:-log}"
+echo "    MAIL_HOST     = ${MAIL_HOST:-[VIDE]}"
+echo "    MAIL_USERNAME = ${MAIL_USERNAME:-[VIDE - emails ne seront pas envoyes]}"
 
 # Verifier APP_KEY
 if [ -z "$APP_KEY" ] || [[ "$APP_KEY" != base64:* ]]; then

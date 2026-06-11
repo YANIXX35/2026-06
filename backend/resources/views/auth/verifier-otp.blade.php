@@ -19,6 +19,18 @@
                         </p>
                     </div>
 
+                    @if(session('success'))
+                        <div class="alert alert-success rounded-3" style="font-size:.85rem;">
+                            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if(session('warning'))
+                        <div class="alert alert-warning rounded-3" style="font-size:.85rem;">
+                            {!! session('warning') !!}
+                        </div>
+                    @endif
+
                     @if($errors->any())
                         <div class="alert alert-danger rounded-3" style="font-size:.85rem;">
                             @foreach($errors->all() as $err)

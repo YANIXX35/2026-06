@@ -38,9 +38,24 @@ class PasswordResetController extends Controller
             'updated_at' => now(),
         ]);
 
-        Mail::to($request->email)->send(new OtpResetMail($otp));
+        $mailSent = false;
+        $mailError = null;
+
+        try {
+            Mail::to($request->email)->send(new OtpResetMail($otp));
+            $mailSent = true;
+        } catch (\Exception $e) {
+            $mailError = $e->getMessage();
+            \Illuminate\Support\Facades\Log::error('OTP mail failed: ' . $mailError);
+        }
 
         session(['otp_email' => $request->email]);
+
+        // En debug : affiche le code OTP dans le flash si le mail a échoué
+        if (!$mailSent && config('app.debug')) {
+            return redirect()->route('password.otp.form')
+                ->with('warning', "⚠️ Email non envoyé (SMTP non configuré). Votre code OTP de test : <strong>{$otp}</strong>");
+        }
 
         return redirect()->route('password.otp.form')
             ->with('success', 'Un code à 6 chiffres a été envoyé à ' . $request->email);
