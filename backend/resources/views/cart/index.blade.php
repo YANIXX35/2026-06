@@ -170,7 +170,7 @@
                     <span style="color:#16a34a;">{{ $total > 0 ? number_format($total, 0, ',', ' ').' FCFA' : 'Gratuit' }}</span>
                 </div>
 
-                <form action="{{ route('commandes.passer') }}" method="POST" class="mt-4">
+                <form action="{{ route('paiement.initier') }}" method="POST" class="mt-4">
                     @csrf
                     <div class="checkout-field">
                         <label>Adresse de collecte (optionnel)</label>
@@ -181,7 +181,7 @@
                         <textarea name="message" rows="2" placeholder="Instructions particulières..."></textarea>
                     </div>
                     <button type="submit" class="btn-checkout">
-                        <i class="fas fa-check-circle me-2"></i>Passer la commande
+                        <i class="fas fa-lock me-2"></i>Procéder au paiement
                     </button>
                 </form>
 

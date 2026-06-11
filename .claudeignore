@@ -1,0 +1,13 @@
+node_modules/
+.git/
+.vscode/
+dist/
+build/
+*.log
+*.sql
+*.db
+pint
+__pycache__/
+.env
+.next/
+*.tmp

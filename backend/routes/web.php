@@ -14,6 +14,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\PaymentController;
 
 // ─── PAGE D'ACCUEIL ────────────────────────────────────────────
 Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('home');
@@ -87,6 +88,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/panier/{cartItem}', [CartController::class, 'mettreAJour'])->name('cart.update');
     Route::delete('/panier/{cartItem}', [CartController::class, 'supprimer'])->name('cart.remove');
     Route::delete('/panier', [CartController::class, 'vider'])->name('cart.vider');
+
+    // Paiement
+    Route::post('/paiement/initier', [PaymentController::class, 'initier'])->name('paiement.initier');
+    Route::get('/paiement', [PaymentController::class, 'show'])->name('paiement.show');
+    Route::post('/paiement/confirmer', [PaymentController::class, 'confirmer'])->name('paiement.confirmer');
+    Route::get('/paiement/succes/{commande}', [PaymentController::class, 'succes'])->name('paiement.succes');
 
     // Commandes
     Route::get('/commandes', [CommandeController::class, 'index'])->name('commandes.index');
