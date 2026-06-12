@@ -172,6 +172,7 @@ class AnnonceController extends Controller
             'longitude'       => 'nullable|numeric|between:-180,180',
             'date_expiration' => 'nullable|date',
             'statut'          => 'required|in:disponible,reservé,expiré',
+            'photos.*'        => 'nullable|image|max:2048',
         ]);
 
         if ($validated['type_offre'] === 'don') {
@@ -180,7 +181,30 @@ class AnnonceController extends Controller
         $validated['prix'] = $validated['prix'] ?? 0;
 
         $annonce->update($validated);
-        return redirect()->route('dashboard')->with('success', 'Annonce mise à jour.');
+
+        if ($request->hasFile('photos')) {
+            $annonce->photos()->delete();
+            foreach ($request->file('photos') as $index => $file) {
+                try {
+                    $uploaded = Cloudinary::upload($file->getRealPath(), [
+                        'folder'         => 'antigasci/annonces',
+                        'resource_type'  => 'image',
+                        'transformation' => [['quality' => 'auto', 'fetch_format' => 'auto']],
+                    ]);
+                    $url = $uploaded->getSecurePath();
+                } catch (\Throwable $e) {
+                    Log::warning('Cloudinary upload failed on update, fallback local', ['error' => $e->getMessage()]);
+                    $url = $file->store('annonces', 'public');
+                }
+                Photo::create([
+                    'annonce_id'    => $annonce->id,
+                    'url'           => $url,
+                    'is_principale' => $index === 0,
+                ]);
+            }
+        }
+
+        return redirect()->route('annonces.mes-annonces')->with('success', 'Annonce mise à jour.');
     }
 
     public function destroy(Annonce $annonce)

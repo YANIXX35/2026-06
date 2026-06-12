@@ -142,7 +142,7 @@
 
             {{-- Vider le panier --}}
             <form action="{{ route('cart.vider') }}" method="POST" style="margin-top:8px;">
-                @csrf
+                @csrf @method('DELETE')
                 <button type="submit" class="btn btn-link text-danger p-0 small" onclick="return confirm('Vider tout le panier ?')">
                     <i class="fas fa-trash me-1"></i>Vider le panier
                 </button>
