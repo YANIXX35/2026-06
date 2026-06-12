@@ -99,6 +99,13 @@
 
         <div class="commande-footer">
             <div class="commande-total">
+                @if(->mode_paiement)
+                    @if(->mode_paiement === 'wave')
+                        <span style="font-size:.7rem;font-weight:700;background:#fff8f3;color:#c2410c;border:1px solid #fed7aa;padding:2px 8px;border-radius:50px;margin-right:8px;"><i class="fas fa-bolt"></i> Wave</span>
+                    @elseif(->mode_paiement === 'moov_money')
+                        <span style="font-size:.7rem;font-weight:700;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 8px;border-radius:50px;margin-right:8px;"><i class="fas fa-mobile-alt"></i> Moov</span>
+                    @endif
+                @endif
                 {{ $commande->montant_total > 0 ? number_format($commande->montant_total, 0, ',', ' ').' FCFA' : 'Gratuit' }}
             </div>
             <div class="d-flex gap-2 align-items-center">
