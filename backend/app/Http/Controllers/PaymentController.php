@@ -55,7 +55,7 @@ class PaymentController extends Controller
     {
         $request->validate([
             'mode_paiement' => 'required|in:wave,moov_money',
-            'telephone'     => ['required', 'string', 'regex:/^[0-9\s\+\-]{8,15}$/'],
+            'telephone'     => ['required', 'string', 'regex:/^\+\d{3}\d{10}$/'],
         ]);
 
         $userId    = Auth::id();

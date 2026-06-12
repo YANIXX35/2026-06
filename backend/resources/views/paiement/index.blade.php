@@ -118,7 +118,7 @@
 .provider-card {
     border: 2.5px solid #e5e7eb;
     border-radius: 16px;
-    padding: 16px;
+    padding: 16px 12px;
     cursor: pointer;
     transition: all .25s;
     position: relative;
@@ -150,27 +150,14 @@
     transition: opacity .2s;
 }
 .provider-card.active .provider-check { opacity: 1; }
-.provider-logo {
-    height: 42px;
-    object-fit: contain;
-    margin-bottom: 8px;
-    display: block;
-    margin-left: auto; margin-right: auto;
-}
-.provider-name { font-size: .8rem; font-weight: 700; color: #374151; }
-.provider-tagline { font-size: .68rem; color: #9ca3af; margin-top: 2px; }
 
-/* Wave brand */
-.wave-logo-box {
+/* Wave SVG logo */
+.wave-logo-svg {
     width: 64px; height: 42px;
-    background: linear-gradient(135deg, #FF6B00, #FF8C00);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
     margin: 0 auto 8px;
-    font-size: 1.2rem; font-weight: 900; color: #fff;
-    letter-spacing: -1px;
-    font-family: 'Arial Black', sans-serif;
+    display: block;
 }
+
 /* Moov brand */
 .moov-logo-box {
     width: 64px; height: 42px;
@@ -178,10 +165,14 @@
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 8px;
-    font-size: .75rem; font-weight: 900; color: #fff;
-    letter-spacing: -.5px;
+    font-size: .72rem; font-weight: 900; color: #fff;
+    letter-spacing: -.3px;
     font-family: 'Arial Black', sans-serif;
+    line-height: 1.2;
 }
+
+.provider-name { font-size: .8rem; font-weight: 700; color: #374151; }
+.provider-tagline { font-size: .68rem; color: #9ca3af; margin-top: 2px; }
 
 /* Payment form */
 .payment-form { display: none; }
@@ -193,27 +184,50 @@
     text-transform: uppercase; letter-spacing: 1px;
     display: block; margin-bottom: 6px;
 }
+
+/* Phone row : select + input */
+.phone-row {
+    display: flex; gap: 0; border: 2px solid #e5e7eb; border-radius: 12px;
+    overflow: hidden; transition: border-color .2s; background: #fafafa;
+}
+.phone-row:focus-within { border-color: var(--green); background: #fff; }
+.phone-row.wave-border:focus-within { border-color: var(--wave-color); }
+.phone-row.moov-border:focus-within { border-color: var(--moov-color); }
+
+.country-select {
+    border: none; outline: none; background: transparent;
+    font-size: .82rem; font-weight: 700; color: #374151;
+    padding: 12px 8px 12px 12px;
+    cursor: pointer; flex-shrink: 0;
+    border-right: 1.5px solid #e5e7eb;
+    font-family: inherit; min-width: 110px;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 26px;
+}
+.phone-number-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: .95rem; padding: 12px 14px;
+    font-family: inherit; color: #111827;
+    min-width: 0;
+}
+.phone-number-input::placeholder { color: #9ca3af; }
+
+.phone-hint { font-size: .72rem; color: #9ca3af; margin-top: 5px; }
+.phone-hint.error { color: #ef4444; font-weight: 600; }
+
+/* PIN field */
 .field-input {
     width: 100%; border: 2px solid #e5e7eb; border-radius: 12px;
     padding: 13px 16px; font-size: .95rem; outline: none;
     transition: border-color .2s; font-family: inherit;
-    background: #fafafa;
+    background: #fafafa; box-sizing: border-box;
 }
 .field-input:focus { border-color: var(--green); background: #fff; }
 .field-input.wave-focus:focus { border-color: var(--wave-color); }
 .field-input.moov-focus:focus { border-color: var(--moov-color); }
-
-.phone-hint { font-size: .72rem; color: #9ca3af; margin-top: 4px; }
-
-/* PIN field */
-.pin-row { display: flex; gap: 10px; }
-.pin-input {
-    flex: 1; text-align: center; font-size: 1.2rem; font-weight: 700;
-    letter-spacing: 8px; border: 2px solid #e5e7eb; border-radius: 12px;
-    padding: 13px; outline: none; transition: border-color .2s; background: #fafafa;
-    font-family: monospace;
-}
-.pin-input:focus { border-color: var(--green); background: #fff; }
 
 /* Provider info banner */
 .provider-info {
@@ -301,6 +315,13 @@
     border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;
     font-size: .85rem; display: flex; align-items: center; gap: 8px;
 }
+
+/* Digit counter */
+.digit-counter {
+    font-size: .7rem; color: #9ca3af; text-align: right; margin-top: 3px;
+}
+.digit-counter.ok { color: var(--green); font-weight: 700; }
+.digit-counter.error { color: #ef4444; font-weight: 700; }
 </style>
 @endpush
 
@@ -403,9 +424,18 @@
                     <div class="providers">
                         <div class="provider-card wave" id="card-wave" onclick="selectProvider('wave')">
                             <div class="provider-check"><i class="fas fa-check"></i></div>
-                            <div class="wave-logo-box">Wave</div>
+                            {{-- Logo Wave SVG officiel --}}
+                            <svg class="wave-logo-svg" viewBox="0 0 160 106" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="160" height="106" rx="18" fill="#FF6B00"/>
+                                <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+                                    font-family="'Arial Black', Arial, sans-serif" font-size="44"
+                                    font-weight="900" fill="white" letter-spacing="-1">Wave</text>
+                                <path d="M28 72 Q45 52 62 72 Q79 92 96 72 Q113 52 132 72"
+                                    stroke="rgba(255,255,255,0.35)" stroke-width="5"
+                                    fill="none" stroke-linecap="round"/>
+                            </svg>
                             <div class="provider-name">Wave Money</div>
-                            <div class="provider-tagline">Rapide & sans frais</div>
+                            <div class="provider-tagline">Rapide &amp; sans frais</div>
                         </div>
                         <div class="provider-card moov" id="card-moov" onclick="selectProvider('moov')">
                             <div class="provider-check"><i class="fas fa-check"></i></div>
@@ -419,6 +449,7 @@
                     <form id="form-wave" class="payment-form" action="{{ route('paiement.confirmer') }}" method="POST">
                         @csrf
                         <input type="hidden" name="mode_paiement" value="wave">
+                        <input type="hidden" id="hidden-tel-wave" name="telephone" value="">
 
                         <div class="provider-info wave">
                             <i class="fas fa-info-circle"></i>
@@ -426,24 +457,43 @@
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label">Numéro Wave (CI)</label>
-                            <div style="position:relative;">
-                                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#FF6B00;font-weight:700;font-size:.9rem;">+225</span>
-                                <input type="tel" name="telephone" class="field-input wave-focus" style="padding-left:60px;"
-                                    placeholder="07 XX XX XX XX" maxlength="13" required
-                                    oninput="formatPhone(this)">
+                            <label class="field-label">Numéro de téléphone</label>
+                            <div class="phone-row wave-border">
+                                <select id="country-wave" class="country-select" onchange="updateHint('wave')">
+                                    <option value="+225" data-flag="🇨🇮" selected>🇨🇮 +225</option>
+                                    <option value="+221" data-flag="🇸🇳">🇸🇳 +221</option>
+                                    <option value="+223" data-flag="🇲🇱">🇲🇱 +223</option>
+                                    <option value="+226" data-flag="🇧🇫">🇧🇫 +226</option>
+                                    <option value="+233" data-flag="🇬🇭">🇬🇭 +233</option>
+                                    <option value="+234" data-flag="🇳🇬">🇳🇬 +234</option>
+                                    <option value="+224" data-flag="🇬🇳">🇬🇳 +224</option>
+                                    <option value="+228" data-flag="🇹🇬">🇹🇬 +228</option>
+                                    <option value="+229" data-flag="🇧🇯">🇧🇯 +229</option>
+                                    <option value="+227" data-flag="🇳🇪">🇳🇪 +227</option>
+                                    <option value="+222" data-flag="🇲🇷">🇲🇷 +222</option>
+                                    <option value="+220" data-flag="🇬🇲">🇬🇲 +220</option>
+                                    <option value="+232" data-flag="🇸🇱">🇸🇱 +232</option>
+                                    <option value="+231" data-flag="🇱🇷">🇱🇷 +231</option>
+                                    <option value="+245" data-flag="🇬🇼">🇬🇼 +245</option>
+                                    <option value="+238" data-flag="🇨🇻">🇨🇻 +238</option>
+                                </select>
+                                <input type="tel" id="phone-wave" class="phone-number-input"
+                                    placeholder="07 XX XX XX XX"
+                                    maxlength="12" inputmode="numeric" autocomplete="tel"
+                                    oninput="formatPhoneInput(this, 'wave')">
                             </div>
-                            <div class="phone-hint"><i class="fas fa-info-circle me-1"></i>Format : 07 XX XX XX XX (Wave CI)</div>
+                            <div class="digit-counter" id="counter-wave">0 / 10 chiffres</div>
+                            <div class="phone-hint" id="hint-wave">
+                                <i class="fas fa-info-circle me-1"></i>Exactement 10 chiffres requis
+                            </div>
                         </div>
 
                         <div class="field-group">
                             <label class="field-label">Code de confirmation (PIN)</label>
-                            <div style="position:relative;">
-                                <input type="text" id="pin-wave" class="field-input wave-focus pin-input"
-                                    placeholder="1234" maxlength="4" inputmode="numeric" autocomplete="off"
-                                    style="letter-spacing:12px;font-size:1.4rem;text-align:center;font-family:monospace;"
-                                    oninput="this.value=this.value.replace(/\D/g,'')">
-                            </div>
+                            <input type="text" id="pin-wave" class="field-input wave-focus pin-input"
+                                placeholder="1234" maxlength="4" inputmode="numeric" autocomplete="off"
+                                style="letter-spacing:12px;font-size:1.4rem;text-align:center;font-family:monospace;"
+                                oninput="this.value=this.value.replace(/\D/g,'')">
                             <div class="phone-hint"><i class="fas fa-lock me-1"></i>Code PIN à 4 chiffres (simulation)</div>
                         </div>
 
@@ -460,6 +510,7 @@
                     <form id="form-moov" class="payment-form" action="{{ route('paiement.confirmer') }}" method="POST">
                         @csrf
                         <input type="hidden" name="mode_paiement" value="moov_money">
+                        <input type="hidden" id="hidden-tel-moov" name="telephone" value="">
 
                         <div class="provider-info moov">
                             <i class="fas fa-info-circle"></i>
@@ -467,24 +518,43 @@
                         </div>
 
                         <div class="field-group">
-                            <label class="field-label">Numéro Moov Money (CI)</label>
-                            <div style="position:relative;">
-                                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#003DA5;font-weight:700;font-size:.9rem;">+225</span>
-                                <input type="tel" name="telephone" class="field-input moov-focus" style="padding-left:60px;"
-                                    placeholder="01 XX XX XX XX" maxlength="13" required
-                                    oninput="formatPhone(this)">
+                            <label class="field-label">Numéro de téléphone</label>
+                            <div class="phone-row moov-border">
+                                <select id="country-moov" class="country-select" onchange="updateHint('moov')">
+                                    <option value="+225" data-flag="🇨🇮" selected>🇨🇮 +225</option>
+                                    <option value="+221" data-flag="🇸🇳">🇸🇳 +221</option>
+                                    <option value="+223" data-flag="🇲🇱">🇲🇱 +223</option>
+                                    <option value="+226" data-flag="🇧🇫">🇧🇫 +226</option>
+                                    <option value="+233" data-flag="🇬🇭">🇬🇭 +233</option>
+                                    <option value="+234" data-flag="🇳🇬">🇳🇬 +234</option>
+                                    <option value="+224" data-flag="🇬🇳">🇬🇳 +224</option>
+                                    <option value="+228" data-flag="🇹🇬">🇹🇬 +228</option>
+                                    <option value="+229" data-flag="🇧🇯">🇧🇯 +229</option>
+                                    <option value="+227" data-flag="🇳🇪">🇳🇪 +227</option>
+                                    <option value="+222" data-flag="🇲🇷">🇲🇷 +222</option>
+                                    <option value="+220" data-flag="🇬🇲">🇬🇲 +220</option>
+                                    <option value="+232" data-flag="🇸🇱">🇸🇱 +232</option>
+                                    <option value="+231" data-flag="🇱🇷">🇱🇷 +231</option>
+                                    <option value="+245" data-flag="🇬🇼">🇬🇼 +245</option>
+                                    <option value="+238" data-flag="🇨🇻">🇨🇻 +238</option>
+                                </select>
+                                <input type="tel" id="phone-moov" class="phone-number-input"
+                                    placeholder="01 XX XX XX XX"
+                                    maxlength="12" inputmode="numeric" autocomplete="tel"
+                                    oninput="formatPhoneInput(this, 'moov')">
                             </div>
-                            <div class="phone-hint"><i class="fas fa-info-circle me-1"></i>Format : 01 XX XX XX XX (Moov CI)</div>
+                            <div class="digit-counter" id="counter-moov">0 / 10 chiffres</div>
+                            <div class="phone-hint" id="hint-moov">
+                                <i class="fas fa-info-circle me-1"></i>Exactement 10 chiffres requis
+                            </div>
                         </div>
 
                         <div class="field-group">
                             <label class="field-label">Code de confirmation (PIN)</label>
-                            <div style="position:relative;">
-                                <input type="text" id="pin-moov" class="field-input moov-focus pin-input"
-                                    placeholder="1234" maxlength="4" inputmode="numeric" autocomplete="off"
-                                    style="letter-spacing:12px;font-size:1.4rem;text-align:center;font-family:monospace;"
-                                    oninput="this.value=this.value.replace(/\D/g,'')">
-                            </div>
+                            <input type="text" id="pin-moov" class="field-input moov-focus pin-input"
+                                placeholder="1234" maxlength="4" inputmode="numeric" autocomplete="off"
+                                style="letter-spacing:12px;font-size:1.4rem;text-align:center;font-family:monospace;"
+                                oninput="this.value=this.value.replace(/\D/g,'')">
                             <div class="phone-hint"><i class="fas fa-lock me-1"></i>Code PIN à 4 chiffres (simulation)</div>
                         </div>
 
@@ -541,62 +611,84 @@ let activeForm = null;
 function selectProvider(provider) {
     activeProvider = provider;
 
-    // Reset cards
     document.getElementById('card-wave').classList.remove('active');
     document.getElementById('card-moov').classList.remove('active');
     document.getElementById('card-wave').classList.toggle('active', provider === 'wave');
     document.getElementById('card-moov').classList.toggle('active', provider === 'moov');
 
-    // Reset forms
     document.getElementById('form-wave').classList.remove('visible');
     document.getElementById('form-moov').classList.remove('visible');
     document.getElementById('no-provider').style.display = 'none';
 
-    // Show selected form
     const form = document.getElementById('form-' + provider);
     form.classList.add('visible');
     activeForm = form;
 
-    // Focus first input
     setTimeout(() => {
-        const firstInput = form.querySelector('input[type="tel"]');
-        if (firstInput) firstInput.focus();
+        const phoneInput = document.getElementById('phone-' + provider);
+        if (phoneInput) phoneInput.focus();
     }, 100);
 }
 
-function formatPhone(input) {
-    let v = input.value.replace(/\D/g, '');
-    if (v.length > 10) v = v.slice(0, 10);
+function formatPhoneInput(input, provider) {
+    // Garder uniquement les chiffres
+    let digits = input.value.replace(/\D/g, '');
+    if (digits.length > 10) digits = digits.slice(0, 10);
+
+    // Formater en XX XX XX XX XX
     let formatted = '';
-    for (let i = 0; i < v.length; i++) {
-        if (i === 2 || i === 4 || i === 6 || i === 8) formatted += ' ';
-        formatted += v[i];
+    for (let i = 0; i < digits.length; i++) {
+        if (i > 0 && i % 2 === 0) formatted += ' ';
+        formatted += digits[i];
     }
     input.value = formatted;
+
+    // Compteur
+    const counter = document.getElementById('counter-' + provider);
+    if (counter) {
+        counter.textContent = digits.length + ' / 10 chiffres';
+        counter.className = 'digit-counter' + (digits.length === 10 ? ' ok' : (digits.length > 0 ? ' error' : ''));
+    }
+}
+
+function updateHint(provider) {
+    const sel = document.getElementById('country-' + provider);
+    const hint = document.getElementById('hint-' + provider);
+    const code = sel.value;
+    const countryNames = {
+        '+225':'Côte d\'Ivoire','+221':'Sénégal','+223':'Mali','+226':'Burkina Faso',
+        '+233':'Ghana','+234':'Nigeria','+224':'Guinée','+228':'Togo',
+        '+229':'Bénin','+227':'Niger','+222':'Mauritanie','+220':'Gambie',
+        '+232':'Sierra Leone','+231':'Libéria','+245':'Guinée-Bissau','+238':'Cap-Vert'
+    };
+    if (hint) hint.innerHTML = '<i class="fas fa-info-circle me-1"></i>Exactement 10 chiffres — ' + (countryNames[code] || '') + ' ' + code;
 }
 
 function initierPaiement(provider, btn) {
-    const form = document.getElementById('form-' + provider);
+    const digits = document.getElementById('phone-' + provider).value.replace(/\D/g, '');
 
-    // Validate phone
-    const phone = form.querySelector('input[type="tel"]').value.replace(/\s/g, '');
-    if (phone.length < 8) {
-        showToast('Veuillez entrer un numéro valide.', 'error');
+    if (digits.length !== 10) {
+        showToast('Le numéro doit contenir exactement 10 chiffres.', 'error');
+        document.getElementById('phone-' + provider).focus();
         return;
     }
 
-    // Validate PIN
-    const pin = form.querySelector('.pin-input').value;
+    const pin = document.getElementById('pin-' + provider).value;
     if (pin.length < 1) {
         showToast('Veuillez entrer un code PIN.', 'error');
+        document.getElementById('pin-' + provider).focus();
         return;
     }
 
-    // Show overlay
-    const overlay = document.getElementById('processing-overlay');
-    const spinner = document.getElementById('proc-spinner');
-    const title   = document.getElementById('proc-title');
-    const sub     = document.getElementById('proc-sub');
+    // Construire le numéro complet : indicatif + 10 chiffres
+    const code = document.getElementById('country-' + provider).value;
+    document.getElementById('hidden-tel-' + provider).value = code + digits;
+
+    // Afficher l'overlay
+    const overlay  = document.getElementById('processing-overlay');
+    const spinner  = document.getElementById('proc-spinner');
+    const title    = document.getElementById('proc-title');
+    const sub      = document.getElementById('proc-sub');
 
     spinner.className = 'processing-spinner ' + (provider === 'wave' ? 'wave-spin' : 'moov-spin');
     title.textContent = provider === 'wave' ? 'Traitement Wave...' : 'Traitement Moov Money...';
@@ -604,7 +696,6 @@ function initierPaiement(provider, btn) {
     overlay.classList.add('visible');
     btn.disabled = true;
 
-    // Step animations
     const step1 = document.getElementById('step1-icon');
     const step2 = document.getElementById('step2-icon');
     const step3 = document.getElementById('step3-icon');
@@ -633,8 +724,7 @@ function initierPaiement(provider, btn) {
         step3.innerHTML = '<i class="fas fa-check" style="font-size:.6rem;"></i>';
         title.textContent = 'Paiement validé !';
         sub.textContent   = 'Redirection...';
-        // Submit the real form
-        form.submit();
+        document.getElementById('form-' + provider).submit();
     }, 3200);
 }
 
@@ -643,13 +733,12 @@ function showToast(msg, type) {
     t.style.cssText = `position:fixed;top:20px;right:20px;z-index:9998;padding:12px 20px;border-radius:10px;
         font-size:.85rem;font-weight:600;color:#fff;
         background:${type === 'error' ? '#ef4444' : '#16a34a'};
-        box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideIn .3s ease;`;
+        box-shadow:0 4px 20px rgba(0,0,0,.2);`;
     t.textContent = msg;
     document.body.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
+    setTimeout(() => t.remove(), 3500);
 }
 
-// Auto-select Wave by default
 document.addEventListener('DOMContentLoaded', () => {
     selectProvider('wave');
 });
