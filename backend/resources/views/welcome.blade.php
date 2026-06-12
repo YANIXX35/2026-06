@@ -28,35 +28,46 @@
 
         /* ── NAVBAR ── */
         .navbar-custom{
-            position:fixed;top:14px;left:50%;transform:translateX(-50%);
-            z-index:200;width:calc(100% - 48px);max-width:1180px;
-            display:flex;align-items:center;justify-content:space-between;
-            padding:0 24px;height:58px;
-            background:rgba(255,255,255,.96);backdrop-filter:blur(20px);
-            border:1px solid rgba(255,255,255,.9);border-radius:50px;
-            box-shadow:0 4px 24px rgba(0,0,0,.07);
-            transition:all .3s ease;
+            position:fixed;top:0;left:0;right:0;
+            z-index:200;
+            display:flex;align-items:center;
+            padding:0 32px;height:64px;
+            background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+            border-top:3px solid var(--green);
+            border-bottom:1px solid rgba(0,0,0,.07);
+            box-shadow:0 2px 16px rgba(0,0,0,.06);
+            transition:box-shadow .3s,background .3s;
         }
-        .navbar-custom.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.12);}
-        .navbar-logo{font-family:'Rubik',sans-serif;font-weight:800;font-size:1.08rem;
-            color:var(--green);text-decoration:none;display:flex;align-items:center;gap:9px;}
-        .logo-icon{width:30px;height:30px;border-radius:9px;
-            background:linear-gradient(135deg,var(--green),var(--green-light));
-            display:flex;align-items:center;justify-content:center;font-size:.9rem;}
-        .navbar-logo span{color:var(--text);}
-        .navbar-links{display:flex;gap:2px;list-style:none;}
-        .navbar-links a{text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:600;
-            padding:6px 13px;border-radius:50px;transition:all .2s;}
-        .navbar-links a:hover{color:var(--text);background:var(--surface);}
+        .navbar-custom.scrolled{box-shadow:0 4px 24px rgba(0,0,0,.1);background:rgba(255,255,255,1);}
+        .nav-inner{max-width:1200px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;}
+        /* Logo */
+        .navbar-logo{font-family:'Rubik',sans-serif;font-weight:900;font-size:1.12rem;
+            color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px;letter-spacing:-.3px;}
+        .logo-icon{width:36px;height:36px;border-radius:10px;
+            background:linear-gradient(135deg,#16a34a 0%,#22c55e 100%);
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 2px 8px rgba(22,163,74,.35);flex-shrink:0;}
+        .navbar-logo .logo-text .anti{color:var(--text);}
+        .navbar-logo .logo-text .gaspi{color:var(--green);}
+        .navbar-logo .logo-text .ci{color:var(--text);opacity:.5;font-size:.95rem;}
+        /* Links */
+        .navbar-links{display:flex;gap:0;list-style:none;align-items:center;}
+        .navbar-links li{position:relative;}
+        .navbar-links a{text-decoration:none;color:var(--muted);font-size:.86rem;font-weight:600;
+            padding:8px 14px;border-radius:8px;transition:all .2s;display:flex;align-items:center;gap:5px;}
+        .navbar-links a:hover{color:var(--text);background:var(--green-50);}
+        /* Actions */
         .navbar-actions{display:flex;gap:8px;align-items:center;}
-        .btn-ghost{background:none;border:none;color:var(--text);font-weight:600;
-            font-size:.875rem;padding:8px 16px;border-radius:50px;cursor:pointer;
+        .btn-ghost{background:none;border:none;color:var(--muted);font-weight:600;
+            font-size:.86rem;padding:8px 16px;border-radius:8px;cursor:pointer;
             transition:all .2s;font-family:'Nunito Sans',sans-serif;}
-        .btn-ghost:hover{background:var(--surface);}
-        .btn-dark{background:var(--dark);color:#fff;border:none;padding:9px 22px;
-            border-radius:50px;font-size:.875rem;font-weight:700;cursor:pointer;
-            transition:all .2s;font-family:'Nunito Sans',sans-serif;text-decoration:none;display:inline-block;}
-        .btn-dark:hover{background:#222;transform:translateY(-1px);color:#fff;}
+        .btn-ghost:hover{background:var(--surface);color:var(--text);}
+        .btn-dark{background:var(--green);color:#fff;border:none;padding:9px 20px;
+            border-radius:8px;font-size:.86rem;font-weight:700;cursor:pointer;
+            transition:all .2s;font-family:'Nunito Sans',sans-serif;text-decoration:none;
+            display:inline-flex;align-items:center;gap:7px;
+            box-shadow:0 2px 8px rgba(22,163,74,.3);}
+        .btn-dark:hover{background:#15803d;transform:translateY(-1px);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,.4);}
 
         /* ── HERO ── */
         .hero{
@@ -528,10 +539,12 @@
             .testi-grid{grid-template-columns:repeat(2,1fr);}
             .footer-grid{grid-template-columns:1fr 1fr;}
         }
-        @media(max-width:768px){
-            .navbar-custom{width:calc(100% - 28px);padding:0 18px;}
+        @media(max-width:900px){
             .navbar-links{display:none;}
-            .hero{padding:100px 22px 60px;}
+        }
+        @media(max-width:768px){
+            .navbar-custom{padding:0 16px;height:56px;}
+            .hero{padding:86px 22px 60px;}
             .hero-title{font-size:2.3rem;}
             .how-sec,.shop-sec,.cats-sec,.testi-sec,.cta-sec,.impact-sec{padding:64px 20px;}
             .stats-sec{padding:36px 20px;}
@@ -573,23 +586,32 @@
 
 <!-- ── NAVBAR ── -->
 <nav class="navbar-custom" id="navbar">
-    <a class="navbar-logo" href="{{ route('home') }}">
-        <div class="logo-icon">🌿</div>
-        <span>Anti</span>GaspiCI
-    </a>
-    <ul class="navbar-links">
-        <li><a href="{{ route('comment-ca-marche') }}">Fonctionnement</a></li>
-        <li><a href="{{ route('annonces.index') }}">Annonces</a></li>
-        <li><a href="{{ route('blog') }}">Blog</a></li>
-        <li><a href="{{ route('contact') }}">Contact</a></li>
-    </ul>
-    <div class="navbar-actions">
-        @auth
-            <a href="{{ route('dashboard') }}" class="btn-dark">Mon espace</a>
-        @else
-            <button class="btn-ghost" onclick="openAuth('login')">Connexion</button>
-            <button class="btn-dark" onclick="openAuth('register')">S'inscrire</button>
-        @endauth
+    <div class="nav-inner">
+        <a class="navbar-logo" href="{{ route('home') }}">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 3C21 3 14 3 10 8C7.5 11 9 15 9 15C12 12 15 12 17 8C17 8 18 12 17 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3.82 21C5.9 16.17 8 10 17 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <span class="logo-text">
+                <span class="anti">Anti</span><span class="gaspi">Gaspi</span><span class="ci">CI</span>
+            </span>
+        </a>
+        <ul class="navbar-links">
+            <li><a href="{{ route('comment-ca-marche') }}">Fonctionnement</a></li>
+            <li><a href="{{ route('annonces.index') }}">Annonces</a></li>
+            <li><a href="{{ route('blog') }}">Blog</a></li>
+            <li><a href="{{ route('contact') }}">Contact</a></li>
+        </ul>
+        <div class="navbar-actions">
+            @auth
+                <a href="{{ route('dashboard') }}" class="btn-dark"><i class="fas fa-th-large"></i> Mon espace</a>
+            @else
+                <button class="btn-ghost" onclick="openAuth('login')">Connexion</button>
+                <button class="btn-dark" onclick="openAuth('register')"><i class="fas fa-leaf"></i> S'inscrire</button>
+            @endauth
+        </div>
     </div>
 </nav>
 

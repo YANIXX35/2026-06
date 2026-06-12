@@ -27,49 +27,87 @@
 
         /* ── NAVBAR ── */
         .front-nav{
-            position:fixed;top:14px;left:50%;transform:translateX(-50%);
-            z-index:200;width:calc(100% - 48px);max-width:1180px;
+            position:fixed;top:0;left:0;right:0;
+            z-index:200;
             display:flex;align-items:center;justify-content:space-between;
-            padding:0 22px;height:56px;
-            background:rgba(255,255,255,.96);backdrop-filter:blur(20px);
-            border:1px solid rgba(255,255,255,.9);border-radius:50px;
-            box-shadow:0 4px 24px rgba(0,0,0,.07);transition:box-shadow .3s;
+            padding:0 32px;height:64px;
+            background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(0,0,0,.07);
+            box-shadow:0 2px 16px rgba(0,0,0,.06);transition:box-shadow .3s,background .3s;
         }
-        .front-nav.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.12);}
-        .fn-logo{font-family:'Rubik',sans-serif;font-weight:800;font-size:1.06rem;
-            color:var(--green);text-decoration:none;display:flex;align-items:center;gap:8px;}
-        .fn-logo-ico{width:28px;height:28px;border-radius:8px;
-            background:linear-gradient(135deg,var(--green),var(--green-light));
-            display:flex;align-items:center;justify-content:center;font-size:.85rem;}
-        .fn-logo span{color:var(--text);}
-        .fn-links{display:flex;gap:2px;list-style:none;}
-        .fn-links a{text-decoration:none;color:var(--muted);font-size:.85rem;font-weight:600;
-            padding:6px 12px;border-radius:50px;transition:all .2s;}
-        .fn-links a:hover,.fn-links a.active{color:var(--text);background:var(--surface);}
-        .fn-actions{display:flex;gap:7px;align-items:center;}
-        .btn-ghost{background:none;border:none;color:var(--text);font-weight:600;font-size:.85rem;
-            padding:7px 15px;border-radius:50px;cursor:pointer;transition:all .2s;
-            font-family:'Nunito Sans',sans-serif;text-decoration:none;display:inline-block;}
-        .btn-ghost:hover{background:var(--surface);}
-        .btn-dark{background:var(--dark);color:#fff;border:none;padding:8px 20px;
-            border-radius:50px;font-size:.85rem;font-weight:700;cursor:pointer;
+        .front-nav.scrolled{box-shadow:0 4px 24px rgba(0,0,0,.1);background:rgba(255,255,255,1);}
+        .fn-nav-inner{
+            max-width:1200px;width:100%;margin:0 auto;
+            display:flex;align-items:center;justify-content:space-between;
+        }
+        /* Logo */
+        .fn-logo{
+            font-family:'Rubik',sans-serif;font-weight:900;font-size:1.12rem;
+            color:var(--text);text-decoration:none;
+            display:flex;align-items:center;gap:10px;letter-spacing:-.3px;
+        }
+        .fn-logo-ico{
+            width:36px;height:36px;border-radius:10px;
+            background:linear-gradient(135deg,#16a34a 0%,#22c55e 100%);
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 2px 8px rgba(22,163,74,.35);flex-shrink:0;
+        }
+        .fn-logo-text .anti{color:var(--text);}
+        .fn-logo-text .gaspi{color:var(--green);}
+        .fn-logo-text .ci{color:var(--text);opacity:.5;font-size:.95rem;}
+        /* Links */
+        .fn-links{display:flex;gap:0;list-style:none;align-items:center;}
+        .fn-links li{position:relative;}
+        .fn-links a{
+            text-decoration:none;color:var(--muted);font-size:.86rem;font-weight:600;
+            padding:8px 14px;border-radius:8px;transition:all .2s;
+            display:flex;align-items:center;gap:5px;
+        }
+        .fn-links a:hover{color:var(--text);background:var(--green-50);}
+        .fn-links a.active{color:var(--green);font-weight:700;}
+        .fn-links a.active::after{
+            content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+            width:20px;height:3px;background:var(--green);border-radius:3px;
+        }
+        /* Separateur vertical */
+        .fn-sep{width:1px;height:20px;background:var(--border);margin:0 8px;}
+        /* Actions */
+        .fn-actions{display:flex;gap:8px;align-items:center;}
+        .btn-ghost{
+            background:none;border:none;color:var(--muted);font-weight:600;font-size:.85rem;
+            padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;
+            font-family:'Nunito Sans',sans-serif;text-decoration:none;display:inline-block;
+        }
+        .btn-ghost:hover{background:var(--surface);color:var(--text);}
+        .btn-dark{
+            background:var(--green);color:#fff;border:none;padding:9px 20px;
+            border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;
             transition:all .2s;font-family:'Nunito Sans',sans-serif;
-            text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
-        .btn-dark:hover{background:#222;transform:translateY(-1px);color:#fff;}
-        .btn-green{background:var(--green);color:#fff;border:none;padding:8px 20px;
-            border-radius:50px;font-size:.85rem;font-weight:700;cursor:pointer;
+            text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+            box-shadow:0 2px 8px rgba(22,163,74,.3);
+        }
+        .btn-dark:hover{background:var(--green-dark);transform:translateY(-1px);color:#fff;box-shadow:0 4px 14px rgba(22,163,74,.4);}
+        .btn-green{background:var(--green);color:#fff;border:none;padding:9px 20px;
+            border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;
             transition:all .2s;font-family:'Nunito Sans',sans-serif;
             text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
         .btn-green:hover{background:var(--green-dark);transform:translateY(-1px);color:#fff;}
-        .notif-btn{position:relative;width:36px;height:36px;border-radius:50%;
+        /* Notification bell */
+        .notif-btn{
+            position:relative;width:38px;height:38px;border-radius:8px;
             background:var(--surface);border:1px solid var(--border);
             display:flex;align-items:center;justify-content:center;
             cursor:pointer;color:var(--muted);font-size:.85rem;transition:all .2s;
-            text-decoration:none;}
-        .notif-btn:hover{background:var(--green-50);color:var(--green);}
-        .notif-badge{position:absolute;top:-3px;right:-3px;background:#ef4444;color:#fff;
-            font-size:.55rem;font-weight:800;border-radius:50%;width:16px;height:16px;
-            display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+            text-decoration:none;
+        }
+        .notif-btn:hover{background:var(--green-50);color:var(--green);border-color:var(--green-100);}
+        .notif-badge{
+            position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;
+            font-size:.5rem;font-weight:800;border-radius:50%;width:16px;height:16px;
+            display:flex;align-items:center;justify-content:center;border:2px solid #fff;
+        }
+        /* Bande verte décorative en haut */
+        .front-nav{border-top:3px solid var(--green)!important;}
 
         /* ── PAGE HERO (mini) ── */
         .page-hero{
@@ -162,10 +200,14 @@
         .reveal-right.visible{opacity:1;transform:translateX(0);}
 
         /* ── MOBILE ── */
-        @media(max-width:768px){
-            .front-nav{width:calc(100% - 28px);padding:0 14px;height:52px;}
+        @media(max-width:900px){
             .fn-links{display:none;}
-            .fn-logo{font-size:.9rem;}
+            .fn-sep{display:none;}
+        }
+        @media(max-width:768px){
+            .front-nav{padding:0 16px;height:56px;}
+            .fn-logo{font-size:.92rem;}
+            .fn-logo-ico{width:30px;height:30px;border-radius:8px;}
             .fn-actions .btn-ghost{display:none;}
             .fn-actions .btn-dark{padding:7px 14px;font-size:.78rem;}
             .page-hero{padding:90px 16px 40px;}
@@ -185,28 +227,49 @@
 <body>
 
 <nav class="front-nav" id="frontNav">
-    <a class="fn-logo" href="{{ route('home') }}">
-        <div class="fn-logo-ico">🌿</div>
-        <span>Anti</span>GaspiCI
-    </a>
-    <ul class="fn-links">
-        <li><a href="{{ route('comment-ca-marche') }}" class="{{ request()->is('comment-ca-marche') ? 'active':'' }}">Fonctionnement</a></li>
-        <li><a href="{{ route('annonces.index') }}" class="{{ request()->is('annonces*') ? 'active':'' }}">Annonces</a></li>
-        <li><a href="{{ route('blog') }}" class="{{ request()->is('blog') ? 'active':'' }}">Blog</a></li>
-        <li><a href="{{ route('contact') }}" class="{{ request()->is('contact') ? 'active':'' }}">Contact</a></li>
-    </ul>
-    <div class="fn-actions">
-        @auth
-            @php $unread = Auth::user()->unreadNotifications->count(); @endphp
-            <a href="{{ route('notifications.index') }}" class="notif-btn" title="Notifications">
-                <i class="fas fa-bell"></i>
-                @if($unread > 0)<span class="notif-badge">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
-            </a>
-            <a href="{{ route('dashboard') }}" class="btn-dark"><i class="fas fa-th-large"></i> Mon espace</a>
-        @else
-            <a href="{{ route('connexion') }}" class="btn-ghost">Connexion</a>
-            <a href="{{ route('inscription') }}" class="btn-dark">S'inscrire</a>
-        @endauth
+    <div class="fn-nav-inner">
+
+        {{-- Logo --}}
+        <a class="fn-logo" href="{{ route('home') }}">
+            <div class="fn-logo-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 3C21 3 14 3 10 8C7.5 11 9 15 9 15C12 12 15 12 17 8C17 8 18 12 17 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3.82 21C5.9 16.17 8 10 17 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <span class="fn-logo-text">
+                <span class="anti">Anti</span><span class="gaspi">Gaspi</span><span class="ci">CI</span>
+            </span>
+        </a>
+
+        {{-- Liens --}}
+        <ul class="fn-links">
+            <li><a href="{{ route('comment-ca-marche') }}" class="{{ request()->is('comment-ca-marche') ? 'active':'' }}">Fonctionnement</a></li>
+            <li><a href="{{ route('annonces.index') }}" class="{{ request()->is('annonces*') ? 'active':'' }}">Annonces</a></li>
+            <li><a href="{{ route('blog') }}" class="{{ request()->is('blog') ? 'active':'' }}">Blog</a></li>
+            <li><a href="{{ route('contact') }}" class="{{ request()->is('contact') ? 'active':'' }}">Contact</a></li>
+        </ul>
+
+        {{-- Actions --}}
+        <div class="fn-actions">
+            @auth
+                @php $unread = Auth::user()->unreadNotifications->count(); @endphp
+                <a href="{{ route('notifications.index') }}" class="notif-btn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    @if($unread > 0)<span class="notif-badge">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
+                </a>
+                <div class="fn-sep"></div>
+                <a href="{{ route('dashboard') }}" class="btn-dark">
+                    <i class="fas fa-th-large"></i> Mon espace
+                </a>
+            @else
+                <a href="{{ route('connexion') }}" class="btn-ghost">Connexion</a>
+                <a href="{{ route('inscription') }}" class="btn-dark">
+                    <i class="fas fa-leaf"></i> S'inscrire
+                </a>
+            @endauth
+        </div>
+
     </div>
 </nav>
 
@@ -215,7 +278,13 @@
 <footer class="front-footer">
     <div class="ff-grid">
         <div>
-            <div class="ff-logo">🌿 AntiGaspiCI</div>
+            <div class="ff-logo">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 3C21 3 14 3 10 8C7.5 11 9 15 9 15C12 12 15 12 17 8C17 8 18 12 17 16" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3.82 21C5.9 16.17 8 10 17 8" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                AntiGaspiCI
+            </div>
             <p class="ff-tag">La plateforme collaborative de réduction du gaspillage alimentaire en Côte d'Ivoire.</p>
             <div class="ff-social">
                 <a href="#" class="ffsoc"><i class="fab fa-facebook-f"></i></a>
