@@ -8,8 +8,10 @@ use App\Http\Controllers\Api\CommandeApiController;
 use App\Http\Controllers\Api\AdminApiController;
 
 // ── ROUTES PUBLIQUES ──────────────────────────────────────────────
-Route::post('/auth/login',    [AuthApiController::class, 'login']);
-Route::post('/auth/register', [AuthApiController::class, 'register']);
+Route::post('/auth/login',        [AuthApiController::class, 'login']);
+Route::post('/auth/register',     [AuthApiController::class, 'register']);
+Route::post('/auth/verify-otp',   [AuthApiController::class, 'verifierOtp']);
+Route::post('/auth/resend-otp',   [AuthApiController::class, 'renvoyerOtp']);
 
 Route::get('/annonces',          [AnnonceApiController::class, 'index']);
 Route::get('/annonces/{annonce}',[AnnonceApiController::class, 'show']);
