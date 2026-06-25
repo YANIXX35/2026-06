@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AnnonceApiController;
 use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\CommandeApiController;
 use App\Http\Controllers\Api\AdminApiController;
+use App\Http\Controllers\Api\FournisseurApiController;
 
 // ── ROUTES PUBLIQUES ──────────────────────────────────────────────
 Route::post('/auth/login',        [AuthApiController::class, 'login']);
@@ -34,6 +35,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/commandes',             [CommandeApiController::class, 'index']);
     Route::get('/commandes/{commande}',  [CommandeApiController::class, 'show']);
     Route::post('/commandes/passer',     [CommandeApiController::class, 'passer']);
+
+    // ── FOURNISSEUR ──────────────────────────────────────────────────────
+    Route::get('/mes-annonces',                          [FournisseurApiController::class, 'mesAnnonces']);
+    Route::post('/annonces',                             [FournisseurApiController::class, 'creerAnnonce']);
+    Route::put('/annonces/{annonce}',                    [FournisseurApiController::class, 'modifierAnnonce']);
+    Route::delete('/mes-annonces/{annonce}',             [FournisseurApiController::class, 'supprimerAnnonce']);
+    Route::get('/fournisseur/commandes',                 [FournisseurApiController::class, 'commandes']);
+    Route::post('/commandes/items/{item}/accepter',      [FournisseurApiController::class, 'accepterItem']);
+    Route::post('/commandes/items/{item}/refuser',       [FournisseurApiController::class, 'refuserItem']);
 
     // ── ADMIN ────────────────────────────────────────────────────────────
     Route::prefix('admin')->group(function () {
