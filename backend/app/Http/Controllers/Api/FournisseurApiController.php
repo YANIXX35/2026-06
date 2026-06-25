@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Annonce;
 use App\Models\Commande;
 use App\Models\CommandeItem;
+use App\Models\Photo;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class FournisseurApiController extends Controller
 {
@@ -115,6 +118,41 @@ class FournisseurApiController extends Controller
 
         $item->update(['statut' => 'accepté']);
         return response()->json(['message' => 'Commande acceptée.', 'item' => $item]);
+    }
+
+    // ── PHOTO ANNONCE ─────────────────────────────────────────────────────
+    public function ajouterPhoto(Request $request, Annonce $annonce)
+    {
+        if ($annonce->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Accès refusé.'], 403);
+        }
+
+        $request->validate([
+            'photo' => 'required|image|max:4096',
+        ]);
+
+        $file = $request->file('photo');
+        $isPremiere = $annonce->photos()->count() === 0;
+
+        try {
+            $uploaded = Cloudinary::upload($file->getRealPath(), [
+                'folder'         => 'antigasci/annonces',
+                'resource_type'  => 'image',
+                'transformation' => [['quality' => 'auto', 'fetch_format' => 'auto']],
+            ]);
+            $url = $uploaded->getSecurePath();
+        } catch (\Throwable $e) {
+            Log::warning('Cloudinary upload failed (mobile), fallback local', ['error' => $e->getMessage()]);
+            $url = $file->store('annonces', 'public');
+        }
+
+        $photo = Photo::create([
+            'annonce_id'   => $annonce->id,
+            'url'          => $url,
+            'is_principale' => $isPremiere,
+        ]);
+
+        return response()->json(['message' => 'Photo ajoutée.', 'photo' => $photo], 201);
     }
 
     public function refuserItem(CommandeItem $item)

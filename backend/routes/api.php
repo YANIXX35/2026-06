@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/annonces',                             [FournisseurApiController::class, 'creerAnnonce']);
     Route::put('/annonces/{annonce}',                    [FournisseurApiController::class, 'modifierAnnonce']);
     Route::delete('/mes-annonces/{annonce}',             [FournisseurApiController::class, 'supprimerAnnonce']);
+    Route::post('/annonces/{annonce}/photos',            [FournisseurApiController::class, 'ajouterPhoto']);
     Route::get('/fournisseur/commandes',                 [FournisseurApiController::class, 'commandes']);
     Route::post('/commandes/items/{item}/accepter',      [FournisseurApiController::class, 'accepterItem']);
     Route::post('/commandes/items/{item}/refuser',       [FournisseurApiController::class, 'refuserItem']);
