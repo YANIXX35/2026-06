@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\CommandeApiController;
 use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Api\FournisseurApiController;
+use App\Http\Controllers\Api\NotificationApiController;
 
 // ── ROUTES PUBLIQUES ──────────────────────────────────────────────
 Route::post('/auth/login',        [AuthApiController::class, 'login']);
@@ -35,6 +36,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/commandes',             [CommandeApiController::class, 'index']);
     Route::get('/commandes/{commande}',  [CommandeApiController::class, 'show']);
     Route::post('/commandes/passer',     [CommandeApiController::class, 'passer']);
+
+    // Notifications
+    Route::get('/notifications',       [NotificationApiController::class, 'index']);
+    Route::post('/notifications/lire', [NotificationApiController::class, 'lire']);
 
     // ── FOURNISSEUR ──────────────────────────────────────────────────────
     Route::get('/mes-annonces',                          [FournisseurApiController::class, 'mesAnnonces']);
