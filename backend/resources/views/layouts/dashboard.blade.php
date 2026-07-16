@@ -21,7 +21,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{font-family:'Nunito Sans',sans-serif;background:#f1f5f9;color:var(--text);display:flex;min-height:100vh;}
+body{font-family:'Nunito Sans',sans-serif;background:#f1f5f9;color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
 h1,h2,h3,h4,h5{font-family:'Rubik',sans-serif;}
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px;}
 
@@ -247,12 +247,17 @@ h1,h2,h3,h4,h5{font-family:'Rubik',sans-serif;}
    RESPONSIVE
 ══════════════════════════════════════ */
 @media(max-width:1200px){.right-panel{display:none;}}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:190;}
+.sidebar-backdrop.open{display:block;}
+#menuBtn{display:none;}
 @media(max-width:900px){
     .sidebar{transform:translateX(-100%);transition:.3s;}
     .sidebar.open{transform:translateX(0);}
     .main-wrapper{margin-left:0;}
     .topbar{left:0;}
     .stats-row{grid-template-columns:1fr 1fr;}
+    #menuBtn{display:block;}
+    .dash-table{display:block;overflow-x:auto;white-space:nowrap;}
 }
 @media(max-width:480px){.stats-row{grid-template-columns:1fr;}}
 </style>
@@ -261,6 +266,7 @@ h1,h2,h3,h4,h5{font-family:'Rubik',sans-serif;}
 <body>
 
 <!-- ── SIDEBAR ── -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 <aside class="sidebar" id="sidebar">
     <a href="{{ route('home') }}" class="sidebar-logo">
         <div class="sl-ico">🌿</div>
@@ -299,8 +305,8 @@ h1,h2,h3,h4,h5{font-family:'Rubik',sans-serif;}
 <!-- ── TOPBAR ── -->
 <header class="topbar">
     <div class="topbar-left">
-        <button onclick="document.getElementById('sidebar').classList.toggle('open')"
-            style="display:none;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--muted);padding:4px;" id="menuBtn">
+        <button onclick="toggleSidebar()"
+            style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--muted);padding:4px;" id="menuBtn">
             <i class="fas fa-bars"></i>
         </button>
         <span class="topbar-title">@yield('page-title','Dashboard')</span>
@@ -340,9 +346,13 @@ h1,h2,h3,h4,h5{font-family:'Rubik',sans-serif;}
 </div>
 
 <script>
-// Mobile menu button visibility
-if(window.innerWidth <= 900){
-    document.getElementById('menuBtn').style.display = 'block';
+function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarBackdrop').classList.toggle('open');
+}
+function closeSidebar(){
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarBackdrop').classList.remove('open');
 }
 </script>
 @stack('scripts')

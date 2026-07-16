@@ -199,13 +199,41 @@
         .reveal-right{opacity:0;transform:translateX(30px);transition:all .6s ease;}
         .reveal-right.visible{opacity:1;transform:translateX(0);}
 
+        /* ── MOBILE MENU (hamburger) ── */
+        .fn-mobile-toggle{
+            display:none;width:38px;height:38px;border-radius:8px;
+            background:var(--surface);border:1px solid var(--border);
+            align-items:center;justify-content:center;cursor:pointer;
+            color:var(--text);font-size:1rem;
+        }
+        .fn-mobile-menu{
+            display:none;flex-direction:column;gap:2px;
+            position:fixed;top:64px;left:0;right:0;z-index:199;
+            background:#fff;border-bottom:1px solid var(--border);
+            box-shadow:0 12px 24px rgba(0,0,0,.08);
+            padding:10px 16px 16px;
+        }
+        .fn-mobile-menu.open{display:flex;}
+        .fn-mobile-menu a{
+            text-decoration:none;color:var(--text);font-size:.92rem;font-weight:600;
+            padding:12px 10px;border-radius:8px;display:flex;align-items:center;gap:10px;
+        }
+        .fn-mobile-menu a.active{color:var(--green);background:var(--green-50);}
+        .fn-mobile-menu a:active{background:var(--surface);}
+        .fn-mobile-sep{height:1px;background:var(--border);margin:8px 0;}
+        .fn-mobile-menu .btn-dark,.fn-mobile-menu .btn-ghost{
+            width:100%;justify-content:center;padding:12px;font-size:.9rem;margin-top:4px;
+        }
+
         /* ── MOBILE ── */
         @media(max-width:900px){
             .fn-links{display:none;}
             .fn-sep{display:none;}
+            .fn-mobile-toggle{display:flex;}
         }
         @media(max-width:768px){
             .front-nav{padding:0 16px;height:56px;}
+            .fn-mobile-menu{top:56px;}
             .fn-logo{font-size:.92rem;}
             .fn-logo-ico{width:30px;height:30px;border-radius:8px;}
             .fn-actions .btn-ghost{display:none;}
@@ -268,8 +296,42 @@
                     <i class="fas fa-leaf"></i> S'inscrire
                 </a>
             @endauth
+
+            <button type="button" class="fn-mobile-toggle" id="fnMobileToggle" onclick="toggleMobileMenu()" aria-label="Menu">
+                <i class="fas fa-bars" id="fnMobileIcon"></i>
+            </button>
         </div>
 
+    </div>
+
+    <div class="fn-mobile-menu" id="fnMobileMenu">
+        <a href="{{ route('comment-ca-marche') }}" class="{{ request()->is('comment-ca-marche') ? 'active':'' }}">
+            <i class="fas fa-question-circle"></i> Fonctionnement
+        </a>
+        <a href="{{ route('annonces.index') }}" class="{{ request()->is('annonces*') ? 'active':'' }}">
+            <i class="fas fa-bullhorn"></i> Annonces
+        </a>
+        <a href="{{ route('blog') }}" class="{{ request()->is('blog') ? 'active':'' }}">
+            <i class="fas fa-newspaper"></i> Blog
+        </a>
+        <a href="{{ route('contact') }}" class="{{ request()->is('contact') ? 'active':'' }}">
+            <i class="fas fa-envelope"></i> Contact
+        </a>
+        <div class="fn-mobile-sep"></div>
+        @auth
+            <a href="{{ route('notifications.index') }}">
+                <i class="fas fa-bell"></i> Notifications
+                @if($unread > 0)<span class="notif-badge" style="position:static;margin-left:auto;">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
+            </a>
+            <a href="{{ route('dashboard') }}" class="btn-dark">
+                <i class="fas fa-th-large"></i> Mon espace
+            </a>
+        @else
+            <a href="{{ route('connexion') }}" class="btn-ghost">Connexion</a>
+            <a href="{{ route('inscription') }}" class="btn-dark">
+                <i class="fas fa-leaf"></i> S'inscrire
+            </a>
+        @endauth
     </div>
 </nav>
 
@@ -465,6 +527,30 @@ const revObs=new IntersectionObserver(entries=>{
     entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
 },{threshold:.08,rootMargin:'0px 0px -30px 0px'});
 document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>revObs.observe(el));
+
+function toggleMobileMenu(){
+    const menu = document.getElementById('fnMobileMenu');
+    const icon = document.getElementById('fnMobileIcon');
+    menu.classList.toggle('open');
+    icon.classList.toggle('fa-bars');
+    icon.classList.toggle('fa-times');
+}
+document.querySelectorAll('#fnMobileMenu a').forEach(a=>{
+    a.addEventListener('click',()=>{
+        document.getElementById('fnMobileMenu').classList.remove('open');
+        document.getElementById('fnMobileIcon').classList.add('fa-bars');
+        document.getElementById('fnMobileIcon').classList.remove('fa-times');
+    });
+});
+document.addEventListener('click',(e)=>{
+    const menu = document.getElementById('fnMobileMenu');
+    const toggle = document.getElementById('fnMobileToggle');
+    if(menu.classList.contains('open') && !menu.contains(e.target) && !toggle.contains(e.target)){
+        menu.classList.remove('open');
+        document.getElementById('fnMobileIcon').classList.add('fa-bars');
+        document.getElementById('fnMobileIcon').classList.remove('fa-times');
+    }
+});
 </script>
 @stack('scripts')
 </body>
