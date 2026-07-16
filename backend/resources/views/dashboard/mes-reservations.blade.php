@@ -121,7 +121,7 @@
                                 <i class="fas fa-check-double me-1"></i>Marquer complétée
                             </button>
                         </form>
-                        <a href="{{ route('messages.ouvrir', $reservation->user_id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                        <a href="{{ route('messages.ouvrir', $reservation->user_id) }}?annonce_id={{ $reservation->annonce_id }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
                             <i class="fas fa-comment me-1"></i>Contacter
                         </a>
                     @elseif(!auth()->user()->isFournisseur() && $reservation->statut === 'en_attente')
@@ -132,7 +132,7 @@
                             </button>
                         </form>
                     @elseif(!auth()->user()->isFournisseur() && $reservation->statut === 'acceptée')
-                        <a href="{{ route('messages.ouvrir', $reservation->annonce->user_id) }}" class="btn btn-sm btn-success rounded-pill px-3">
+                        <a href="{{ route('messages.ouvrir', $reservation->annonce->user_id) }}?annonce_id={{ $reservation->annonce_id }}" class="btn btn-sm btn-success rounded-pill px-3">
                             <i class="fas fa-comment me-1"></i>Contacter le fournisseur
                         </a>
                     @elseif($reservation->statut === 'complétée' && !$reservation->avis)

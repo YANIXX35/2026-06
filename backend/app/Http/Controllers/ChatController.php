@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -22,6 +24,11 @@ class ChatController extends Controller
 
         $userMessage = $request->input('message');
         $history     = $request->input('history', []);
+
+        ChatLog::create([
+            'user_id'  => Auth::id(),
+            'question' => $userMessage,
+        ]);
 
         $apiKey = config('services.gemini.key');
         Log::debug('GEMINI CONFIG', [

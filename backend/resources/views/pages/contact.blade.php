@@ -64,6 +64,11 @@ select.form-ctrl{cursor:pointer;}
     border-radius:12px;padding:14px 18px;margin-bottom:20px;
     display:flex;align-items:center;gap:10px;font-size:.88rem;font-weight:600;
 }
+.alert-error{
+    background:#fef2f2;border:1px solid #fecaca;color:#dc2626;
+    border-radius:12px;padding:14px 18px;margin-bottom:20px;
+    display:flex;align-items:center;gap:10px;font-size:.88rem;font-weight:600;
+}
 
 /* ── MAP STRIP ── */
 .map-strip{padding:0 48px 80px;background:#fff;}
@@ -159,6 +164,13 @@ select.form-ctrl{cursor:pointer;}
                     <div class="alert-success">
                         <i class="fas fa-check-circle"></i>
                         {{ session('success') }}
+                    </div>
+                    @endif
+
+                    @if(session('error'))
+                    <div class="alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ session('error') }}
                     </div>
                     @endif
 

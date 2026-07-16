@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Annonce;
+use App\Models\ChatLog;
 use App\Models\Signalement;
 use App\Models\User;
 use App\Models\Reservation;
@@ -22,6 +23,7 @@ class AdminController extends Controller
             'signalements'  => Signalement::where('statut', 'en_attente')->count(),
             'fournisseurs'  => User::where('role', 'fournisseur')->count(),
             'acheteurs'     => User::where('role', 'acheteur')->count(),
+            'questions_chatbot' => ChatLog::count(),
         ];
 
         $derniersUtilisateurs = User::latest()->take(5)->get();

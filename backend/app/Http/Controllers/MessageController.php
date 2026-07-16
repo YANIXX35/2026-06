@@ -33,7 +33,7 @@ class MessageController extends Controller
         return view('messages.show', compact('conversation', 'conversations', 'messages', 'interlocuteur'));
     }
 
-    public function ouvrirOuCreer(User $user)
+    public function ouvrirOuCreer(Request $request, User $user)
     {
         $moi = Auth::id();
         $conversation = Conversation::where(function ($q) use ($moi, $user) {
@@ -43,7 +43,11 @@ class MessageController extends Controller
         })->first();
 
         if (!$conversation) {
-            $conversation = Conversation::create(['user_1_id' => $moi, 'user_2_id' => $user->id]);
+            $conversation = Conversation::create([
+                'user_1_id'  => $moi,
+                'user_2_id'  => $user->id,
+                'annonce_id' => $request->integer('annonce_id') ?: null,
+            ]);
         }
         return redirect()->route('messages.show', $conversation);
     }

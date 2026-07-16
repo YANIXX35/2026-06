@@ -48,6 +48,13 @@
                         <div class="text-muted small">{{ $interlocuteur->role }}</div>
                     </div>
                 </div>
+                @if($conversation->annonce)
+                <a href="{{ route('annonces.show', $conversation->annonce) }}" class="d-flex align-items-center gap-2 px-4 py-2 border-bottom text-decoration-none" style="background:#f8f9fb;">
+                    <i class="fas fa-bullhorn text-muted small"></i>
+                    <span class="small text-muted">À propos de :</span>
+                    <span class="small fw-semibold text-dark">{{ Str::limit($conversation->annonce->titre, 50) }}</span>
+                </a>
+                @endif
                 <div class="card-body p-4" style="height:420px;overflow-y:auto;" id="messagesContainer">
                     @forelse($messages as $msg)
                         @if($msg->user_id === auth()->id())

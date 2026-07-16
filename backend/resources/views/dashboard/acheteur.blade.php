@@ -369,7 +369,7 @@
                     @csrf<button style="background:#fef2f2;color:#ef4444;border:none;border-radius:6px;padding:5px 10px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:inherit;"><i class="fas fa-times me-1"></i>Annuler</button>
                 </form>
                 @elseif($r->statut === 'acceptée')
-                <a href="{{ route('messages.ouvrir',$r->annonce->user_id) }}" style="background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:5px 10px;font-size:.72rem;font-weight:600;text-decoration:none;"><i class="fas fa-comment me-1"></i>Contacter</a>
+                <a href="{{ route('messages.ouvrir',$r->annonce->user_id) }}?annonce_id={{ $r->annonce_id }}" style="background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:5px 10px;font-size:.72rem;font-weight:600;text-decoration:none;"><i class="fas fa-comment me-1"></i>Contacter</a>
                 @elseif($r->statut === 'complétée' && !$r->avis)
                 <a href="{{ route('annonces.show',$r->annonce) }}#avis" style="background:#fef9c3;color:#b45309;border-radius:6px;padding:5px 10px;font-size:.72rem;font-weight:600;text-decoration:none;"><i class="fas fa-star me-1"></i>Laisser un avis</a>
                 @else

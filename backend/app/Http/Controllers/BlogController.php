@@ -8,28 +8,28 @@ class BlogController extends Controller
 {
     private array $sources = [
         [
-            'nom'     => 'OMS',
-            'url'     => 'https://www.who.int/rss-feeds/news-french.xml',
-            'couleur' => '#1d4ed8',
-            'icone'   => '🌍',
-        ],
-        [
-            'nom'     => 'Le Monde Santé',
-            'url'     => 'https://www.lemonde.fr/sante/rss_full.xml',
-            'couleur' => '#dc2626',
-            'icone'   => '📰',
-        ],
-        [
-            'nom'     => 'Futura Santé',
-            'url'     => 'https://www.futura-sciences.com/rss/sante/actualites.xml',
-            'couleur' => '#7c3aed',
-            'icone'   => '🔬',
-        ],
-        [
-            'nom'     => 'Santé Magazine',
-            'url'     => 'https://www.santemagazine.fr/rss',
+            'nom'     => 'ADEME Agriculture & Alimentation',
+            'url'     => 'https://librairie.ademe.fr/rss/3516-thematique-agriculture-alimentation-foret-bioeconomie.xml',
             'couleur' => '#059669',
-            'icone'   => '💊',
+            'icone'   => '🌾',
+        ],
+        [
+            'nom'     => 'ADEME Économie circulaire',
+            'url'     => 'https://librairie.ademe.fr/rss/3426-thematique-economie-circulaire-et-dechets.xml',
+            'couleur' => '#1d4ed8',
+            'icone'   => '♻️',
+        ],
+        [
+            'nom'     => 'Actu-Environnement Déchets',
+            'url'     => 'https://www.actu-environnement.com/flux/rss/dechets/',
+            'couleur' => '#dc2626',
+            'icone'   => '🗑️',
+        ],
+        [
+            'nom'     => 'Actu-Environnement Agroécologie',
+            'url'     => 'https://www.actu-environnement.com/flux/rss/agroecologie/',
+            'couleur' => '#7c3aed',
+            'icone'   => '🌱',
         ],
     ];
 

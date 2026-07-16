@@ -221,7 +221,7 @@
                     @endif
                     @auth
                         @if(Auth::id() !== $annonce->user_id)
-                        <a href="{{ route('messages.ouvrir', $annonce->user) }}" class="btn btn-outline-primary w-100 rounded-pill">
+                        <a href="{{ route('messages.ouvrir', $annonce->user) }}?annonce_id={{ $annonce->id }}" class="btn btn-outline-primary w-100 rounded-pill">
                             <i class="fas fa-comments me-2"></i>Envoyer un message
                         </a>
                         @endif

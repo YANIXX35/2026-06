@@ -101,6 +101,14 @@
             </div>
         </div>
     </div>
+    <div class="stat-card" style="--sc-clr:linear-gradient(90deg,#4f46e5,#818cf8);">
+        <div class="stat-icon" style="background:#e0e7ff;"><i class="fas fa-robot" style="color:#4f46e5;"></i></div>
+        <div>
+            <div class="stat-value">{{ $stats['questions_chatbot'] }}</div>
+            <div class="stat-label">Questions au chatbot IA</div>
+            <div class="stat-trend up">Total posées</div>
+        </div>
+    </div>
 </div>
 
 {{-- CHART + SIGNALEMENTS --}}
