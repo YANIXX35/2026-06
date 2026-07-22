@@ -93,31 +93,88 @@ class BlogController extends Controller
             if (!$rss || !isset($rss->channel->item)) continue;
 
             foreach ($rss->channel->item as $item) {
-                $description = strip_tags((string) ($item->description ?? ''));
-                $description = html_entity_decode($description, ENT_QUOTES, 'UTF-8');
-                $description = trim(mb_substr($description, 0, 200));
-                if (mb_strlen($description) === 200) $description .= '…';
+                // 1. Contenu HTML brut
+                $rawContent = (string) ($item->description ?? '');
+                $contentEncoded = (string) $item->children('content', true)->encoded;
+                if (!empty($contentEncoded)) {
+                    $rawContent .= ' ' . $contentEncoded;
+                }
 
-                $date = strtotime((string) ($item->pubDate ?? '')) ?: 0;
+                // Décodage des entités HTML en premier pour révéler les balises <img> et nettoyer le texte
+                $rawHtml = html_entity_decode($rawContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-                $image     = null;
-                $enclosure = $item->enclosure ?? null;
-                if ($enclosure) {
-                    $type = (string) ($enclosure['type'] ?? '');
-                    if (str_starts_with($type, 'image/')) {
-                        $image = (string) ($enclosure['url'] ?? null);
+                // 2. Extraction d'Image
+                $image = null;
+
+                // a) Balise <enclosure>
+                if (isset($item->enclosure)) {
+                    $url = (string) ($item->enclosure['url'] ?? '');
+                    if (!empty($url)) {
+                        $image = $url;
                     }
                 }
-                $media = $item->children('media', true);
-                if (!$image && isset($media->thumbnail)) {
-                    $image = (string) ($media->thumbnail['url'] ?? '');
-                }
-                if (!$image && isset($media->content)) {
-                    $image = (string) ($media->content['url'] ?? '');
+
+                // b) Namespace media:content ou media:thumbnail
+                if (!$image) {
+                    $media = $item->children('media', true);
+                    if (isset($media->content)) {
+                        $image = (string) ($media->content['url'] ?? $media->content->attributes()->url ?? '');
+                    }
+                    if (!$image && isset($media->thumbnail)) {
+                        $image = (string) ($media->thumbnail['url'] ?? $media->thumbnail->attributes()->url ?? '');
+                    }
                 }
 
+                // c) Namespace itunes:image
+                if (!$image) {
+                    $itunes = $item->children('itunes', true);
+                    if (isset($itunes->image)) {
+                        $image = (string) ($itunes->image->attributes()->href ?? '');
+                    }
+                }
+
+                // d) Extraction par Regex depuis la balise <img src="..."> dans le corps de l'article
+                if (!$image && preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $rawHtml, $matches)) {
+                    $image = $matches[1];
+                }
+
+                // Normalisation des URLs relatives d'images
+                if ($image) {
+                    if (str_starts_with($image, '//')) {
+                        $image = 'https:' . $image;
+                    } elseif (str_starts_with($image, '/')) {
+                        $parsedUrl = parse_url($source['url']);
+                        $host = ($parsedUrl['scheme'] ?? 'https') . '://' . ($parsedUrl['host'] ?? '');
+                        $image = $host . $image;
+                    }
+                }
+
+                // e) Image thématique par défaut si aucune n'est présente dans le flux RSS
+                if (!$image) {
+                    $fallbacks = [
+                        'ADEME Agriculture & Alimentation' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80',
+                        'ADEME Économie circulaire'        => 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80',
+                        'Actu-Environnement Déchets'       => 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=800&q=80',
+                        'Actu-Environnement Agroécologie'  => 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=800&q=80',
+                    ];
+                    $image = $fallbacks[$source['nom']] ?? 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=800&q=80';
+                }
+
+                // 3. Nettoyage de la description texte (Sans balises HTML)
+                $cleanText   = strip_tags($rawHtml);
+                $cleanText   = preg_replace('/\s+/', ' ', $cleanText);
+                $cleanText   = trim($cleanText);
+                $description = mb_substr($cleanText, 0, 180);
+                if (mb_strlen($cleanText) > 180) {
+                    $description .= '…';
+                }
+
+                $title = html_entity_decode(strip_tags((string) $item->title), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $title = preg_replace('/\s+/', ' ', trim($title));
+                $date  = strtotime((string) ($item->pubDate ?? '')) ?: 0;
+
                 $all[] = [
-                    'titre'       => html_entity_decode(strip_tags((string) $item->title), ENT_QUOTES, 'UTF-8'),
+                    'titre'       => $title,
                     'lien'        => (string) ($item->link ?? '#'),
                     'description' => $description,
                     'date'        => $date,
