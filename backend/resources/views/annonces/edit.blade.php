@@ -251,17 +251,18 @@
             style="color:#888;text-decoration:none;font-size:.82rem;padding:12px 16px;">
             Annuler
         </a>
-        <div style="margin-left:auto;">
-            <form action="{{ route('annonces.destroy', $annonce) }}" method="POST" onsubmit="return confirm('Supprimer définitivement cet article ?');">
-                @csrf @method('DELETE')
-                <button type="submit"
-                    style="background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca;padding:10px 24px;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;">
-                    <i class="fas fa-trash me-2"></i>Supprimer l'article
-                </button>
-            </form>
-        </div>
     </div>
 </form>
+
+<div style="margin-top:-44px;display:flex;justify-content:flex-end;">
+    <form action="{{ route('annonces.destroy', $annonce) }}" method="POST" onsubmit="return confirm('Supprimer définitivement cet article ?');">
+        @csrf @method('DELETE')
+        <button type="submit"
+            style="background:#fef2f2;color:#ef4444;border:1.5px solid #fecaca;padding:10px 24px;border-radius:50px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;">
+            <i class="fas fa-trash me-2"></i>Supprimer l'article
+        </button>
+    </form>
+</div>
 @endsection
 
 @section('right-panel')

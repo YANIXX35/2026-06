@@ -173,7 +173,7 @@ class AnnonceController extends Controller
             'latitude'        => 'nullable|numeric|between:-90,90',
             'longitude'       => 'nullable|numeric|between:-180,180',
             'date_expiration' => 'nullable|date',
-            'statut'          => 'required|in:disponible,reservé,expiré',
+            'statut'          => 'nullable|in:disponible,reservé,expiré,disponible,supprimé',
             'photos.*'        => 'nullable|image|max:2048',
         ]);
 
@@ -181,6 +181,9 @@ class AnnonceController extends Controller
             $validated['prix'] = 0;
         }
         $validated['prix'] = $validated['prix'] ?? 0;
+        if (empty($validated['statut'])) {
+            $validated['statut'] = $annonce->statut ?: 'disponible';
+        }
 
         $annonce->update($validated);
 
