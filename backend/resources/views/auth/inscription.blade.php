@@ -268,7 +268,7 @@
 
                 <label class="cgu-row">
                     <input type="checkbox" required>
-                    <span>J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a> d'AntiGaspiCI.</span>
+                    <span>J'accepte les <a href="{{ route('cgu') }}" target="_blank" rel="noopener">conditions d'utilisation</a> et la <a href="{{ route('confidentialite') }}" target="_blank" rel="noopener">politique de confidentialité</a> d'AntiGaspiCI.</span>
                 </label>
 
                 <button type="submit" class="btn-submit">

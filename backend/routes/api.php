@@ -7,9 +7,12 @@ use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\CommandeApiController;
 use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Api\FournisseurApiController;
-use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\WhatsAppWebhookController;
 
 // ── ROUTES PUBLIQUES ──────────────────────────────────────────────
+Route::get('/whatsapp/webhook',  [WhatsAppWebhookController::class, 'verify']);
+Route::post('/whatsapp/webhook', [WhatsAppWebhookController::class, 'receive']);
+
 Route::post('/auth/login',        [AuthApiController::class, 'login']);
 Route::post('/auth/register',     [AuthApiController::class, 'register']);
 Route::post('/auth/verify-otp',   [AuthApiController::class, 'verifierOtp']);

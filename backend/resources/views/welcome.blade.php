@@ -706,7 +706,7 @@
             <div class="impact-pill">
                 <div class="ip-ico">🌱</div>
                 <div class="ip-txt">
-                    <strong>12.4 tonnes</strong>de CO2 évité ce mois
+                    <strong>{{ number_format($co2EviteTonnes, 1, ',', ' ') }} tonnes</strong>de CO2 évité au total
                 </div>
             </div>
         </div>
@@ -716,9 +716,9 @@
 <!-- ── TICKER ── -->
 <div class="ticker">
     <div class="ticker-track">
-        @php $ticks = ['Fruits & Légumes','Produits Laitiers','Pain & Pâtisserie','Céréales','Viande & Poisson','Boissons','Épicerie','Alimentation Animale','Fruits & Légumes','Produits Laitiers','Pain & Pâtisserie','Céréales','Viande & Poisson','Boissons','Épicerie','Alimentation Animale']; @endphp
-        @foreach($ticks as $t)
-            <span class="t-item"><span class="t-dot"></span>{{ $t }}</span>
+        {{-- Categories reelles (table categories), repetees 2x pour le defilement en boucle --}}
+        @foreach($allCats->concat($allCats) as $cat)
+            <span class="t-item"><span class="t-dot"></span>{{ $cat->nom }}</span>
         @endforeach
     </div>
 </div>
@@ -929,10 +929,10 @@
         </div>
         <div class="impact-grid">
             @foreach([
-                ['e'=>'⚖️','n'=>'12.4 t','l'=>'de CO2 évité'],
-                ['e'=>'🌾','n'=>'8 500 kg','l'=>'d\'aliments sauvés'],
-                ['e'=>'🍽️','n'=>'14 200','l'=>'repas équivalents'],
-                ['e'=>'💰','n'=>'4.2 M F','l'=>'économisés'],
+                ['e'=>'⚖️','n'=>number_format($co2EviteTonnes, 1, ',', ' ').' t','l'=>'de CO2 évité (estimation)'],
+                ['e'=>'🌾','n'=>number_format($kgSauves, 0, ',', ' ').' kg','l'=>'d\'aliments sauvés'],
+                ['e'=>'🍽️','n'=>number_format($repasEquivalents, 0, ',', ' '),'l'=>'repas équivalents (estimation)'],
+                ['e'=>'💰','n'=>number_format($fcfaEconomises, 0, ',', ' ').' F','l'=>'valorisés en FCFA'],
             ] as $imp)
             <div class="imp-card reveal">
                 <div class="imp-em">{{ $imp['e'] }}</div>
@@ -1038,18 +1038,22 @@
         <div class="f-col">
             <h5>Alertes & Actus</h5>
             <p style="font-size:.8rem;line-height:1.62;margin-bottom:10px;color:#6b7280;">Recevez les meilleures offres près de chez vous.</p>
-            <div class="nl-wrap">
-                <input type="email" class="nl-input" placeholder="votre@email.com">
-                <button class="nl-btn">OK</button>
-            </div>
+            @if(session('newsletter_success'))
+                <p style="font-size:.78rem;color:#22c55e;font-weight:700;margin-bottom:8px;">{{ session('newsletter_success') }}</p>
+            @endif
+            <form class="nl-wrap" action="{{ route('newsletter.store') }}" method="POST">
+                @csrf
+                <input type="email" name="email" class="nl-input" placeholder="votre@email.com" required>
+                <button type="submit" class="nl-btn">OK</button>
+            </form>
         </div>
     </div>
     <div class="footer-bot">
         <div class="f-copy">© {{ date('Y') }} AntiGaspiCI — Côte d'Ivoire. Tous droits réservés.</div>
         <div class="f-legal">
-            <a href="#">Mentions légales</a>
-            <a href="#">Confidentialité</a>
-            <a href="#">CGU</a>
+            <a href="{{ route('mentions-legales') }}">Mentions légales</a>
+            <a href="{{ route('confidentialite') }}">Confidentialité</a>
+            <a href="{{ route('cgu') }}">CGU</a>
         </div>
     </div>
 </footer>

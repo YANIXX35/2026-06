@@ -8,7 +8,7 @@ echo "==> Construction du fichier .env depuis les variables Render..."
 printf 'APP_NAME=%s\n'    "${APP_NAME:-AntiGaspiCI}"
 printf 'APP_ENV=%s\n'     "${APP_ENV:-production}"
 printf 'APP_KEY=%s\n'     "${APP_KEY}"
-printf 'APP_DEBUG=%s\n'   "${APP_DEBUG:-true}"
+printf 'APP_DEBUG=%s\n'   "${APP_DEBUG:-false}"
 printf 'APP_URL=%s\n'     "${APP_URL:-http://localhost}"
 printf 'APP_LOCALE=fr\n'
 printf 'APP_FALLBACK_LOCALE=fr\n'
@@ -97,4 +97,13 @@ echo '==> Demarrage du scheduler (expiration annonces, etc.)...'
 php artisan schedule:work --no-interaction > /dev/null 2>&1 &
 
 echo '==> Demarrage du serveur PHP...'
+# `php artisan serve` est mono-thread par defaut : une requete lente (ex. le chat
+# IA qui garde une connexion streaming ouverte) bloque toutes les autres, ce qui
+# peut expliquer un timeout observe sur /annonces/{id}. PHP_CLI_SERVER_WORKERS
+# fait tourner plusieurs workers en parallele (supporte nativement par le serveur
+# CLI de PHP depuis PHP 8.0 / Laravel 9.3+). Ce n'est toujours pas un serveur de
+# production a part entiere (pas de reverse proxy, pas de gestion fine des
+# ressources) : a remplacer par php-fpm+nginx ou FrankenPHP/Octane apres la
+# soutenance si le trafic le justifie.
+export PHP_CLI_SERVER_WORKERS=${PHP_CLI_SERVER_WORKERS:-4}
 exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}

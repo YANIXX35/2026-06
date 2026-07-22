@@ -59,7 +59,12 @@ return [
 
     'storage' => [
         'database' => [
-            'connection' => env('TELESCOPE_DB_CONNECTION', 'pgsql'),
+            // Suit la connexion par defaut de l'app plutot qu'un driver code en dur :
+            // sur un poste local sans pdo_pgsql, forcer 'pgsql' ici faisait echouer
+            // (silencieusement, en boucle a chaque requete) le stockage des entrees
+            // Telescope, avec un cout de log tres important par page (plusieurs
+            // dizaines de secondes observees sur /annonces).
+            'connection' => env('TELESCOPE_DB_CONNECTION', env('DB_CONNECTION', 'pgsql')),
             'chunk' => 1000,
         ],
     ],

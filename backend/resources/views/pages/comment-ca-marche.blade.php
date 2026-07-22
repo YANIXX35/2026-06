@@ -304,11 +304,11 @@
         </div>
         <div class="faq-item reveal">
             <button class="faq-q" onclick="toggleFaq(this)">L'inscription est-elle vraiment gratuite ? <i class="fas fa-chevron-down"></i></button>
-            <div class="faq-a"><p>Oui, totalement gratuite et sans engagement. Créez votre compte, publiez des annonces et contactez des vendeurs sans frais cachés. AntiGaspiCI est financé par des partenaires institutionnels engagés dans la réduction du gaspillage alimentaire.</p></div>
+            <div class="faq-a"><p>L'inscription et la mise en relation sont totalement gratuites et sans engagement : créez votre compte, publiez des annonces et contactez des vendeurs sans frais cachés. Pour les annonces en don, la transaction elle-même est également gratuite. Pour les annonces à prix réduit, le paiement se fait dans l'app via Wave ou Moov Money au moment du retrait.</p></div>
         </div>
         <div class="faq-item reveal">
             <button class="faq-q" onclick="toggleFaq(this)">Comment fonctionne le paiement ? <i class="fas fa-chevron-down"></i></button>
-            <div class="faq-a"><p>Les transactions se font directement entre acheteur et vendeur. Vous pouvez payer en espèces lors de la collecte, par Mobile Money (Orange Money, MTN MoMo) ou tout autre moyen convenu entre les deux parties.</p></div>
+            <div class="faq-a"><p>Pour une annonce en don, il n'y a rien à payer. Pour une annonce à prix réduit, vous réglez dans le panier via Wave ou Moov Money. Dans cette version de démonstration académique, le paiement mobile est simulé (aucun débit réel n'est effectué) : l'intégration à une passerelle de paiement réelle n'est pas encore branchée.</p></div>
         </div>
         <div class="faq-item reveal">
             <button class="faq-q" onclick="toggleFaq(this)">Combien de temps reste une annonce en ligne ? <i class="fas fa-chevron-down"></i></button>

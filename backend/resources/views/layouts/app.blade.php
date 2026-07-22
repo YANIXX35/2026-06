@@ -23,12 +23,12 @@
     <div class="container-fluid px-5 d-none border-bottom d-lg-block bg-white">
         <div class="row gx-0 align-items-center" style="height:45px;">
             <div class="col-lg-4 text-start">
-                <a href="#" class="text-muted me-2 small">Aide</a> /
-                <a href="#" class="text-muted mx-2 small">Support</a> /
+                <a href="{{ route('comment-ca-marche') }}" class="text-muted me-2 small">Aide</a> /
+                <a href="{{ route('contact') }}" class="text-muted mx-2 small">Support</a> /
                 <a href="{{ route('contact') }}" class="text-muted ms-2 small">Contact</a>
             </div>
             <div class="col-lg-4 text-center">
-                <small class="text-dark"><i class="fas fa-phone-alt me-1 text-primary"></i>(+225) 07 00 00 00 00</small>
+                <small class="text-dark"><i class="fas fa-phone-alt me-1 text-primary"></i>(+225) 07 00 00 00 00 (exemple)</small>
             </div>
             <div class="col-lg-4 text-end">
                 @auth
@@ -260,7 +260,7 @@
                 <div class="col-md-6 col-lg-3">
                     <h4 class="text-primary mb-4">Contact</h4>
                     <p class="text-light small"><i class="fas fa-map-marker-alt me-2 text-primary"></i>Abidjan, Plateau, Côte d'Ivoire</p>
-                    <p class="text-light small"><i class="fas fa-phone me-2 text-primary"></i>(+225) 07 00 00 00 00</p>
+                    <p class="text-light small"><i class="fas fa-phone me-2 text-primary"></i>(+225) 07 00 00 00 00 (exemple)</p>
                     <p class="text-light small"><i class="fas fa-envelope me-2 text-primary"></i>contact@antigaspi-ci.com</p>
                 </div>
             </div>

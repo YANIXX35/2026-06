@@ -46,6 +46,34 @@ class WelcomeController extends Controller
             }
         });
 
-        return view('welcome', array_merge($stats, compact('shopAnnonces', 'allCats')));
+        // Indicateurs d'impact calcules a partir des reservations reellement completees
+        // (seule transition de statut qui signifie un echange effectivement realise).
+        $impact = Cache::remember('welcome_impact', 300, function () {
+            try {
+                $completees = Reservation::with('annonce')->where('statut', 'complétée')->get();
+
+                $kgSauves = $completees
+                    ->filter(fn($r) => $r->annonce && $r->annonce->unite === 'kg')
+                    ->sum('quantite_demandee');
+
+                $fcfaEconomises = $completees
+                    ->filter(fn($r) => $r->annonce && $r->annonce->type_offre !== 'don')
+                    ->sum(fn($r) => $r->quantite_demandee * $r->annonce->prix);
+
+                return [
+                    'kgSauves'         => (float) $kgSauves,
+                    // ~0,4 kg par repas et ~2,5 kg CO2e evites par kg de nourriture non gaspillee :
+                    // ordres de grandeur couramment utilises pour ce type de communication (ADEME),
+                    // a affiner si des donnees plus precises sont disponibles.
+                    'repasEquivalents' => (int) round($kgSauves / 0.4),
+                    'co2EviteTonnes'    => round($kgSauves * 2.5 / 1000, 1),
+                    'fcfaEconomises'    => (float) $fcfaEconomises,
+                ];
+            } catch (\Exception $e) {
+                return ['kgSauves' => 0, 'repasEquivalents' => 0, 'co2EviteTonnes' => 0, 'fcfaEconomises' => 0];
+            }
+        });
+
+        return view('welcome', array_merge($stats, $impact, compact('shopAnnonces', 'allCats')));
     }
 }

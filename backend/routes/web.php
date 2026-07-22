@@ -23,6 +23,10 @@ Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('home');
 Route::get('/comment-ca-marche', fn() => view('pages.comment-ca-marche'))->name('comment-ca-marche');
 Route::get('/contact', fn() => view('pages.contact'))->name('contact');
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('contact.send');
+Route::get('/mentions-legales', fn() => view('pages.mentions-legales'))->name('mentions-legales');
+Route::get('/confidentialite', fn() => view('pages.confidentialite'))->name('confidentialite');
+Route::get('/cgu', fn() => view('pages.cgu'))->name('cgu');
+Route::post('/newsletter', [App\Http\Controllers\NewsletterController::class, 'store'])->name('newsletter.store')->middleware('throttle:10,1');
 
 // ─── AUTHENTIFICATION ──────────────────────────────────────────
 Route::middleware('guest')->group(function () {

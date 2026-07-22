@@ -1,4 +1,10 @@
 ﻿services:
+  # NOTE: le nom "antigaspi-2026" déclaré ci-dessous ne correspond pas au service
+  # réellement provisionné sur Render, dont l'hôte est two026-06-3.onrender.com
+  # (auto-généré par Render à partir du nom du dépôt GitHub "2026-06").
+  # L'app mobile (2026-06/mobile/src/constants/index.ts) pointe vers two026-06-3.onrender.com.
+  # Si ce blueprint est réutilisé pour reprovisionner le service, mettre à jour
+  # DNS/APP_URL/API_URL en conséquence.
   - type: web
     name: antigaspi-2026
     env: docker
@@ -8,7 +14,7 @@
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: "true"
+        value: "false"
       - key: APP_KEY
         sync: false
       - key: APP_URL

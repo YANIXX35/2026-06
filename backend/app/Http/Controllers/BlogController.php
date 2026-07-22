@@ -39,9 +39,9 @@ class BlogController extends Controller
             return $this->fetchAllFeeds();
         });
 
-        $categories = collect($this->sources)->pluck('nom');
+        $sources = $this->sources;
 
-        return view('blog.index', compact('articles', 'categories'));
+        return view('blog.index', compact('articles', 'sources'));
     }
 
     public function refresh()

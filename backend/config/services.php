@@ -55,4 +55,5 @@ return [
         'redirect'      => env('FACEBOOK_REDIRECT_URI', '/auth/facebook/callback'),
     ],
 
+    'commission_rate' => (float) env('COMMISSION_RATE', 0.15),
 ];

@@ -88,6 +88,7 @@ class CommandeController extends Controller
                     'prix_unitaire'  => $annonce->type_offre === 'don' ? 0 : $annonce->prix,
                     'statut'         => 'en_attente',
                 ]);
+                $annonce->update(['statut' => 'reservé']);
             }
 
             foreach ($parFournisseur as $fournisseurId => $fournisseurItems) {
@@ -116,6 +117,11 @@ class CommandeController extends Controller
 
         DB::transaction(function () use ($commande) {
             $commande->update(['statut' => 'annulée']);
+            foreach ($commande->items()->with('annonce')->get() as $item) {
+                if ($item->annonce && $item->annonce->statut === 'reservé') {
+                    $item->annonce->update(['statut' => 'disponible']);
+                }
+            }
         });
 
         return back()->with('success', 'Commande annulée.');
@@ -156,6 +162,9 @@ class CommandeController extends Controller
 
         DB::transaction(function () use ($item) {
             $item->update(['statut' => 'refusé']);
+            if ($item->annonce && $item->annonce->statut === 'reservé') {
+                $item->annonce->update(['statut' => 'disponible']);
+            }
         });
 
         return back()->with('success', 'Article refusé.');

@@ -378,18 +378,22 @@
         <div class="ff-nl">
             <h5>Alertes & Actus</h5>
             <p>Recevez les meilleures offres près de chez vous.</p>
-            <div class="nl-row">
-                <input type="email" class="nl-inp" placeholder="votre@email.com">
-                <button class="nl-btn">OK</button>
-            </div>
+            @if(session('newsletter_success'))
+                <p style="font-size:.78rem;color:#22c55e;font-weight:700;margin-bottom:8px;">{{ session('newsletter_success') }}</p>
+            @endif
+            <form class="nl-row" action="{{ route('newsletter.store') }}" method="POST">
+                @csrf
+                <input type="email" name="email" class="nl-inp" placeholder="votre@email.com" required>
+                <button type="submit" class="nl-btn">OK</button>
+            </form>
         </div>
     </div>
     <div class="ff-bot">
         <div class="ff-copy">© {{ date('Y') }} AntiGaspiCI — Côte d'Ivoire. Tous droits réservés.</div>
         <div class="ff-legal">
-            <a href="#">Mentions légales</a>
-            <a href="#">Confidentialité</a>
-            <a href="#">CGU</a>
+            <a href="{{ route('mentions-legales') }}">Mentions légales</a>
+            <a href="{{ route('confidentialite') }}">Confidentialité</a>
+            <a href="{{ route('cgu') }}">CGU</a>
         </div>
     </div>
 </footer>

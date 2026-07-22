@@ -124,24 +124,24 @@
                 </div>
 
                 {{-- Infos paiement --}}
-                @if(->mode_paiement)
+                @if($commande->mode_paiement)
                 <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f0f0f0;">
                     <div style="font-size:.73rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Paiement</div>
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                        @if(->mode_paiement === 'wave')
+                        @if($commande->mode_paiement === 'wave')
                             <span class="pill" style="background:#fff8f3;color:#c2410c;border:1px solid #fed7aa;"><i class="fas fa-bolt"></i> Wave Money</span>
-                        @elseif(->mode_paiement === 'moov_money')
+                        @elseif($commande->mode_paiement === 'moov_money')
                             <span class="pill" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;"><i class="fas fa-mobile-alt"></i> Moov Money</span>
                         @endif
-                        @if(->statut_paiement === 'payé')
+                        @if($commande->statut_paiement === 'payé')
                             <span class="pill pill-green"><span class="pill-dot"></span>Payé</span>
                         @endif
                     </div>
-                    @if(->telephone_paiement)
-                    <div style="font-size:.78rem;color:#9ca3af;margin-top:6px;"><i class="fas fa-phone me-1"></i>+225 {{ ->telephone_paiement }}</div>
+                    @if($commande->telephone_paiement)
+                    <div style="font-size:.78rem;color:#9ca3af;margin-top:6px;"><i class="fas fa-phone me-1"></i>+225 {{ $commande->telephone_paiement }}</div>
                     @endif
-                    @if(->reference_paiement)
-                    <div style="font-size:.78rem;color:#9ca3af;margin-top:4px;"><i class="fas fa-hashtag me-1"></i>Réf : <span style="font-family:monospace;font-weight:600;">{{ ->reference_paiement }}</span></div>
+                    @if($commande->reference_paiement)
+                    <div style="font-size:.78rem;color:#9ca3af;margin-top:4px;"><i class="fas fa-hashtag me-1"></i>Réf : <span style="font-family:monospace;font-weight:600;">{{ $commande->reference_paiement }}</span></div>
                     @endif
                 </div>
                 @endif

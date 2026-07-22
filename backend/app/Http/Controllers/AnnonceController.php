@@ -34,15 +34,17 @@ class AnnonceController extends Controller
             $query->where('adresse_collecte', 'like', '%' . $request->ville . '%');
         }
 
-        // Urgents (expire dans 24h) remontés en premier (syntaxe PostgreSQL)
+        // Urgents (expire dans 24h) remontés en premier. Bornes passées en
+        // parametres lies plutot que NOW()/INTERVAL (specifiques a PostgreSQL)
+        // pour rester compatible avec les autres drivers (ex. MySQL en local).
         $annonces = $query->orderByRaw("
             CASE
                 WHEN date_expiration IS NOT NULL
-                     AND date_expiration > NOW()
-                     AND date_expiration <= NOW() + INTERVAL '24 hours'
+                     AND date_expiration > ?
+                     AND date_expiration <= ?
                 THEN 0 ELSE 1
             END ASC
-        ")->latest()->paginate(12);
+        ", [now(), now()->addHours(24)])->latest()->paginate(12);
         $categories = Categorie::all();
 
         $annoncesGeo = $annonces->filter(fn($a) => $a->latitude && $a->longitude)->map(fn($a) => [

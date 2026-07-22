@@ -111,6 +111,11 @@ select.form-ctrl{cursor:pointer;}
                 <div class="sec-tag" style="margin-bottom:20px;"><div class="sec-line"></div>Coordonnées<div class="sec-line"></div></div>
                 <h2 class="sec-title" style="font-size:1.6rem;margin-bottom:24px;">Restons en <span class="hl">contact</span></h2>
 
+                <p style="font-size:.78rem;color:var(--muted-2);margin-bottom:16px;">
+                    Coordonnées d'exemple pour ce prototype académique — le formulaire ci-contre reste le moyen de
+                    contact fonctionnel (envoi réel par e-mail).
+                </p>
+
                 <div class="info-cards">
                     <div class="info-card">
                         <div class="info-ico" style="background:#f0fdf4;color:var(--green);"><i class="fas fa-map-marker-alt"></i></div>
@@ -122,8 +127,8 @@ select.form-ctrl{cursor:pointer;}
                     <div class="info-card">
                         <div class="info-ico" style="background:#fff7ed;color:var(--orange);"><i class="fas fa-phone-alt"></i></div>
                         <div class="info-body">
-                            <h4>Téléphone &amp; WhatsApp</h4>
-                            <p><a href="tel:+2250700000000">+225 07 00 00 00 00</a></p>
+                            <h4>Téléphone &amp; WhatsApp (exemple)</h4>
+                            <p>+225 07 00 00 00 00</p>
                         </div>
                     </div>
                     <div class="info-card">

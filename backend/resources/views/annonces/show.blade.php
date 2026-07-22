@@ -44,7 +44,19 @@
                             </span>
                         </div>
 
-                        <h2 class="fw-bold mb-3">{{ $annonce->titre }}</h2>
+                        <div class="alert alert-warning border-start border-warning border-4 rounded-3 mb-4 shadow-sm">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt text-warning fs-3 me-3"></i>
+                                <div>
+                                    <strong class="d-block text-dark mb-1">🛡️ Anti-Arnaque & Sécurité des Transactions</strong>
+                                    <small class="text-secondary d-block">
+                                        Effectuez vos réservations et paiements uniquement sur l'application AntiGaspiCI. Vos échanges WhatsApp transitent par notre Proxy officiel pour garantir vos preuves. 
+                                        <strong>Ne faites aucun virement direct hors plateforme sans utiliser le système de Code PIN Séquestre.</strong>
+                                        <a href="{{ route('cgu') }}" class="text-primary text-decoration-underline ms-1">En savoir plus (CGU)</a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="row g-3 mb-4">
                             <div class="col-sm-4">
@@ -234,9 +246,9 @@
                 <div class="card-body p-4">
                     <h6 class="fw-semibold mb-3"><i class="fas fa-share-alt me-2 text-primary"></i>Partager</h6>
                     <div class="d-flex gap-2">
-                        <a href="#" class="btn btn-primary btn-sm rounded-circle"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="btn btn-info btn-sm rounded-circle text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="btn btn-success btn-sm rounded-circle"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm rounded-circle"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($annonce->titre) }}" target="_blank" rel="noopener" class="btn btn-info btn-sm rounded-circle text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="https://wa.me/?text={{ urlencode($annonce->titre.' - '.url()->current()) }}" target="_blank" rel="noopener" class="btn btn-success btn-sm rounded-circle"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
             </div>

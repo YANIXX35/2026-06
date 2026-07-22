@@ -1,6 +1,6 @@
 @extends('layouts.front')
-@section('title','Blog Santé & Alimentation')
-@section('description','Actualités nutrition, santé et alimentation durable — agrégées en temps réel depuis les meilleures sources.')
+@section('title','Blog Gaspillage Alimentaire & Économie Circulaire')
+@section('description','Actualités agriculture, économie circulaire et lutte contre le gaspillage alimentaire — agrégées en temps réel depuis ADEME et Actu-Environnement.')
 
 @push('styles')
 <style>
@@ -126,8 +126,8 @@
             <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#4ade80"/></svg>
             Mis à jour toutes les heures
         </div>
-        <h1>Blog <span>Santé</span> &amp; Alimentation</h1>
-        <p>Actualités nutrition, alimentation durable et santé — agrégées en temps réel depuis les meilleures sources internationales.</p>
+        <h1>Blog <span>Gaspillage</span> Alimentaire</h1>
+        <p>Actualités agriculture, économie circulaire et lutte contre le gaspillage alimentaire — agrégées en temps réel depuis ADEME et Actu-Environnement.</p>
     </div>
     <svg class="page-hero-wave" viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg">
         <path d="M0,32 C360,56 1080,0 1440,32 L1440,56 L0,56 Z" fill="#f8fafc"/>
@@ -138,9 +138,9 @@
 <div class="sources-bar">
     <span class="sources-label">Sources :</span>
     <a href="{{ route('blog') }}" class="source-pill" id="pill-all">Toutes</a>
-    @foreach([['OMS','#1d4ed8'],['Le Monde Santé','#dc2626'],['Futura Santé','#7c3aed'],['Santé Magazine','#059669']] as [$nom,$couleur])
-    <a href="{{ route('blog') }}?source={{ urlencode($nom) }}" class="source-pill" style="color:{{ $couleur }};" id="pill-{{ Str::slug($nom) }}">
-        <span class="source-dot" style="background:{{ $couleur }};"></span>{{ $nom }}
+    @foreach($sources as $src)
+    <a href="{{ route('blog') }}?source={{ urlencode($src['nom']) }}" class="source-pill" style="color:{{ $src['couleur'] }};" id="pill-{{ Str::slug($src['nom']) }}">
+        <span class="source-dot" style="background:{{ $src['couleur'] }};"></span>{{ $src['nom'] }}
     </a>
     @endforeach
     @auth

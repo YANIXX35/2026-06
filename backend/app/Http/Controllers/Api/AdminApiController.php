@@ -26,12 +26,14 @@ class AdminApiController extends Controller
 
         return response()->json([
             'stats' => [
-                'utilisateurs'  => User::where('role', '!=', 'admin')->count(),
-                'annonces'      => Annonce::count(),
-                'commandes'     => Commande::count(),
-                'signalements'  => Signalement::where('statut', 'en_attente')->count(),
-                'fournisseurs'  => User::where('role', 'fournisseur')->count(),
-                'acheteurs'     => User::where('role', 'acheteur')->count(),
+                'utilisateurs'        => User::where('role', '!=', 'admin')->count(),
+                'annonces'            => Annonce::count(),
+                'commandes'           => Commande::count(),
+                'signalements'        => Signalement::where('statut', 'en_attente')->count(),
+                'fournisseurs'        => User::where('role', 'fournisseur')->count(),
+                'acheteurs'           => User::where('role', 'acheteur')->count(),
+                'chiffre_affaires'    => (float) Commande::where('statut_paiement', 'payé')->sum('montant_total'),
+                'commissions_totales' => (float) Commande::where('statut_paiement', 'payé')->sum('montant_commission'),
             ],
             'derniers_utilisateurs' => User::latest()->take(5)->get(['id', 'nom', 'prenom', 'email', 'role', 'statut']),
             'dernieres_annonces'    => Annonce::with('user:id,nom,prenom', 'categorie:id,nom')

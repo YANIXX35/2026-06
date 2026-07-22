@@ -70,32 +70,45 @@ class CommandeApiController extends Controller
                 }
             }
 
-            $total     = $cartItems->sum(fn($i) => $i->sousTotal());
-            $reference = 'AGC-' . strtoupper(Str::random(8));
+            $total             = $cartItems->sum(fn($i) => $i->sousTotal());
+            $commissionTaux    = (float) config('services.commission_rate', 0.15);
+            $commissionTotal   = round($total * $commissionTaux, 2);
+            $montantNetTotal   = round($total - $commissionTotal, 2);
+            $reference         = 'AGC-' . strtoupper(Str::random(8));
 
             $commande = Commande::create([
-                'user_id'             => $userId,
-                'statut'              => 'confirmée',
-                'montant_total'       => $total,
-                'adresse_livraison'   => $request->adresse_livraison,
-                'message'             => $request->message,
-                'mode_paiement'       => $request->mode_paiement,
-                'telephone_paiement'  => $request->telephone,
-                'reference_paiement'  => $reference,
-                'statut_paiement'     => $total > 0 ? 'payé' : 'gratuit',
+                'user_id'                 => $userId,
+                'statut'                  => 'confirmée',
+                'montant_total'           => $total,
+                'commission_taux'         => $commissionTaux,
+                'montant_commission'      => $commissionTotal,
+                'montant_net_fournisseur' => $montantNetTotal,
+                'adresse_livraison'       => $request->adresse_livraison,
+                'message'                 => $request->message,
+                'mode_paiement'           => $request->mode_paiement,
+                'telephone_paiement'      => $request->telephone,
+                'reference_paiement'      => $reference,
+                'statut_paiement'         => $total > 0 ? 'payé' : 'gratuit',
             ]);
 
             $parFournisseur = $cartItems->groupBy(fn($i) => $annonces->get($i->annonce_id)?->user_id);
 
             foreach ($cartItems as $item) {
-                $annonce = $annonces->get($item->annonce_id);
+                $annonce        = $annonces->get($item->annonce_id);
+                $prixUnitaire   = $annonce->type_offre === 'don' ? 0 : $annonce->prix;
+                $sousTotalItem  = $item->quantite * $prixUnitaire;
+                $itemCommission = round($sousTotalItem * $commissionTaux, 2);
+                $itemNet        = round($sousTotalItem - $itemCommission, 2);
+
                 CommandeItem::create([
-                    'commande_id'    => $commande->id,
-                    'annonce_id'     => $item->annonce_id,
-                    'fournisseur_id' => $annonce->user_id,
-                    'quantite'       => $item->quantite,
-                    'prix_unitaire'  => $annonce->type_offre === 'don' ? 0 : $annonce->prix,
-                    'statut'         => 'en_attente',
+                    'commande_id'        => $commande->id,
+                    'annonce_id'         => $item->annonce_id,
+                    'fournisseur_id'     => $annonce->user_id,
+                    'quantite'           => $item->quantite,
+                    'prix_unitaire'      => $prixUnitaire,
+                    'commission_montant' => $itemCommission,
+                    'montant_net'        => $itemNet,
+                    'statut'             => 'en_attente',
                 ]);
             }
 
