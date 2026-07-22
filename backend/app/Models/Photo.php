@@ -16,12 +16,12 @@ class Photo extends Model
 
     public function annonce() { return $this->belongsTo(Annonce::class); }
 
-    // Retourne toujours une URL complète cloud ou valide, évitant les 404 lors des redémarrages de conteneur
+    // Retourne toujours une URL complète (Cloud, Base64 DB ou fichier local valide)
     protected function url(): Attribute
     {
         return Attribute::get(function ($value) {
             if (!$value) return null;
-            if (str_starts_with($value, 'http')) return $value;
+            if (str_starts_with($value, 'http') || str_starts_with($value, 'data:image')) return $value;
 
             // Sur un serveur comme Render à stockage éphémère, si le fichier local n'existe plus :
             if (file_exists(public_path('storage/' . $value))) {

@@ -208,36 +208,32 @@ class AnnonceController extends Controller
 
     private function uploadImageCloud($file): string
     {
-        // 1. Tenter l'upload vers Cloudinary
+        // 1. Tenter l'upload vers Cloudinary si configuré
         try {
-            $uploaded = Cloudinary::upload($file->getRealPath(), [
-                'folder'          => 'antigasci/annonces',
-                'resource_type'   => 'image',
-                'transformation'  => [['quality' => 'auto', 'fetch_format' => 'auto']],
-            ]);
-            $url = $uploaded->getSecurePath();
-            if (!empty($url)) return $url;
-        } catch (\Throwable $e) {
-            Log::warning('Cloudinary upload failed, attempting ImgBB persistent fallback', ['error' => $e->getMessage()]);
-        }
-
-        // 2. Secours Cloud Persistant (ImgBB API) -> URL permanente indestructible sur Render
-        try {
-            $imgBbApiKey = env('IMGBB_API_KEY', '6d70057863e4b570585d2e2363146d97');
-            $response = \Illuminate\Support\Facades\Http::asForm()->timeout(10)->post('https://api.imgbb.com/1/upload', [
-                'key'   => $imgBbApiKey,
-                'image' => base64_encode(file_get_contents($file->getRealPath())),
-            ]);
-            if ($response->successful()) {
-                $data = $response->json();
-                $url  = $data['data']['url'] ?? null;
+            if (config('cloudinary.cloud_url') || env('CLOUDINARY_URL')) {
+                $uploaded = Cloudinary::upload($file->getRealPath(), [
+                    'folder'          => 'antigasci/annonces',
+                    'resource_type'   => 'image',
+                    'transformation'  => [['quality' => 'auto', 'fetch_format' => 'auto']],
+                ]);
+                $url = $uploaded->getSecurePath();
                 if (!empty($url)) return $url;
             }
         } catch (\Throwable $e) {
-            Log::warning('ImgBB upload failed, falling back to local storage', ['error' => $e->getMessage()]);
+            Log::warning('Cloudinary upload failed, switching to Base64 DB storage', ['error' => $e->getMessage()]);
         }
 
-        // 3. Fallback stockage local
+        // 2. Stockage Persistant Base64 en Base de Données (PostgreSQL)
+        // Les images stockées en Base de Données ne disparaissent JAMAIS lors des redéploiements sur Render !
+        try {
+            $mime = $file->getMimeType() ?: 'image/jpeg';
+            $base64 = base64_encode(file_get_contents($file->getRealPath()));
+            return 'data:' . $mime . ';base64,' . $base64;
+        } catch (\Throwable $e) {
+            Log::warning('Base64 conversion failed', ['error' => $e->getMessage()]);
+        }
+
+        // 3. Fallback disque local
         return $file->store('annonces', 'public');
     }
 }
