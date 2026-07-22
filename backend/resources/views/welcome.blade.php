@@ -817,11 +817,7 @@
             @endphp
             <div class="shop-card reveal">
                 <div class="s-img">
-                    @if($annonce->photoPrincipale)
-                        <img src="{{ $annonce->photoPrincipale->url }}" alt="{{ $annonce->titre }}" onerror="this.parentElement.innerHTML='<div class=\'s-emoji\'>{{ $annonce->categorie->icone ?? '🌿' }}</div>'">
-                    @else
-                        <div class="s-emoji">{{ $annonce->categorie->icone ?? '🌿' }}</div>
-                    @endif
+                    <img src="{{ $annonce->image_url }}" alt="{{ $annonce->titre }}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='{{ $annonce->default_image_by_category }}';">
                     <span class="s-type {{ $tCss[$annonce->type_offre] ?? 'type-don' }}">{{ $tLabel[$annonce->type_offre] ?? $annonce->type_offre }}</span>
                     @if($isUrgent)<span class="s-urgent"><i class="fas fa-fire"></i> {{ $annonce->heuresRestantes() }}h</span>@endif
                 </div>

@@ -23,13 +23,11 @@
                     @if($annonce->photos->count())
                         <div class="owl-carousel" id="photoCarousel">
                             @foreach($annonce->photos as $photo)
-                                <img src="{{ $photo->url }}" class="img-fluid w-100 rounded-top" style="max-height:400px;object-fit:cover;" alt="{{ $annonce->titre }}" onerror="this.style.display='none'">
+                                <img src="{{ $photo->url }}" class="img-fluid w-100 rounded-top" style="max-height:400px;object-fit:cover;" alt="{{ $annonce->titre }}" onerror="this.src='{{ $annonce->default_image_by_category }}';">
                             @endforeach
                         </div>
                     @else
-                        <div class="bg-light d-flex align-items-center justify-content-center rounded-top" style="height:300px;">
-                            <i class="fas fa-image fa-5x text-muted"></i>
-                        </div>
+                        <img src="{{ $annonce->image_url }}" class="img-fluid w-100 rounded-top" style="max-height:400px;object-fit:cover;" alt="{{ $annonce->titre }}" onerror="this.src='{{ $annonce->default_image_by_category }}';">
                     @endif
                     <div class="p-4">
                         @php

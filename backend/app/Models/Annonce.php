@@ -91,4 +91,47 @@ class Annonce extends Model
     {
         $this->increment('vues');
     }
+
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->photoPrincipale && !empty($this->photoPrincipale->url)) {
+            return $this->photoPrincipale->url;
+        }
+
+        if ($this->relationLoaded('photos') && $this->photos && $this->photos->count() > 0 && !empty($this->photos->first()->url)) {
+            return $this->photos->first()->url;
+        }
+
+        return $this->default_image_by_category;
+    }
+
+    public function getDefaultImageByCategoryAttribute(): string
+    {
+        $catNom = mb_strtolower($this->categorie?->nom ?? '');
+
+        if (str_contains($catNom, 'lait') || str_contains($catNom, 'fromage') || str_contains($catNom, 'yaourt')) {
+            return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'fruit') || str_contains($catNom, 'légume') || str_contains($catNom, 'legume')) {
+            return 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'boulangerie') || str_contains($catNom, 'pain') || str_contains($catNom, 'pâtisserie') || str_contains($catNom, 'patisserie')) {
+            return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'viande') || str_contains($catNom, 'poisson') || str_contains($catNom, 'boucherie')) {
+            return 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'boisson') || str_contains($catNom, 'jus')) {
+            return 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'épicerie') || str_contains($catNom, 'epicerie') || str_contains($catNom, 'riz') || str_contains($catNom, 'céréale') || str_contains($catNom, 'cereale')) {
+            return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'animal') || str_contains($catNom, 'élevage') || str_contains($catNom, 'elevage')) {
+            return 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=800&q=80';
+        }
+
+        // Image culinaire / nourriture générale de très haute qualité
+        return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+    }
 }

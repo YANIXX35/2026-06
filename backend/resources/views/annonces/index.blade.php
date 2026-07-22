@@ -345,18 +345,10 @@
             @endphp
             <div class="ann-card reveal">
                 <div class="ann-img">
-                    @if($annonce->photoPrincipale)
-                        <img src="{{ $annonce->photoPrincipale->url }}"
-                             alt="{{ $annonce->titre }}"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                        <div class="ann-img-placeholder" style="display:none">
-                            <span style="font-size:2.5rem">{{ $annonce->categorie->icone ?? '📦' }}</span>
-                        </div>
-                    @else
-                        <div class="ann-img-placeholder">
-                            <span style="font-size:2.5rem">{{ $annonce->categorie->icone ?? '📦' }}</span>
-                        </div>
-                    @endif
+                    <img src="{{ $annonce->image_url }}"
+                         alt="{{ $annonce->titre }}"
+                         style="width:100%;height:100%;object-fit:cover;"
+                         onerror="this.src='{{ $annonce->default_image_by_category }}';">
                     <span class="ann-badge" style="background:{{ $bgColor }};">{{ $badgeLabel }}</span>
                     @if($annonce->estUrgent())
                         <span class="ann-urgent">🔥 {{ $annonce->heuresRestantes() }}h restantes</span>
