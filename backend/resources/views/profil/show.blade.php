@@ -148,8 +148,25 @@
                     @endif
                     <div><i class="fas fa-calendar me-2" style="color:#9ca3af;width:16px;"></i>Membre depuis {{ $user->created_at->format('M Y') }}</div>
                 </div>
+            </div>
 
-                @auth
+            {{-- Badges Anti-Gaspi --}}
+            <div class="section-card">
+                <div class="section-title"><i class="fas fa-medal me-2" style="color:#f59e0b;"></i>Badges Anti-Gaspi</div>
+                <div style="display:grid;gap:10px;">
+                    @foreach($user->badges as $badge)
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:{{ $badge['debloque'] ? '#f0fdf4' : '#fafafa' }};border:1px solid {{ $badge['debloque'] ? '#bbf7d0' : '#f0f0f0' }};opacity:{{ $badge['debloque'] ? '1' : '0.6' }};">
+                        <span style="font-size:1.4rem;">{{ $badge['icone'] }}</span>
+                        <div style="flex:1;">
+                            <div style="font-size:.78rem;font-weight:700;color:{{ $badge['debloque'] ? '#15803d' : '#888' }};">{{ $badge['nom'] }}</div>
+                            <div style="font-size:.7rem;color:#666;">{{ $badge['description'] }}</div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+
+            @auth
                 @if(Auth::id() !== $user->id)
                 <a href="{{ route('messages.ouvrir', $user->id) }}"
                    style="display:flex;align-items:center;justify-content:center;gap:8px;

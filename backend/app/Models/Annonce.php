@@ -11,7 +11,7 @@ class Annonce extends Model
 
     protected $fillable = [
         'user_id', 'categorie_id', 'titre', 'description',
-        'quantite', 'unite', 'prix', 'type_offre', 'statut',
+        'quantite', 'unite', 'prix', 'prix_original', 'est_panier_mystere', 'poids_estime_kg', 'type_offre', 'statut',
         'date_expiration', 'latitude', 'longitude', 'adresse_collecte', 'vues',
     ];
 
@@ -20,6 +20,9 @@ class Annonce extends Model
         return [
             'date_expiration' => 'datetime',
             'prix' => 'decimal:2',
+            'prix_original' => 'decimal:2',
+            'poids_estime_kg' => 'decimal:2',
+            'est_panier_mystere' => 'boolean',
             'quantite' => 'decimal:2',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
@@ -85,6 +88,47 @@ class Annonce extends Model
             ->whereNotNull('date_expiration')
             ->where('date_expiration', '>', now())
             ->where('date_expiration', '<=', now()->addHours(24));
+    }
+
+    public function scopePanierMystere($query)
+    {
+        return $query->where('statut', 'disponible')
+            ->where('est_panier_mystere', true);
+    }
+
+    public function scopeVenteFlash($query)
+    {
+        return $query->where('statut', 'disponible')
+            ->where(function ($q) {
+                $q->where('est_panier_mystere', true)
+                  ->orWhere(function ($q2) {
+                      $q2->whereNotNull('date_expiration')
+                         ->where('date_expiration', '>', now())
+                         ->where('date_expiration', '<=', now()->addHours(24));
+                  });
+            });
+    }
+
+    public function tauxReduction(): int
+    {
+        if (!$this->prix_original || $this->prix_original <= 0 || $this->prix >= $this->prix_original) {
+            return 0;
+        }
+        return (int) round((1 - ($this->prix / $this->prix_original)) * 100);
+    }
+
+    public function economieEstimee(): float
+    {
+        if (!$this->prix_original || $this->prix_original <= $this->prix) {
+            return 0.0;
+        }
+        return (float) ($this->prix_original - $this->prix);
+    }
+
+    public function impactCo2(): float
+    {
+        $poids = (float) ($this->poids_estime_kg > 0 ? $this->poids_estime_kg : 1.0);
+        return round($poids * 2.5, 2);
     }
 
     public function incrementerVues(): void

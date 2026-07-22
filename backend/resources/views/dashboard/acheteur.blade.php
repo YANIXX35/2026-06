@@ -181,6 +181,87 @@
     </div>
 </div>
 
+{{-- ── TABLEAU DE BORD D'IMPACT ÉCOLOGIQUE & BADGES (GAMIFICATION) ── --}}
+<div style="background: linear-gradient(135deg, #052e16 0%, #0d3d1f 100%); border-radius: 20px; padding: 24px; color: #fff; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(5,46,22,0.15);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
+        <div>
+            <h4 style="font-family:'Rubik',sans-serif; font-size: 1.15rem; font-weight: 800; margin: 0; color: #4ade80;">
+                🌱 Mon Impact Écologique & Économique
+            </h4>
+            <p style="font-size: .8rem; color: rgba(255,255,255,0.7); margin: 2px 0 0 0;">Vos actions concrètes pour préserver la planète et faire des économies.</p>
+        </div>
+        <span style="background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); font-size: .75rem; font-weight: 700; padding: 4px 12px; border-radius: 50px;">
+            <i class="fas fa-medal me-1"></i> {{ count(array_filter(Auth::user()->badges, fn($b) => $b['debloque'])) }}/{{ count(Auth::user()->badges) }} Badges Débloqués
+        </span>
+    </div>
+
+    <!-- Impact Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <!-- Card 1 -->
+        <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(34,197,94,0.2); color: #4ade80; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                🥗
+            </div>
+            <div>
+                <div style="font-size: .72rem; color: rgba(255,255,255,0.65); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Nourriture Sauvée</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2;">{{ Auth::user()->impact_metrics['kg_sauves'] }} <span style="font-size: .85rem; font-weight: 600; color: #4ade80;">kg</span></div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(59,130,246,0.2); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                🌍
+            </div>
+            <div>
+                <div style="font-size: .72rem; color: rgba(255,255,255,0.65); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">CO₂ Évité</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2;">{{ Auth::user()->impact_metrics['co2_evite_kg'] }} <span style="font-size: .85rem; font-weight: 600; color: #60a5fa;">kg CO₂e</span></div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(245,158,11,0.2); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                💰
+            </div>
+            <div>
+                <div style="font-size: .72rem; color: rgba(255,255,255,0.65); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Économies Générées</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2;">{{ number_format(Auth::user()->impact_metrics['economies_fcfa'], 0, ',', ' ') }} <span style="font-size: .85rem; font-weight: 600; color: #fbbf24;">FCFA</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badges Grid -->
+    <div style="font-size: .85rem; font-weight: 700; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+        🏆 Vos Trophées & Badges Débloqués
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+        @foreach(Auth::user()->badges as $badge)
+        <div style="background: {{ $badge['debloque'] ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)' }}; border: 1px solid {{ $badge['debloque'] ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.08)' }}; border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; opacity: {{ $badge['debloque'] ? '1' : '0.65' }};">
+            <div style="font-size: 1.8rem; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 50%;">
+                {{ $badge['icone'] }}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: .82rem; font-weight: 800; color: {{ $badge['debloque'] ? '#4ade80' : '#d1d5db' }};">{{ $badge['nom'] }}</span>
+                    @if($badge['debloque'])
+                    <span style="background: #22c55e; color: #fff; font-size: .6rem; font-weight: 800; padding: 2px 6px; border-radius: 50px;">✔ ACCOMPLI</span>
+                    @else
+                    <span style="color: rgba(255,255,255,0.5); font-size: .65rem; font-weight: 700;">{{ $badge['progres'] }}%</span>
+                    @endif
+                </div>
+                <p style="font-size: .72rem; color: rgba(255,255,255,0.6); margin: 3px 0 6px 0; line-height: 1.2;">{{ $badge['description'] }}</p>
+                @if(!$badge['debloque'])
+                <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                    <div style="width: {{ $badge['progres'] }}%; height: 100%; background: #3b82f6;"></div>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+
 {{-- ── CASHFLOW + SIDE METRICS ── --}}
 <div class="cashflow-grid">
     <div class="cashflow-card">

@@ -33,6 +33,12 @@ class AnnonceController extends Controller
         if ($request->filled('ville')) {
             $query->where('adresse_collecte', 'like', '%' . $request->ville . '%');
         }
+        if ($request->boolean('panier_mystere')) {
+            $query->panierMystere();
+        }
+        if ($request->boolean('vente_flash')) {
+            $query->venteFlash();
+        }
 
         // Urgents (expire dans 24h) remontés en premier. Bornes passées en
         // parametres lies plutot que NOW()/INTERVAL (specifiques a PostgreSQL)
@@ -102,13 +108,20 @@ class AnnonceController extends Controller
             'latitude'        => 'nullable|numeric|between:-90,90',
             'longitude'       => 'nullable|numeric|between:-180,180',
             'date_expiration' => 'nullable|date',
+            'prix_original'   => 'nullable|numeric|min:0',
+            'est_panier_mystere' => 'nullable|boolean',
+            'poids_estime_kg' => 'nullable|numeric|min:0.05',
             'photos.*'        => 'nullable|image|max:2048',
         ]);
 
         if ($validated['type_offre'] === 'don') {
             $validated['prix'] = 0;
+            $validated['prix_original'] = 0;
         }
         $validated['prix'] = $validated['prix'] ?? 0;
+        $validated['prix_original'] = $validated['prix_original'] ?? null;
+        $validated['est_panier_mystere'] = $request->boolean('est_panier_mystere');
+        $validated['poids_estime_kg'] = $validated['poids_estime_kg'] ?? 1.0;
         $validated['description'] = $validated['description'] ?? '';
         $validated['adresse_collecte'] = $validated['adresse_collecte'] ?? '';
         $validated['user_id'] = Auth::id();

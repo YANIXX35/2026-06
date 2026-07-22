@@ -802,11 +802,16 @@
         <div class="shop-hdr reveal">
             <div>
                 <div class="sec-tag"><div class="sec-line"></div>Boutique en ligne</div>
-                <h2 class="sec-title">Surplus disponibles <span class="hl">maintenant</span></h2>
+                <h2 class="sec-title">Surplus, <span style="color:#c026d3;">Paniers Surprise 🎁</span> &amp; <span class="hl">Ventes Flash ⚡</span></h2>
             </div>
-            <a href="{{ route('annonces.index') }}" class="btn-all">
-                Tout voir <i class="fas fa-arrow-right"></i>
-            </a>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <a href="{{ route('annonces.index', ['panier_mystere' => 1]) }}" class="btn-all" style="background:#fce7f3;color:#be185d;border:1px solid #fbcfe8;">
+                    🎁 Paniers Surprise
+                </a>
+                <a href="{{ route('annonces.index') }}" class="btn-all">
+                    Tout voir <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
         </div>
         <div class="shop-grid">
             @forelse($shopAnnonces as $annonce)

@@ -83,4 +83,114 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    /**
+     * Calcule l'impact écologique et économique global de l'utilisateur
+     */
+    public function getImpactMetricsAttribute(): array
+    {
+        // 1. Commandes complétées / payées
+        $commandesPayees = Commande::where('user_id', $this->id)
+            ->whereIn('statut', ['payee', 'livree', 'terminee', 'confirmee'])
+            ->with('items.annonce')
+            ->get();
+
+        $kgSauves = 0.0;
+        $economiesFcfa = 0.0;
+        $nbCommandes = $commandesPayees->count();
+
+        foreach ($commandesPayees as $cmd) {
+            foreach ($cmd->items as $item) {
+                $annonce = $item->annonce;
+                $qte = (float) $item->quantite;
+                if ($annonce) {
+                    $poidsUnit = (float) ($annonce->poids_estime_kg > 0 ? $annonce->poids_estime_kg : 1.0);
+                    $kgSauves += ($qte * $poidsUnit);
+                    $economiesFcfa += ($annonce->economieEstimee() * $qte);
+                } else {
+                    $kgSauves += $qte;
+                }
+            }
+        }
+
+        // 2. Réservations acceptées ou complétées
+        $reservations = Reservation::where('user_id', $this->id)
+            ->whereIn('statut', ['acceptée', 'complétée', 'terminee'])
+            ->with('annonce')
+            ->get();
+
+        foreach ($reservations as $res) {
+            $annonce = $res->annonce;
+            $qte = (float) $res->quantite;
+            if ($annonce) {
+                $poidsUnit = (float) ($annonce->poids_estime_kg > 0 ? $annonce->poids_estime_kg : 1.0);
+                $kgSauves += ($qte * $poidsUnit);
+                $economiesFcfa += ($annonce->economieEstimee() * $qte);
+            } else {
+                $kgSauves += $qte;
+            }
+        }
+
+        // Si l'utilisateur n'a pas encore de commandes réelles, fournissons une estimation de base d'activité
+        if ($kgSauves == 0 && ($this->annonces()->count() > 0 || $nbCommandes > 0)) {
+            $kgSauves = (float) ($this->annonces()->count() * 2.5);
+            $economiesFcfa = (float) ($this->annonces()->count() * 1500);
+        }
+
+        $co2EviteKg = round($kgSauves * 2.5, 1);
+
+        return [
+            'kg_sauves'      => round($kgSauves, 1),
+            'co2_evite_kg'   => $co2EviteKg,
+            'economies_fcfa' => round($economiesFcfa, 0),
+            'total_actions'  => $nbCommandes + $reservations->count(),
+        ];
+    }
+
+    /**
+     * Retourne la liste des badges débloqués par l'utilisateur
+     */
+    public function getBadgesAttribute(): array
+    {
+        $metrics = $this->impact_metrics;
+        $kg = $metrics['kg_sauves'];
+        $actions = $metrics['total_actions'];
+
+        $badges = [
+            [
+                'id'          => 'premier_pas',
+                'nom'         => 'Premier Pas',
+                'description' => 'A réalisé au moins 1 action anti-gaspillage sur la plateforme',
+                'icone'       => '🌱',
+                'debloque'    => $actions >= 1 || $kg >= 1,
+                'progres'     => min(100, round(($actions / 1) * 100)),
+            ],
+            [
+                'id'          => 'eco_guerrier',
+                'nom'         => 'Éco-Guerrier',
+                'description' => 'A sauvé au moins 5 kg de nourriture du gaspillage',
+                'icone'       => '🍃',
+                'debloque'    => $kg >= 5,
+                'progres'     => min(100, round(($kg / 5) * 100)),
+            ],
+            [
+                'id'          => 'heros_antigaspi',
+                'nom'         => 'Héros Anti-Gaspi',
+                'description' => 'A évité l\'émission de plus de 25 kg de CO₂',
+                'icone'       => '🌍',
+                'debloque'    => $metrics['co2_evite_kg'] >= 25,
+                'progres'     => min(100, round(($metrics['co2_evite_kg'] / 25) * 100)),
+            ],
+            [
+                'id'          => 'legende_verte',
+                'nom'         => 'Légende Verte',
+                'description' => 'A économisé plus de 20 000 FCFA tout en préservant la planète',
+                'icone'       => '👑',
+                'debloque'    => $metrics['economies_fcfa'] >= 20000,
+                'progres'     => min(100, round(($metrics['economies_fcfa'] / 20000) * 100)),
+            ],
+        ];
+
+        return $badges;
+    }
 }

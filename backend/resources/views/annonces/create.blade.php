@@ -151,14 +151,39 @@
                     </select>
                 </div>
             </div>
-            <div id="prixWrap">
-                <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">Prix en FCFA *</label>
-                <div style="display:flex;align-items:center;gap:0;border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;">
-                    <input type="number" name="prix" value="{{ old('prix', 0) }}" min="0" id="prixInput"
-                        style="flex:1;padding:11px 14px;border:none;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;">
-                    <span style="background:#f9fafb;padding:11px 14px;font-size:.82rem;font-weight:700;color:#888;border-left:1px solid #e5e5e5;">FCFA</span>
+            <!-- Panier Surprise Toggle -->
+            <div style="background:#fcf4ff;border:1.5px solid #f0abfc;border-radius:12px;padding:14px;margin-bottom:16px;">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;color:#86198f;font-size:.85rem;">
+                    <input type="checkbox" name="est_panier_mystere" value="1" {{ old('est_panier_mystere')?'checked':'' }} style="width:18px;height:18px;accent-color:#c026d3;">
+                    🎁 Ceci est un "Panier Surprise / Mystère" (Style Too Good To Go)
+                </label>
+                <p style="font-size:.73rem;color:#a21caf;margin:4px 0 0 28px;">Proposez un assortiment d'invendus du jour à prix très réduit sans détailler chaque produit.</p>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div id="prixWrap">
+                    <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">Prix Vendu (FCFA) *</label>
+                    <div style="display:flex;align-items:center;gap:0;border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;">
+                        <input type="number" name="prix" value="{{ old('prix', 0) }}" min="0" id="prixInput"
+                            style="flex:1;padding:11px 14px;border:none;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;">
+                        <span style="background:#f9fafb;padding:11px 14px;font-size:.82rem;font-weight:700;color:#888;border-left:1px solid #e5e5e5;">FCFA</span>
+                    </div>
                 </div>
-                <p style="font-size:.72rem;color:#aaa;margin-top:5px;">Mettez 0 pour un don gratuit</p>
+                <div>
+                    <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">Prix d'origine habituel (FCFA)</label>
+                    <div style="display:flex;align-items:center;gap:0;border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;">
+                        <input type="number" name="prix_original" value="{{ old('prix_original') }}" min="0" placeholder="Ex: 5000"
+                            style="flex:1;padding:11px 14px;border:none;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;">
+                        <span style="background:#f9fafb;padding:11px 14px;font-size:.82rem;font-weight:700;color:#888;border-left:1px solid #e5e5e5;">FCFA</span>
+                    </div>
+                    <p style="font-size:.72rem;color:#aaa;margin-top:5px;">Pour afficher le badge de réduction (ex: -60%)</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:6px;">Poids estimé en kg (calcul impact CO₂)</label>
+                <input type="number" name="poids_estime_kg" value="{{ old('poids_estime_kg', 1.0) }}" step="0.1" min="0.05"
+                    style="width:100%;padding:11px 14px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;">
             </div>
         </div>
 

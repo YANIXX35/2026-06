@@ -261,6 +261,20 @@
                 <form action="{{ route('annonces.index') }}" method="GET">
 
                     <div class="filter-group">
+                        <span class="filter-label">Offres Spéciales</span>
+                        <div class="radio-item">
+                            <input type="checkbox" name="panier_mystere" value="1" id="f_panier_mystere" {{ request('panier_mystere') ? 'checked' : '' }} style="accent-color:var(--green);width:15px;height:15px;cursor:pointer;">
+                            <label for="f_panier_mystere" style="font-weight:700;color:#16a34a;">🎁 Paniers Surprise</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="checkbox" name="vente_flash" value="1" id="f_vente_flash" {{ request('vente_flash') ? 'checked' : '' }} style="accent-color:#dc2626;width:15px;height:15px;cursor:pointer;">
+                            <label for="f_vente_flash" style="font-weight:700;color:#dc2626;">⚡ Ventes Flash (-24h)</label>
+                        </div>
+                    </div>
+
+                    <hr class="filter-sep">
+
+                    <div class="filter-group">
                         <span class="filter-label">Type d'offre</span>
                         @foreach(['vente'=>'Vente','don'=>'Don gratuit','alimentation_animale'=>'Alimentation animale','transformation'=>'Transformation'] as $val=>$lbl)
                         <div class="radio-item">
@@ -350,19 +364,37 @@
                          style="width:100%;height:100%;object-fit:cover;"
                          onerror="this.src='{{ $annonce->default_image_by_category }}';">
                     <span class="ann-badge" style="background:{{ $bgColor }};">{{ $badgeLabel }}</span>
-                    @if($annonce->estUrgent())
-                        <span class="ann-urgent">🔥 {{ $annonce->heuresRestantes() }}h restantes</span>
+                    @if($annonce->est_panier_mystere)
+                        <span class="ann-badge" style="background:linear-gradient(135deg, #ec4899, #8b5cf6);top:34px;left:10px;">🎁 Panier Surprise</span>
+                    @endif
+                    @if($annonce->tauxReduction() > 0)
+                        <span style="position:absolute;bottom:10px;left:10px;background:#dc2626;color:#fff;font-size:.7rem;font-weight:900;padding:2px 8px;border-radius:50px;">-{{ $annonce->tauxReduction() }}%</span>
+                    @endif
+                    @if($annonce->date_expiration && !$annonce->estExpire())
+                        <span class="ann-urgent countdown-timer" data-expire="{{ $annonce->date_expiration->toIso8601String() }}">
+                            ⏰ <span class="timer-text">{{ $annonce->heuresRestantes() }}h restantes</span>
+                        </span>
                     @endif
                 </div>
                 <div class="ann-body">
                     <div>
-                        <span class="ann-cat">{{ $annonce->categorie->icone ?? '' }} {{ $annonce->categorie->nom }}</span>
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap;">
+                            <span class="ann-cat">{{ $annonce->categorie->icone ?? '' }} {{ $annonce->categorie->nom }}</span>
+                            @if($annonce->est_panier_mystere)
+                            <span style="background:#fce7f3;color:#be185d;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:50px;">🎁 Panier Surprise</span>
+                            @endif
+                        </div>
                         <h3 class="ann-title"><a href="{{ route('annonces.show', $annonce) }}">{{ $annonce->titre }}</a></h3>
                         <p class="ann-desc">{{ Str::limit($annonce->description, 95) }}</p>
                         @if($annonce->type_offre === 'don')
                             <div class="ann-price gratuit">GRATUIT</div>
                         @else
-                            <div class="ann-price vente">{{ number_format($annonce->prix,0,',',' ') }} FCFA</div>
+                            <div style="display:flex;align-items:baseline;gap:8px;">
+                                <div class="ann-price vente">{{ number_format($annonce->prix,0,',',' ') }} FCFA</div>
+                                @if($annonce->prix_original && $annonce->prix_original > $annonce->prix)
+                                <div style="text-decoration:line-through;color:#94a3b8;font-size:.85rem;font-weight:600;">{{ number_format($annonce->prix_original,0,',',' ') }} FCFA</div>
+                                @endif
+                            </div>
                         @endif
                         <div class="ann-meta">
                             <span><i class="fas fa-weight"></i>{{ $annonce->quantite }} {{ $annonce->unite }}</span>
@@ -525,5 +557,36 @@ function initMap(){
         map.fitBounds(group.getBounds().pad(0.3));
     }
 }
+
+// ── Compte à Rebours en Temps Réel ──
+function updateCountdownTimers() {
+    document.querySelectorAll('.countdown-timer').forEach(function(el) {
+        const expireTime = new Date(el.getAttribute('data-expire')).getTime();
+        const now = new Date().getTime();
+        const diff = expireTime - now;
+
+        if (diff <= 0) {
+            el.innerHTML = '⚠️ Expiré';
+            return;
+        }
+
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const hStr = String(hours).padStart(2, '0');
+        const mStr = String(minutes).padStart(2, '0');
+        const sStr = String(seconds).padStart(2, '0');
+
+        const timerText = el.querySelector('.timer-text');
+        if (timerText) {
+            timerText.innerText = `${hStr}h : ${mStr}m : ${sStr}s`;
+        } else {
+            el.innerText = `⏰ ${hStr}h : ${mStr}m : ${sStr}s`;
+        }
+    });
+}
+setInterval(updateCountdownTimers, 1000);
+updateCountdownTimers();
 </script>
 @endpush
