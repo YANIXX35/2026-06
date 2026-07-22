@@ -118,17 +118,7 @@ class AnnonceController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $file) {
-                try {
-                    $uploaded = Cloudinary::upload($file->getRealPath(), [
-                        'folder'          => 'antigasci/annonces',
-                        'resource_type'   => 'image',
-                        'transformation'  => [['quality' => 'auto', 'fetch_format' => 'auto']],
-                    ]);
-                    $url = $uploaded->getSecurePath();
-                } catch (\Throwable $e) {
-                    Log::warning('Cloudinary upload failed, fallback local', ['error' => $e->getMessage()]);
-                    $url = $file->store('annonces', 'public');
-                }
+                $url = $this->uploadImageCloud($file);
                 Photo::create([
                     'annonce_id'    => $annonce->id,
                     'url'           => $url,
@@ -190,17 +180,7 @@ class AnnonceController extends Controller
         if ($request->hasFile('photos')) {
             $annonce->photos()->delete();
             foreach ($request->file('photos') as $index => $file) {
-                try {
-                    $uploaded = Cloudinary::upload($file->getRealPath(), [
-                        'folder'         => 'antigasci/annonces',
-                        'resource_type'  => 'image',
-                        'transformation' => [['quality' => 'auto', 'fetch_format' => 'auto']],
-                    ]);
-                    $url = $uploaded->getSecurePath();
-                } catch (\Throwable $e) {
-                    Log::warning('Cloudinary upload failed on update, fallback local', ['error' => $e->getMessage()]);
-                    $url = $file->store('annonces', 'public');
-                }
+                $url = $this->uploadImageCloud($file);
                 Photo::create([
                     'annonce_id'    => $annonce->id,
                     'url'           => $url,
@@ -224,5 +204,40 @@ class AnnonceController extends Controller
         $annonces = Annonce::with(['categorie', 'photoPrincipale', 'reservations'])
             ->where('user_id', Auth::id())->latest()->paginate(10);
         return view('dashboard.mes-annonces', compact('annonces'));
+    }
+
+    private function uploadImageCloud($file): string
+    {
+        // 1. Tenter l'upload vers Cloudinary
+        try {
+            $uploaded = Cloudinary::upload($file->getRealPath(), [
+                'folder'          => 'antigasci/annonces',
+                'resource_type'   => 'image',
+                'transformation'  => [['quality' => 'auto', 'fetch_format' => 'auto']],
+            ]);
+            $url = $uploaded->getSecurePath();
+            if (!empty($url)) return $url;
+        } catch (\Throwable $e) {
+            Log::warning('Cloudinary upload failed, attempting ImgBB persistent fallback', ['error' => $e->getMessage()]);
+        }
+
+        // 2. Secours Cloud Persistant (ImgBB API) -> URL permanente indestructible sur Render
+        try {
+            $imgBbApiKey = env('IMGBB_API_KEY', '6d70057863e4b570585d2e2363146d97');
+            $response = \Illuminate\Support\Facades\Http::asForm()->timeout(10)->post('https://api.imgbb.com/1/upload', [
+                'key'   => $imgBbApiKey,
+                'image' => base64_encode(file_get_contents($file->getRealPath())),
+            ]);
+            if ($response->successful()) {
+                $data = $response->json();
+                $url  = $data['data']['url'] ?? null;
+                if (!empty($url)) return $url;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('ImgBB upload failed, falling back to local storage', ['error' => $e->getMessage()]);
+        }
+
+        // 3. Fallback stockage local
+        return $file->store('annonces', 'public');
     }
 }

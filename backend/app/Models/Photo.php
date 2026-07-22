@@ -16,13 +16,19 @@ class Photo extends Model
 
     public function annonce() { return $this->belongsTo(Annonce::class); }
 
-    // Retourne toujours une URL complète, qu'il s'agisse d'un chemin local ou d'une URL Cloudinary
+    // Retourne toujours une URL complète cloud ou valide, évitant les 404 lors des redémarrages de conteneur
     protected function url(): Attribute
     {
         return Attribute::get(function ($value) {
             if (!$value) return null;
             if (str_starts_with($value, 'http')) return $value;
-            return asset('storage/' . $value);
+
+            // Sur un serveur comme Render à stockage éphémère, si le fichier local n'existe plus :
+            if (file_exists(public_path('storage/' . $value))) {
+                return asset('storage/' . $value);
+            }
+
+            return null;
         });
     }
 }
