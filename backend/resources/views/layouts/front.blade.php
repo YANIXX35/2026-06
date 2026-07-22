@@ -37,8 +37,8 @@
         }
         .front-nav.scrolled{box-shadow:0 4px 24px rgba(0,0,0,.1);background:rgba(255,255,255,1);}
         .fn-nav-inner{
-            max-width:1200px;width:100%;margin:0 auto;
-            display:flex;align-items:center;justify-content:space-between;
+            max-width:1280px;width:100%;margin:0 auto;
+            display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;
         }
         /* Logo */
         .fn-logo{
@@ -56,11 +56,11 @@
         .fn-logo-text .gaspi{color:var(--green);}
         .fn-logo-text .ci{color:var(--text);opacity:.5;font-size:.95rem;}
         /* Links */
-        .fn-links{display:flex;gap:0;list-style:none;align-items:center;}
+        .fn-links{display:flex;gap:8px;list-style:none;align-items:center;justify-content:center;margin:0 auto;}
         .fn-links li{position:relative;}
         .fn-links a{
-            text-decoration:none;color:var(--muted);font-size:.86rem;font-weight:600;
-            padding:8px 14px;border-radius:8px;transition:all .2s;
+            text-decoration:none;color:var(--muted);font-size:.88rem;font-weight:600;
+            padding:8px 18px;border-radius:8px;transition:all .2s;
             display:flex;align-items:center;gap:5px;
         }
         .fn-links a:hover{color:var(--text);background:var(--green-50);}
@@ -72,7 +72,7 @@
         /* Separateur vertical */
         .fn-sep{width:1px;height:20px;background:var(--border);margin:0 8px;}
         /* Actions */
-        .fn-actions{display:flex;gap:8px;align-items:center;}
+        .fn-actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;}
         .btn-ghost{
             background:none;border:none;color:var(--muted);font-weight:600;font-size:.85rem;
             padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;
