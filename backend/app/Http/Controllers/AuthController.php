@@ -235,11 +235,14 @@ class AuthController extends Controller
             $dernieresAnnonces = $user->annonces()->with('categorie')->latest()->take(5)->get();
             $annonceIds  = $annonces->pluck('id');
             $chartLabels = collect(range(6, 0))->map(fn($d) => now()->subDays($d)->format('d/m'))->toArray();
-            $chartData   = collect(range(6, 0))->map(function ($d) use ($annonceIds) {
-                $date = now()->subDays($d)->toDateString();
-                return \App\Models\Reservation::whereIn('annonce_id', $annonceIds)
-                    ->whereDate('created_at', $date)->count();
-            })->toArray();
+            $reservationsParJour = \App\Models\Reservation::whereIn('annonce_id', $annonceIds)
+                ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+                ->selectRaw('DATE(created_at) as jour, count(*) as total')
+                ->groupBy('jour')
+                ->pluck('total', 'jour');
+            $chartData = collect(range(6, 0))->map(
+                fn($d) => (int) ($reservationsParJour[now()->subDays($d)->toDateString()] ?? 0)
+            )->toArray();
             return view('dashboard.fournisseur', compact('user', 'stats', 'impact', 'dernieresReservations', 'dernieresAnnonces', 'chartLabels', 'chartData'));
         }
 
