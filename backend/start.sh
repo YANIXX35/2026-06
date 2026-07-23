@@ -102,4 +102,12 @@ echo '===> Demarrage du serveur PHP...'
 # PHP_CLI_SERVER_WORKERS = nombre de requetes traitees en parallele.
 # 8 workers = 8 utilisateurs simultanes sans attente.
 export PHP_CLI_SERVER_WORKERS=${PHP_CLI_SERVER_WORKERS:-8}
-exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Opcache : sans lui, chaque requete recompile tout Laravel (framework + vendor)
+# depuis zero. validate_timestamps=0 est sans risque ici car chaque deploiement
+# Render demarre un conteneur neuf (le code ne change jamais a chaud).
+exec php -d opcache.enable_cli=1 \
+         -d opcache.enable=1 \
+         -d opcache.validate_timestamps=0 \
+         -d opcache.memory_consumption=128 \
+         -d opcache.max_accelerated_files=10000 \
+         artisan serve --host=0.0.0.0 --port=${PORT:-8000}

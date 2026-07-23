@@ -281,7 +281,7 @@
         {{-- Actions --}}
         <div class="fn-actions">
             @auth
-                @php $unread = Auth::user()->unreadNotifications->count(); @endphp
+                @php $unread = Auth::user()->unreadNotifications()->count(); @endphp
                 <a href="{{ route('notifications.index') }}" class="notif-btn" title="Notifications">
                     <i class="fas fa-bell"></i>
                     @if($unread > 0)<span class="notif-badge">{{ $unread > 9 ? '9+' : $unread }}</span>@endif

@@ -313,7 +313,7 @@ h1,h2,h3,h4,h5{font-family:'Rubik',sans-serif;}
     </div>
     <div class="topbar-right">
         @auth
-        @php $unread = Auth::user()->unreadNotifications->count(); @endphp
+        @php $unread = Auth::user()->unreadNotifications()->count(); @endphp
         <a href="{{ route('notifications.index') }}" class="tb-btn" title="Notifications">
             <i class="fas fa-bell"></i>
             @if($unread > 0)<span class="tb-badge">{{ min($unread,9) }}</span>@endif

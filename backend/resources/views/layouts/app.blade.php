@@ -60,7 +60,7 @@
                         <input class="form-control border-0 py-2 px-4" type="text" name="q" value="{{ request('q') }}" placeholder="Rechercher des surplus alimentaires...">
                         <select class="form-select text-dark border-0 border-start py-2" style="width:180px;" name="categorie">
                             <option value="">Toutes catégories</option>
-                            @foreach(\App\Models\Categorie::all() as $cat)
+                            @foreach(\Illuminate\Support\Facades\Cache::remember('all_categories', 600, fn() => \App\Models\Categorie::all()) as $cat)
                                 <option value="{{ $cat->id }}" {{ request('categorie') == $cat->id ? 'selected' : '' }}>{{ $cat->nom }}</option>
                             @endforeach
                         </select>
@@ -108,7 +108,7 @@
                     </button>
                     <div class="collapse navbar-collapse rounded-bottom" id="allCat">
                         <ul class="list-unstyled categories-bars w-100">
-                            @foreach(\App\Models\Categorie::all() as $cat)
+                            @foreach(\Illuminate\Support\Facades\Cache::remember('all_categories', 600, fn() => \App\Models\Categorie::all()) as $cat)
                             <li>
                                 <div class="categories-bars-item">
                                     <a href="{{ route('annonces.index', ['categorie' => $cat->id]) }}">{{ $cat->icone }} {{ $cat->nom }}</a>
@@ -146,7 +146,7 @@
                         </div>
                         @auth
                             {{-- Cloche notifications --}}
-                            @php $unread = Auth::user()->unreadNotifications->count(); @endphp
+                            @php $unread = Auth::user()->unreadNotifications()->count(); @endphp
                             <div class="position-relative me-3 d-inline-block" style="cursor:pointer;" id="notifBell">
                                 <button class="btn btn-outline-light rounded-circle p-0"
                                     style="width:38px;height:38px;border:1.5px solid rgba(255,255,255,.5);"

@@ -10,21 +10,34 @@ use App\Models\User;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        $stats = [
-            'utilisateurs'  => User::where('role', '!=', 'admin')->count(),
-            'annonces'      => Annonce::count(),
-            'reservations'  => Reservation::count(),
-            'signalements'  => Signalement::where('statut', 'en_attente')->count(),
-            'fournisseurs'  => User::where('role', 'fournisseur')->count(),
-            'acheteurs'     => User::where('role', 'acheteur')->count(),
-            'questions_chatbot' => ChatLog::count(),
-        ];
+        // Mis en cache 30s : le dashboard admin n'a pas besoin d'un temps reel
+        // strict, et ca evite de payer 7 requetes separees a chaque chargement.
+        $stats = Cache::remember('admin_dashboard_stats', 30, function () {
+            // CASE WHEN plutot que FILTER (specifique a PostgreSQL) pour rester
+            // compatible avec MySQL en local (cf. remarque similaire dans AnnonceController).
+            $parRole = User::selectRaw("
+                    sum(case when role != 'admin' then 1 else 0 end) as utilisateurs,
+                    sum(case when role = 'fournisseur' then 1 else 0 end) as fournisseurs,
+                    sum(case when role = 'acheteur' then 1 else 0 end) as acheteurs
+                ")->first();
+
+            return [
+                'utilisateurs'  => (int) $parRole->utilisateurs,
+                'fournisseurs'  => (int) $parRole->fournisseurs,
+                'acheteurs'     => (int) $parRole->acheteurs,
+                'annonces'      => Annonce::count(),
+                'reservations'  => Reservation::count(),
+                'signalements'  => Signalement::where('statut', 'en_attente')->count(),
+                'questions_chatbot' => ChatLog::count(),
+            ];
+        });
 
         $derniersUtilisateurs = User::latest()->take(5)->get();
         $dernieresAnnonces    = Annonce::with('user', 'categorie')->latest()->take(5)->get();
