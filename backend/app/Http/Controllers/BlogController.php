@@ -31,6 +31,18 @@ class BlogController extends Controller
             'couleur' => '#7c3aed',
             'icone'   => '🌱',
         ],
+        [
+            'nom'     => 'Zero Waste France',
+            'url'     => 'https://www.zerowastefrance.org/feed/',
+            'couleur' => '#f59e0b',
+            'icone'   => '🚫',
+        ],
+        [
+            'nom'     => 'Le Monde - Planète',
+            'url'     => 'https://www.lemonde.fr/planete/rss_full.xml',
+            'couleur' => '#1e293b',
+            'icone'   => '🌍',
+        ],
     ];
 
     public function index()
@@ -152,12 +164,20 @@ class BlogController extends Controller
                 // e) Image thématique par défaut si aucune n'est présente dans le flux RSS
                 if (!$image) {
                     $fallbacks = [
-                        'ADEME Agriculture & Alimentation' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80',
-                        'ADEME Économie circulaire'        => 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80',
-                        'Actu-Environnement Déchets'       => 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=800&q=80',
-                        'Actu-Environnement Agroécologie'  => 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1592837372722-108bbda96803?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1518843875459-f738682238a6?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=800&q=80',
+                        'https://images.unsplash.com/photo-1558586077-e8eaee895048?auto=format&fit=crop&w=800&q=80',
                     ];
-                    $image = $fallbacks[$source['nom']] ?? 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=800&q=80';
+                    // Utiliser le titre pour garantir la même image à chaque actualisation pour le même article
+                    $hash = abs(crc32((string) $item->title));
+                    $image = $fallbacks[$hash % count($fallbacks)];
                 }
 
                 // 3. Nettoyage de la description texte (Sans balises HTML)
