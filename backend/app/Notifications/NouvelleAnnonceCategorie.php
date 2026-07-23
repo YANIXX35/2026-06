@@ -3,10 +3,14 @@
 namespace App\Notifications;
 
 use App\Models\Annonce;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class NouvelleAnnonceCategorie extends Notification
+class NouvelleAnnonceCategorie extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(public Annonce $annonce) {}
 
     public function via(object $notifiable): array

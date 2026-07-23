@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -86,23 +87,44 @@ class User extends Authenticatable
 
     /**
      * Calcule l'impact écologique et économique global de l'utilisateur
+     * Résultat mis en cache 10 minutes pour éviter des requêtes DB répétées.
      */
     public function getImpactMetricsAttribute(): array
     {
-        // 1. Commandes complétées / payées
-        $commandesPayees = Commande::where('user_id', $this->id)
-            ->whereIn('statut', ['payee', 'livree', 'terminee', 'confirmee'])
-            ->with('items.annonce')
-            ->get();
+        return Cache::remember('user_impact_' . $this->id, 600, function () {
+            // 1. Commandes complétées / payées
+            $commandesPayees = Commande::where('user_id', $this->id)
+                ->whereIn('statut', ['payee', 'livree', 'terminee', 'confirmee'])
+                ->with('items.annonce')
+                ->get();
 
-        $kgSauves = 0.0;
-        $economiesFcfa = 0.0;
-        $nbCommandes = $commandesPayees->count();
+            $kgSauves = 0.0;
+            $economiesFcfa = 0.0;
+            $nbCommandes = $commandesPayees->count();
 
-        foreach ($commandesPayees as $cmd) {
-            foreach ($cmd->items as $item) {
-                $annonce = $item->annonce;
-                $qte = (float) $item->quantite;
+            foreach ($commandesPayees as $cmd) {
+                foreach ($cmd->items as $item) {
+                    $annonce = $item->annonce;
+                    $qte = (float) $item->quantite;
+                    if ($annonce) {
+                        $poidsUnit = (float) ($annonce->poids_estime_kg > 0 ? $annonce->poids_estime_kg : 1.0);
+                        $kgSauves += ($qte * $poidsUnit);
+                        $economiesFcfa += ($annonce->economieEstimee() * $qte);
+                    } else {
+                        $kgSauves += $qte;
+                    }
+                }
+            }
+
+            // 2. Réservations acceptées ou complétées
+            $reservations = Reservation::where('user_id', $this->id)
+                ->whereIn('statut', ['acceptée', 'complétée', 'terminee'])
+                ->with('annonce')
+                ->get();
+
+            foreach ($reservations as $res) {
+                $annonce = $res->annonce;
+                $qte = (float) $res->quantite;
                 if ($annonce) {
                     $poidsUnit = (float) ($annonce->poids_estime_kg > 0 ? $annonce->poids_estime_kg : 1.0);
                     $kgSauves += ($qte * $poidsUnit);
@@ -111,40 +133,21 @@ class User extends Authenticatable
                     $kgSauves += $qte;
                 }
             }
-        }
 
-        // 2. Réservations acceptées ou complétées
-        $reservations = Reservation::where('user_id', $this->id)
-            ->whereIn('statut', ['acceptée', 'complétée', 'terminee'])
-            ->with('annonce')
-            ->get();
-
-        foreach ($reservations as $res) {
-            $annonce = $res->annonce;
-            $qte = (float) $res->quantite;
-            if ($annonce) {
-                $poidsUnit = (float) ($annonce->poids_estime_kg > 0 ? $annonce->poids_estime_kg : 1.0);
-                $kgSauves += ($qte * $poidsUnit);
-                $economiesFcfa += ($annonce->economieEstimee() * $qte);
-            } else {
-                $kgSauves += $qte;
+            if ($kgSauves == 0 && ($this->annonces()->count() > 0 || $nbCommandes > 0)) {
+                $kgSauves = (float) ($this->annonces()->count() * 2.5);
+                $economiesFcfa = (float) ($this->annonces()->count() * 1500);
             }
-        }
 
-        // Si l'utilisateur n'a pas encore de commandes réelles, fournissons une estimation de base d'activité
-        if ($kgSauves == 0 && ($this->annonces()->count() > 0 || $nbCommandes > 0)) {
-            $kgSauves = (float) ($this->annonces()->count() * 2.5);
-            $economiesFcfa = (float) ($this->annonces()->count() * 1500);
-        }
+            $co2EviteKg = round($kgSauves * 2.5, 1);
 
-        $co2EviteKg = round($kgSauves * 2.5, 1);
-
-        return [
-            'kg_sauves'      => round($kgSauves, 1),
-            'co2_evite_kg'   => $co2EviteKg,
-            'economies_fcfa' => round($economiesFcfa, 0),
-            'total_actions'  => $nbCommandes + $reservations->count(),
-        ];
+            return [
+                'kg_sauves'      => round($kgSauves, 1),
+                'co2_evite_kg'   => $co2EviteKg,
+                'economies_fcfa' => round($economiesFcfa, 0),
+                'total_actions'  => $nbCommandes + $reservations->count(),
+            ];
+        });
     }
 
     /**
