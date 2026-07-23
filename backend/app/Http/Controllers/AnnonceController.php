@@ -224,12 +224,12 @@ class AnnonceController extends Controller
         // 1. Tenter l'upload vers Cloudinary si configuré
         try {
             if (config('cloudinary.cloud_url') || env('CLOUDINARY_URL')) {
-                $uploaded = Cloudinary::upload($file->getRealPath(), [
+                $uploaded = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::uploadApi()->upload($file->getRealPath(), [
                     'folder'          => 'antigasci/annonces',
                     'resource_type'   => 'image',
                     'transformation'  => [['quality' => 'auto', 'fetch_format' => 'auto']],
                 ]);
-                $url = $uploaded->getSecurePath();
+                $url = $uploaded['secure_url'] ?? null;
                 if (!empty($url)) return $url;
             }
         } catch (\Throwable $e) {
