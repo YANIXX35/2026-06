@@ -38,7 +38,7 @@
       - key: CACHE_STORE
         value: file
       - key: QUEUE_CONNECTION
-        value: sync
+        value: database
       - key: FILESYSTEM_DISK
         value: public
       - key: GEMINI_API_KEY

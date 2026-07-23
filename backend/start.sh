@@ -98,6 +98,14 @@ echo '===> Demarrage du scheduler (expiration annonces, etc.)...'
 # On utilise une boucle shell legere (sleep 60) qui consomme beaucoup moins de ressources.
 (while true; do php artisan schedule:run --no-interaction >> /dev/null 2>&1; sleep 60; done) &
 
+echo '===> Demarrage du worker de queue (notifications ShouldQueue, etc.)...'
+# Sans ce worker, QUEUE_CONNECTION=database ne sert a rien : les jobs s'empilent
+# dans la table "jobs" sans jamais etre traites. queue:work se met en veille
+# (sleep=3s) entre deux jobs, charge CPU negligeable a l'inverse de schedule:work.
+# --max-time redemarre le process toutes les heures (evite toute fuite memoire
+# sur un daemon de tres longue duree) ; la boucle exterieure le relance aussitot.
+(while true; do php artisan queue:work --tries=3 --sleep=3 --max-time=3600 --no-interaction >> /dev/null 2>&1; sleep 5; done) &
+
 echo '===> Demarrage du serveur PHP...'
 # PHP_CLI_SERVER_WORKERS = nombre de requetes traitees en parallele.
 # 8 workers = 8 utilisateurs simultanes sans attente.
