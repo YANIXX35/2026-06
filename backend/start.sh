@@ -93,17 +93,13 @@ php artisan db:seed --class=AdminSeeder --force || echo 'WARNING: Seeder admin e
 echo '==> Lien symbolique storage...'
 php artisan storage:link 2>/dev/null || echo 'Storage link deja present.'
 
-echo '==> Demarrage du scheduler (expiration annonces, etc.)...'
-php artisan schedule:work --no-interaction > /dev/null 2>&1 &
+echo '===> Demarrage du scheduler (expiration annonces, etc.)...'
+# schedule:work est une boucle infinie qui consomme du CPU en permanence sur Render.
+# On utilise une boucle shell legere (sleep 60) qui consomme beaucoup moins de ressources.
+(while true; do php artisan schedule:run --no-interaction >> /dev/null 2>&1; sleep 60; done) &
 
-echo '==> Demarrage du serveur PHP...'
-# `php artisan serve` est mono-thread par defaut : une requete lente (ex. le chat
-# IA qui garde une connexion streaming ouverte) bloque toutes les autres, ce qui
-# peut expliquer un timeout observe sur /annonces/{id}. PHP_CLI_SERVER_WORKERS
-# fait tourner plusieurs workers en parallele (supporte nativement par le serveur
-# CLI de PHP depuis PHP 8.0 / Laravel 9.3+). Ce n'est toujours pas un serveur de
-# production a part entiere (pas de reverse proxy, pas de gestion fine des
-# ressources) : a remplacer par php-fpm+nginx ou FrankenPHP/Octane apres la
-# soutenance si le trafic le justifie.
-export PHP_CLI_SERVER_WORKERS=${PHP_CLI_SERVER_WORKERS:-4}
+echo '===> Demarrage du serveur PHP...'
+# PHP_CLI_SERVER_WORKERS = nombre de requetes traitees en parallele.
+# 8 workers = 8 utilisateurs simultanes sans attente.
+export PHP_CLI_SERVER_WORKERS=${PHP_CLI_SERVER_WORKERS:-8}
 exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}

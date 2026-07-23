@@ -10,6 +10,7 @@ use App\Notifications\NouvelleAnnonceCategorie;
 use Illuminate\Http\Request;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +53,9 @@ class AnnonceController extends Controller
                 THEN 0 ELSE 1
             END ASC
         ", [now(), now()->addHours(24)])->latest()->paginate(12);
-        $categories = Categorie::all();
+
+        // Catégories en cache (évite une requête à chaque chargement de page)
+        $categories = Cache::remember('all_categories', 600, fn() => Categorie::all());
 
         $annoncesGeo = $annonces->filter(fn($a) => $a->latitude && $a->longitude)->map(fn($a) => [
             'lat'     => (float) $a->latitude,
@@ -78,7 +81,8 @@ class AnnonceController extends Controller
     {
         $annonce->incrementerVues();
         $annonce->load(['user', 'categorie', 'photos', 'reservations']);
-        $annoncesLiees = Annonce::where('categorie_id', $annonce->categorie_id)
+        $annoncesLiees = Annonce::with(['photoPrincipale'])
+            ->where('categorie_id', $annonce->categorie_id)
             ->where('id', '!=', $annonce->id)
             ->where('statut', 'disponible')
             ->limit(4)->get();
@@ -129,9 +133,11 @@ class AnnonceController extends Controller
         $validated['statut'] = 'disponible';
 
         // Sécurité : retirer les colonnes "nouvelles" si elles n'existent pas encore en BDD
+        // (résultat mis en cache pour éviter une requête d'introspection à chaque création d'annonce)
         $newColumns = ['prix_original', 'est_panier_mystere', 'poids_estime_kg'];
         foreach ($newColumns as $col) {
-            if (!Schema::hasColumn('annonces', $col)) {
+            $exists = Cache::rememberForever("schema_annonces_has_{$col}", fn() => Schema::hasColumn('annonces', $col));
+            if (!$exists) {
                 unset($validated[$col]);
             }
         }
@@ -248,6 +254,18 @@ class AnnonceController extends Controller
 
         // 2. Stockage Persistant Base64 en Base de Données (PostgreSQL)
         // Les images stockées en Base de Données ne disparaissent JAMAIS lors des redéploiements sur Render !
+        // Compression/redimensionnement avant encodage : la base est distante (Aiven), un blob plus
+        // petit réduit nettement le temps d'écriture réseau à chaque création/modification d'annonce.
+        try {
+            $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+            $encoded = $manager->read($file->getRealPath())
+                ->scaleDown(width: 1280)
+                ->toJpeg(75);
+            return (string) $encoded->toDataUri();
+        } catch (\Throwable $e) {
+            Log::warning('Compression image echouee, fallback Base64 brut', ['error' => $e->getMessage()]);
+        }
+
         try {
             $mime = $file->getMimeType() ?: 'image/jpeg';
             $base64 = base64_encode(file_get_contents($file->getRealPath()));
