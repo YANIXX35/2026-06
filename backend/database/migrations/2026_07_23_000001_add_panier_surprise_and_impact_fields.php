@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('annonces', function (Blueprint $table) {
-            $table->decimal('prix_original', 10, 2)->nullable()->after('prix');
-            $table->boolean('est_panier_mystere')->default(false)->after('type_offre');
-            $table->decimal('poids_estime_kg', 8, 2)->default(1.0)->after('unite');
+            if (!Schema::hasColumn('annonces', 'prix_original')) {
+                $table->decimal('prix_original', 10, 2)->nullable();
+            }
+            if (!Schema::hasColumn('annonces', 'est_panier_mystere')) {
+                $table->boolean('est_panier_mystere')->default(false);
+            }
+            if (!Schema::hasColumn('annonces', 'poids_estime_kg')) {
+                $table->decimal('poids_estime_kg', 8, 2)->default(1.0);
+            }
         });
     }
 
@@ -24,7 +30,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('annonces', function (Blueprint $table) {
-            $table->dropColumn(['prix_original', 'est_panier_mystere', 'poids_estime_kg']);
+            if (Schema::hasColumn('annonces', 'prix_original')) {
+                $table->dropColumn('prix_original');
+            }
+            if (Schema::hasColumn('annonces', 'est_panier_mystere')) {
+                $table->dropColumn('est_panier_mystere');
+            }
+            if (Schema::hasColumn('annonces', 'poids_estime_kg')) {
+                $table->dropColumn('poids_estime_kg');
+            }
         });
     }
 };

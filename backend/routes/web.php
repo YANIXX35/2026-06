@@ -19,11 +19,6 @@ use App\Http\Controllers\PaymentController;
 // ─── PAGE D'ACCUEIL ────────────────────────────────────────────
 Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('home');
 
-Route::get('/run-migrations', function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-    return "Migrations executed successfully. Output: " . \Illuminate\Support\Facades\Artisan::output();
-});
-
 // ─── PAGES STATIQUES ───────────────────────────────────────────
 Route::get('/comment-ca-marche', fn() => view('pages.comment-ca-marche'))->name('comment-ca-marche');
 Route::get('/contact', fn() => view('pages.contact'))->name('contact');

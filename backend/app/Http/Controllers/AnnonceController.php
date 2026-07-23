@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class AnnonceController extends Controller
@@ -127,7 +128,16 @@ class AnnonceController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['statut'] = 'disponible';
 
+        // Sécurité : retirer les colonnes "nouvelles" si elles n'existent pas encore en BDD
+        $newColumns = ['prix_original', 'est_panier_mystere', 'poids_estime_kg'];
+        foreach ($newColumns as $col) {
+            if (!Schema::hasColumn('annonces', $col)) {
+                unset($validated[$col]);
+            }
+        }
+
         $annonce = Annonce::create($validated);
+
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $file) {
