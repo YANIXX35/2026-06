@@ -62,10 +62,10 @@
         <a href="{{ route('contact') }}">page de contact</a>. L'administrateur peut suspendre un compte en cas de
         signalement fondé ou de non-respect des présentes conditions.</p>
 
-        <h2>8. Sécurité des Échanges et Transactions Hors Plateforme</h2>
-        <p>Pour la sécurité de tous les utilisateurs, AntiGaspiCI propose un système de messagerie interne et un Proxy WhatsApp Officiel qui conserve un journal d'audit en base de données. 
-        <strong>Toute transaction financière effectuée en dehors de la plateforme ou en liquide sans l'utilisation du Code PIN Séquestre engage la seule responsabilité des participants.</strong> 
-        AntiGaspiCI décline toute responsabilité et ne pourra procéder à aucun remboursement en cas de litige financier survenu lors d'un paiement direct non sécurisé hors application.</p>
+        <h2>8. Sécurité des Échanges et Négociation de Prix</h2>
+        <p>Pour la sécurité de tous les utilisateurs, AntiGaspiCI propose un système de messagerie interne et un mécanisme de négociation de prix structuré (bouton « Proposer un prix ») dont chaque étape (proposition, acceptation, refus) est horodatée et conservée en base de données.
+        <strong>Toute négociation de prix ou transaction financière effectuée en dehors de ce parcours (message informel, réseau externe, paiement en liquide non déclaré) engage la seule responsabilité des participants.</strong>
+        AntiGaspiCI décline toute responsabilité et ne pourra procéder à aucun remboursement en cas de litige financier survenu lors d'un accord ou d'un paiement conclu hors de ce parcours applicatif.</p>
     </div>
 </section>
 @endsection

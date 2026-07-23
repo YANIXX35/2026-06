@@ -55,6 +55,57 @@
                     <span class="small fw-semibold text-dark">{{ Str::limit($conversation->annonce->titre, 50) }}</span>
                 </a>
                 @endif
+
+                @if($offres->count())
+                <div class="px-4 pt-3">
+                    @foreach($offres as $offre)
+                        @php
+                            $badgeOffre = ['en_attente'=>['warning','En attente'],'acceptee'=>['success','Acceptée'],'refusee'=>['danger','Refusée'],'remplacee'=>['secondary','Remplacée'],'expiree'=>['secondary','Expirée']];
+                            [$couleurOffre, $labelOffre] = $badgeOffre[$offre->statut] ?? ['secondary', $offre->statut];
+                        @endphp
+                        <div class="alert alert-light border rounded-3 mb-2 py-2 px-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <i class="fas fa-hand-holding-usd text-primary me-1"></i>
+                                    <strong>{{ $offre->acheteur->prenom }}</strong> propose
+                                    <strong>{{ number_format($offre->prix_propose, 0, ',', ' ') }} FCFA</strong>
+                                    pour {{ $offre->quantite }} {{ $conversation->annonce->unite ?? '' }}
+                                    <span class="badge bg-{{ $couleurOffre }} ms-1">{{ $labelOffre }}</span>
+                                </div>
+                                @if($offre->statut === 'en_attente' && $offre->fournisseur_id === auth()->id())
+                                <div class="d-flex gap-2">
+                                    <form action="{{ route('offres.accepter', $offre) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Accepter</button>
+                                    </form>
+                                    <form action="{{ route('offres.refuser', $offre) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Refuser</button>
+                                    </form>
+                                </div>
+                                @endif
+                            </div>
+                            @if($offre->message)
+                                <div class="small text-muted mt-1">« {{ $offre->message }} »</div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+                @endif
+
+                @if($conversation->annonce && $conversation->annonce->type_offre === 'vente' && $conversation->annonce->user_id !== auth()->id())
+                <div class="px-4 pt-2">
+                    <form action="{{ route('offres.store', $conversation) }}" method="POST" class="d-flex gap-2 align-items-start flex-wrap">
+                        @csrf
+                        <input type="number" name="prix_propose" class="form-control form-control-sm" style="max-width:140px;" step="1" min="1" placeholder="Prix (FCFA)" required>
+                        <input type="number" name="quantite" class="form-control form-control-sm" style="max-width:120px;" step="0.01" min="0.01" max="{{ $conversation->annonce->quantite }}" value="{{ $conversation->annonce->quantite }}" placeholder="Quantité" required>
+                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">
+                            <i class="fas fa-hand-holding-usd me-1"></i>Proposer un prix
+                        </button>
+                    </form>
+                </div>
+                @endif
+
                 <div class="card-body p-4" style="height:420px;overflow-y:auto;" id="messagesContainer">
                     @forelse($messages as $msg)
                         @if($msg->user_id === auth()->id())

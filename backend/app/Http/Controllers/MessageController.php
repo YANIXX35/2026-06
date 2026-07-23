@@ -30,7 +30,8 @@ class MessageController extends Controller
         $conversations = Conversation::with(['user1', 'user2', 'dernierMessage'])
             ->where('user_1_id', $userId)->orWhere('user_2_id', $userId)
             ->latest()->get();
-        return view('messages.show', compact('conversation', 'conversations', 'messages', 'interlocuteur'));
+        $offres = $conversation->offres()->with('acheteur')->latest()->get();
+        return view('messages.show', compact('conversation', 'conversations', 'messages', 'interlocuteur', 'offres'));
     }
 
     public function ouvrirOuCreer(Request $request, User $user)

@@ -15,6 +15,7 @@ class Conversation extends Model
     public function user2()    { return $this->belongsTo(User::class, 'user_2_id'); }
     public function annonce()  { return $this->belongsTo(Annonce::class); }
     public function messages() { return $this->hasMany(Message::class)->orderBy('created_at'); }
+    public function offres()   { return $this->hasMany(Offre::class); }
 
     public function dernierMessage()
     {

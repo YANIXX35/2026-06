@@ -115,6 +115,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/{conversation}', [MessageController::class, 'envoyer'])->name('messages.envoyer');
     Route::get('/messages/ouvrir/{user}', [MessageController::class, 'ouvrirOuCreer'])->name('messages.ouvrir');
 
+    // Offres (négociation de prix)
+    Route::post('/messages/{conversation}/offres', [\App\Http\Controllers\OffreController::class, 'store'])->name('offres.store');
+    Route::post('/offres/{offre}/accepter', [\App\Http\Controllers\OffreController::class, 'accepter'])->name('offres.accepter');
+    Route::post('/offres/{offre}/refuser', [\App\Http\Controllers\OffreController::class, 'refuser'])->name('offres.refuser');
+
     // Avis
     Route::post('/reservations/{reservation}/avis', [AvisController::class, 'store'])->name('avis.store');
 

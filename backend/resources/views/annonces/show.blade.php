@@ -48,8 +48,9 @@
                                 <div>
                                     <strong class="d-block text-dark mb-1">🛡️ Anti-Arnaque & Sécurité des Transactions</strong>
                                     <small class="text-secondary d-block">
-                                        Effectuez vos réservations et paiements uniquement sur l'application AntiGaspiCI. Vos échanges WhatsApp transitent par notre Proxy officiel pour garantir vos preuves. 
-                                        <strong>Ne faites aucun virement direct hors plateforme sans utiliser le système de Code PIN Séquestre.</strong>
+                                        Effectuez vos réservations, négociations et paiements uniquement sur l'application AntiGaspiCI.
+                                        <strong>Toute négociation de prix doit passer par le bouton « Proposer un prix » ci-contre : c'est la seule preuve que la plateforme peut produire en cas de litige.</strong>
+                                        Un accord ou un paiement en dehors de ce parcours n'est couvert par aucune garantie.
                                         <a href="{{ route('cgu') }}" class="text-primary text-decoration-underline ms-1">En savoir plus (CGU)</a>
                                     </small>
                                 </div>
@@ -187,6 +188,20 @@
                             </form>
                         </div>
                     </div>
+
+                    {{-- Négociation de prix --}}
+                    @if($annonce->type_offre === 'vente')
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-hand-holding-usd text-primary fs-3 mb-2"></i>
+                            <h6 class="fw-semibold mb-2">Envie de négocier le prix ?</h6>
+                            <p class="text-muted small mb-3">Proposez un montant directement dans la messagerie de l'application — c'est la seule façon pour AntiGaspiCI de pouvoir vous protéger en cas de litige.</p>
+                            <a href="{{ route('messages.ouvrir', ['user' => $annonce->user_id, 'annonce_id' => $annonce->id]) }}" class="btn btn-outline-primary rounded-pill px-4">
+                                Proposer un prix
+                            </a>
+                        </div>
+                    </div>
+                    @endif
                     @endif
                 @else
                     <div class="card border-0 shadow-sm rounded-3 mb-4">
