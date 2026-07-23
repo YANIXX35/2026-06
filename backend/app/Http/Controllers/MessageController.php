@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\NouveauMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class MessageController extends Controller
 {
@@ -30,7 +31,11 @@ class MessageController extends Controller
         $conversations = Conversation::with(['user1', 'user2', 'dernierMessage'])
             ->where('user_1_id', $userId)->orWhere('user_2_id', $userId)
             ->latest()->get();
-        $offres = $conversation->offres()->with('acheteur')->latest()->get();
+        // Garde-fou : si la migration de la table "offres" n'est pas encore
+        // passee en production, la messagerie ne doit pas planter pour autant.
+        $offres = Schema::hasTable('offres')
+            ? $conversation->offres()->with('acheteur')->latest()->get()
+            : collect();
         return view('messages.show', compact('conversation', 'conversations', 'messages', 'interlocuteur', 'offres'));
     }
 

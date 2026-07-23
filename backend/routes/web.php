@@ -162,6 +162,7 @@ Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'chat'])
 // ─── ADMIN ──────────────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/migrer', [AdminController::class, 'migrer'])->name('migrer');
     Route::get('/utilisateurs', [AdminController::class, 'utilisateurs'])->name('utilisateurs');
     Route::post('/utilisateurs', [AdminController::class, 'storeUtilisateur'])->name('utilisateurs.store');
     Route::put('/utilisateurs/{user}', [AdminController::class, 'updateUtilisateur'])->name('utilisateurs.update');

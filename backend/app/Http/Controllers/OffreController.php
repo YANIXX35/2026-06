@@ -11,6 +11,7 @@ use App\Notifications\OffreRefusee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Négociation de prix structurée, tracée en base, entre un acheteur et le
@@ -27,6 +28,10 @@ class OffreController extends Controller
 {
     public function store(Request $request, Conversation $conversation)
     {
+        if (!Schema::hasTable('offres')) {
+            return back()->with('error', 'La négociation de prix n\'est pas encore disponible, réessayez dans quelques minutes.');
+        }
+
         $userId = Auth::id();
         if ($conversation->user_1_id !== $userId && $conversation->user_2_id !== $userId) abort(403);
 

@@ -9,12 +9,31 @@ use App\Models\Signalement;
 use App\Models\User;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    /**
+     * Relance les migrations en attente et affiche le resultat brut.
+     * Protege par le middleware "admin" (contrairement a une precedente route
+     * de migration non authentifiee, retiree pour raison de securite) :
+     * seul un compte admin connecte peut declencher/diagnostiquer ceci.
+     */
+    public function migrer()
+    {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $sortie = Artisan::output();
+        } catch (\Throwable $e) {
+            $sortie = "ERREUR : " . $e->getMessage() . "\n\n" . $e->getTraceAsString();
+        }
+
+        return response('<pre style="white-space:pre-wrap;font-family:monospace;padding:2rem;">' . e($sortie) . '</pre>');
+    }
+
     public function dashboard()
     {
         // Mis en cache 30s : le dashboard admin n'a pas besoin d'un temps reel
