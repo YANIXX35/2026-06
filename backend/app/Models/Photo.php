@@ -23,12 +23,8 @@ class Photo extends Model
             if (!$value) return null;
             if (str_starts_with($value, 'http') || str_starts_with($value, 'data:image')) return $value;
 
-            // Sur un serveur comme Render à stockage éphémère, si le fichier local n'existe plus :
-            if (file_exists(public_path('storage/' . $value))) {
-                return asset('storage/' . $value);
-            }
-
-            return null;
+            // Retourne le lien de stockage classique
+            return asset('storage/' . $value);
         });
     }
 }

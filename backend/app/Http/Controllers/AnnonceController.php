@@ -274,7 +274,31 @@ class AnnonceController extends Controller
             Log::warning('Base64 conversion failed', ['error' => $e->getMessage()]);
         }
 
-        // 3. Fallback disque local
-        return $file->store('annonces', 'public');
+        // 3. Fallback en cas d'échec total (si Intervention Image échoue et base64 natif échoue)
+        // On ne stocke PAS sur le disque local de Render car il est effacé à chaque redéploiement.
+        // On retourne à la place l'image de catégorie par défaut.
+        $catNom = mb_strtolower($this->categorie?->nom ?? '');
+        if (str_contains($catNom, 'lait') || str_contains($catNom, 'fromage') || str_contains($catNom, 'yaourt')) {
+            return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'fruit') || str_contains($catNom, 'légume') || str_contains($catNom, 'legume')) {
+            return 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'boulangerie') || str_contains($catNom, 'pain') || str_contains($catNom, 'pâtisserie') || str_contains($catNom, 'patisserie')) {
+            return 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'viande') || str_contains($catNom, 'poisson') || str_contains($catNom, 'boucherie')) {
+            return 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'boisson') || str_contains($catNom, 'jus')) {
+            return 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'épicerie') || str_contains($catNom, 'epicerie') || str_contains($catNom, 'riz') || str_contains($catNom, 'céréale') || str_contains($catNom, 'cereale')) {
+            return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80';
+        }
+        if (str_contains($catNom, 'animal') || str_contains($catNom, 'élevage') || str_contains($catNom, 'elevage')) {
+            return 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=800&q=80';
+        }
+        return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
     }
 }
