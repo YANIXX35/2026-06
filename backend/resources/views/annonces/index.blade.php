@@ -410,9 +410,15 @@
                         </a>
                         @auth
                             @if(Auth::id() !== $annonce->user_id)
-                            <a href="{{ route('messages.ouvrir', $annonce->user) }}?annonce_id={{ $annonce->id }}" class="btn-ann-outline">
-                                <i class="fas fa-comment"></i> Négocier / Contacter
+                            <a href="{{ route('messages.ouvrir', $annonce->user) }}?annonce_id={{ $annonce->id }}" class="btn-ann-outline" title="Discuter par message">
+                                <i class="fas fa-comment"></i> Contacter
                             </a>
+                            @if($annonce->type_offre === 'vente')
+                            <button type="button" class="btn-ann-primary bg-success border-success text-white" 
+                                    onclick="openNegociationModal({{ $annonce->id }}, {{ $annonce->prix }}, {{ $annonce->quantite }}, '{{ $annonce->unite }}')">
+                                <i class="fas fa-handshake"></i> Négocier
+                            </button>
+                            @endif
                             @endif
                         @endauth
                     </div>
@@ -489,6 +495,81 @@
     </div>
 </section>
 
+@endsection
+
+@section('scripts')
+@parent
+<!-- Modal Négociation Globale -->
+<div class="modal fade" id="globalNegociationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-success text-white border-0 rounded-top-4">
+        <h5 class="modal-title fw-bold">
+            <i class="fas fa-handshake me-2"></i>Faire une offre
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="globalNegociationForm" method="POST">
+            @csrf
+            <div class="alert alert-success bg-light text-success border-success border-start border-4 mb-4" style="font-size:.85rem;">
+                Proposez un prix au vendeur. S'il accepte, vous pourrez acheter l'article à ce prix directement depuis votre panier.
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Prix proposé (FCFA)</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-white"><i class="fas fa-tag text-success"></i></span>
+                    <input type="number" name="prix_propose" id="modal_prix_propose" class="form-control fw-bold text-success" 
+                           min="1" required>
+                    <span class="input-group-text bg-light">FCFA</span>
+                </div>
+                <div class="form-text" id="modal_prix_public_text"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold" id="modal_quantite_label">Pour quelle quantité ?</label>
+                <input type="number" name="quantite" id="modal_quantite" class="form-control" step="0.01" min="0.01" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Petit message (optionnel)</label>
+                <textarea name="message" class="form-control" rows="2" placeholder="Bonjour, je suis très intéressé par..."></textarea>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold">
+                    <i class="fas fa-paper-plane me-2"></i>Envoyer mon offre
+                </button>
+                <button type="button" class="btn btn-light rounded-pill fw-semibold" data-bs-dismiss="modal">Annuler</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function openNegociationModal(annonceId, prixPublic, maxQuantite, unite) {
+        // Mettre à jour l'action du formulaire
+        const form = document.getElementById('globalNegociationForm');
+        form.action = `/annonces/${annonceId}/negocier`;
+
+        // Mettre à jour les champs
+        const suggestedPrice = Math.floor(prixPublic * 0.8);
+        document.getElementById('modal_prix_propose').placeholder = `Ex: ${suggestedPrice}`;
+        document.getElementById('modal_prix_public_text').innerText = `Prix public : ${new Intl.NumberFormat('fr-FR').format(prixPublic)} FCFA`;
+        
+        document.getElementById('modal_quantite_label').innerText = `Pour quelle quantité ? (${unite})`;
+        const qteInput = document.getElementById('modal_quantite');
+        qteInput.max = maxQuantite;
+        qteInput.value = Math.min(1, maxQuantite);
+
+        // Ouvrir la modale
+        const modal = new bootstrap.Modal(document.getElementById('globalNegociationModal'));
+        modal.show();
+    }
+</script>
 @endsection
 
 @push('scripts')
