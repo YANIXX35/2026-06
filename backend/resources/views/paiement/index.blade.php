@@ -479,7 +479,7 @@
                                 </select>
                                 <input type="tel" id="phone-wave" class="phone-number-input"
                                     placeholder="07 XX XX XX XX"
-                                    maxlength="12" inputmode="numeric" autocomplete="tel"
+                                    maxlength="14" inputmode="numeric" autocomplete="tel"
                                     oninput="formatPhoneInput(this, 'wave')">
                             </div>
                             <div class="digit-counter" id="counter-wave">0 / 10 chiffres</div>
@@ -540,7 +540,7 @@
                                 </select>
                                 <input type="tel" id="phone-moov" class="phone-number-input"
                                     placeholder="01 XX XX XX XX"
-                                    maxlength="12" inputmode="numeric" autocomplete="tel"
+                                    maxlength="14" inputmode="numeric" autocomplete="tel"
                                     oninput="formatPhoneInput(this, 'moov')">
                             </div>
                             <div class="digit-counter" id="counter-moov">0 / 10 chiffres</div>

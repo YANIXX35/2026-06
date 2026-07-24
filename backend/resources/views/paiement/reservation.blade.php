@@ -276,14 +276,40 @@ function selectMethod(method) {
 
     // Pré-remplir préfixe
     const tel = document.getElementById('tel-input');
-    if (!tel.value) tel.value = '+225';
+    if (!tel.value) tel.value = '+225 ';
 
     updateButton();
 }
 
 function updateButton() {
-    const tel   = document.getElementById('tel-input').value;
-    const valid = selectedMethod && /^\+\d{13}$/.test(tel.replace(/\s/g, ''));
+    const telInput = document.getElementById('tel-input');
+    
+    // Garder le + initial et ne conserver que les chiffres pour le reste
+    let raw = telInput.value;
+    let hasPlus = raw.startsWith('+');
+    let digits = raw.replace(/\D/g, '');
+    
+    // Formater la saisie : +225 XX XX XX XX XX
+    let formatted = hasPlus ? '+' : '';
+    if (digits.length > 0) {
+        // Indicatif pays (3 premiers chiffres, ex: 225)
+        formatted += digits.substring(0, 3);
+        if (digits.length > 3) {
+            formatted += ' ';
+            let rest = digits.substring(3, 13); // Les 10 chiffres du numéro
+            let parts = [];
+            for (let i = 0; i < rest.length; i += 2) {
+                parts.push(rest.substring(i, i + 2));
+            }
+            formatted += parts.join(' ');
+        }
+    }
+    
+    telInput.value = formatted;
+
+    // Validation : doit avoir un + indicatif pays de 3 chiffres + 10 chiffres = 13 chiffres au total
+    const cleanDigits = (hasPlus ? '+' : '') + digits;
+    const valid = selectedMethod && /^\+\d{13}$/.test(cleanDigits);
     document.getElementById('btn-payer').disabled = !valid;
 }
 
