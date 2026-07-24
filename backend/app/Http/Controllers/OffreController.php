@@ -31,7 +31,68 @@ use Illuminate\Support\Facades\Schema;
  */
 class OffreController extends Controller
 {
-    // ─── ACHETEUR : propose un prix ─────────────────────────────────────────
+    // ─── ACHETEUR : propose un prix (directement depuis l'annonce) ──────────
+    public function storeDirect(Request $request, \App\Models\Annonce $annonce)
+    {
+        if (!Schema::hasTable('offres')) {
+            return back()->with('error', 'La négociation de prix n\'est pas encore disponible, réessayez dans quelques minutes.');
+        }
+
+        $userId = Auth::id();
+        
+        if ($annonce->user_id === $userId) {
+            return back()->with('error', 'Vous ne pouvez pas proposer un prix sur votre propre annonce.');
+        }
+        if ($annonce->type_offre !== 'vente') {
+            return back()->with('error', 'La négociation de prix n\'est disponible que pour les annonces en vente.');
+        }
+        if ($annonce->statut !== 'disponible') {
+            return back()->with('error', 'Cette annonce n\'est plus disponible.');
+        }
+
+        $request->validate([
+            'prix_propose' => 'required|numeric|min:1',
+            'quantite'     => 'required|numeric|min:0.01|max:' . $annonce->quantite,
+            'message'      => 'nullable|string|max:500',
+        ]);
+
+        $offre = null;
+
+        DB::transaction(function () use ($request, $annonce, $userId, &$offre) {
+            // Créer silencieusement une conversation pour garder l'historique 
+            // et permettre de discuter si besoin, mais l'acheteur n'est pas 
+            // redirigé vers le chat.
+            $conversation = Conversation::firstOrCreate([
+                'annonce_id' => $annonce->id,
+                'user_1_id'  => $userId,
+                'user_2_id'  => $annonce->user_id,
+            ]);
+
+            // Une nouvelle proposition remplace toute proposition encore en attente
+            // sur cette conversation (ce couple acheteur/vendeur/annonce)
+            $conversation->offres()->enAttente()->update(['statut' => 'remplacee']);
+
+            $offre = Offre::create([
+                'annonce_id'       => $annonce->id,
+                'conversation_id'  => $conversation->id, // On lie la conversation
+                'acheteur_id'      => $userId,
+                'fournisseur_id'   => $annonce->user_id,
+                'proposeur_id'     => $userId,
+                'prix_propose'     => $request->prix_propose,
+                'quantite'         => $request->quantite,
+                'message'          => $request->message,
+                'statut'           => 'en_attente',
+                'est_contre_offre' => false,
+            ]);
+        });
+
+        $offre->load('annonce', 'acheteur');
+        $annonce->user->notify(new NouvelleOffre($offre));
+
+        return back()->with('success', 'Votre offre a été envoyée au fournisseur. Vous serez notifié dès qu\'il aura répondu.');
+    }
+
+    // ─── ACHETEUR : propose un prix (depuis la messagerie) ──────────────────
 
     public function store(Request $request, Conversation $conversation)
     {

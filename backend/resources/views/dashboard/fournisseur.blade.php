@@ -377,9 +377,21 @@
                 </div>
             </div>
             <div style="display:flex;gap:6px;">
+                <form action="{{ route('offres.accepter', $offreDash) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold" style="font-size:.76rem;" title="Accepter l'offre">
+                        <i class="fas fa-check me-1"></i>Accepter
+                    </button>
+                </form>
+                <form action="{{ route('offres.refuser', $offreDash) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 fw-semibold" style="font-size:.76rem;" title="Refuser l'offre">
+                        <i class="fas fa-times me-1"></i>Refuser
+                    </button>
+                </form>
                 @if($offreDash->conversation)
-                <a href="{{ route('messages.show', $offreDash->conversation) }}" class="btn btn-sm btn-warning rounded-pill px-3 fw-semibold" style="font-size:.76rem;">
-                    <i class="fas fa-reply me-1"></i>Répondre
+                <a href="{{ route('messages.show', $offreDash->conversation) }}" class="btn btn-sm btn-outline-warning rounded-pill px-2" style="font-size:.76rem;" title="Discuter">
+                    <i class="fas fa-comment"></i>
                 </a>
                 @endif
             </div>
