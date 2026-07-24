@@ -221,11 +221,14 @@ class AuthController extends Controller
                     ->whereHas('commande', fn($q) => $q->whereIn('statut', ['confirmée', 'livrée']))
                     ->sum('montant_net');
 
-                $offresEnAttente = \App\Models\Offre::with(['annonce', 'acheteur', 'fournisseur'])
-                    ->where('fournisseur_id', $user->id)
-                    ->where('statut', 'en_attente')
-                    ->latest()
-                    ->get();
+                $offresEnAttente = collect();
+                if (\Illuminate\Support\Facades\Schema::hasTable('offres')) {
+                    $offresEnAttente = \App\Models\Offre::with(['annonce', 'acheteur', 'fournisseur'])
+                        ->where('fournisseur_id', $user->id)
+                        ->where('statut', 'en_attente')
+                        ->latest()
+                        ->get();
+                }
 
                 $annonceIds = $annonces->pluck('id');
                 $reservationsParJour = \App\Models\Reservation::whereIn('annonce_id', $annonceIds)
