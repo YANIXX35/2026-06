@@ -415,6 +415,7 @@
                             </a>
                             @if($annonce->type_offre === 'vente')
                             <button type="button" class="btn-ann-primary bg-success border-success text-white" 
+                                    data-bs-toggle="modal" data-bs-target="#globalNegociationModal"
                                     onclick="openNegociationModal({{ $annonce->id }}, {{ $annonce->prix }}, {{ $annonce->quantite }}, '{{ $annonce->unite }}')">
                                 <i class="fas fa-handshake"></i> Négocier
                             </button>
@@ -564,10 +565,6 @@
         const qteInput = document.getElementById('modal_quantite');
         qteInput.max = maxQuantite;
         qteInput.value = Math.min(1, maxQuantite);
-
-        // Ouvrir la modale
-        const modal = new bootstrap.Modal(document.getElementById('globalNegociationModal'));
-        modal.show();
     }
 </script>
 @endsection
