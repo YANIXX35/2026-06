@@ -192,15 +192,15 @@ class OffreController extends Controller
         if ($offre->est_contre_offre) {
             // L'acheteur vient d'accepter la contre-offre du fournisseur
             $offre->fournisseur->notify(new OffreAcceptee($offre));
-            // Rediriger l'acheteur vers la page de paiement AU PRIX NÉGOCIÉ
-            return redirect()->route('paiement.reservation.show', $reservation)
-                ->with('success', 'Offre acceptée ! Finalisez le paiement à votre prix négocié.');
+            // Rediriger l'acheteur vers l'annonce
+            return redirect()->route('annonces.show', $offre->annonce)
+                ->with('success', 'Offre acceptée ! Vous pouvez maintenant ajouter l\'article au panier à votre prix négocié.');
         }
 
         // Le fournisseur vient d'accepter l'offre initiale de l'acheteur
         $offre->acheteur->notify(new OffreAcceptee($offre));
-        return redirect()->route('reservations.mes-reservations')
-            ->with('success', 'Offre acceptée, réservation créée. L\'acheteur a été notifié pour le paiement.');
+        return back()
+            ->with('success', 'Offre acceptée. L\'acheteur a été notifié et peut maintenant ajouter l\'article à son panier.');
     }
 
     // ─── FOURNISSEUR (ou acheteur sur contre-offre) : refuse ────────────────

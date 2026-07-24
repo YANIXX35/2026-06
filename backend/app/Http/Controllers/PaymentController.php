@@ -86,30 +86,45 @@ class PaymentController extends Controller
 
             $total     = $cartItems->sum(fn($i) => $i->sousTotal());
             $reference = 'AGC-' . strtoupper(Str::random(8));
+            
+            // Calcul de la commission de 5%
+            $commissionTaux = 0.05;
+            $montantCommission = $total * $commissionTaux;
+            $montantNetFournisseur = $total - $montantCommission;
 
             $commande = Commande::create([
-                'user_id'             => $userId,
-                'statut'              => 'confirmée',
-                'montant_total'       => $total,
-                'adresse_livraison'   => session('checkout.adresse'),
-                'message'             => session('checkout.message'),
-                'mode_paiement'       => $request->mode_paiement,
-                'telephone_paiement'  => $request->telephone,
-                'reference_paiement'  => $reference,
-                'statut_paiement'     => $total > 0 ? 'payé' : 'gratuit',
+                'user_id'                 => $userId,
+                'statut'                  => 'confirmée',
+                'montant_total'           => $total,
+                'commission_taux'         => $commissionTaux,
+                'montant_commission'      => $montantCommission,
+                'montant_net_fournisseur' => $montantNetFournisseur,
+                'adresse_livraison'       => session('checkout.adresse'),
+                'message'                 => session('checkout.message'),
+                'mode_paiement'           => $request->mode_paiement,
+                'telephone_paiement'      => $request->telephone,
+                'reference_paiement'      => $reference,
+                'statut_paiement'         => $total > 0 ? 'payé' : 'gratuit',
             ]);
 
             $parFournisseur = $cartItems->groupBy(fn($i) => $annonces->get($i->annonce_id)?->user_id);
 
             foreach ($cartItems as $item) {
                 $annonce = $annonces->get($item->annonce_id);
+                $prixUnitaire = $item->prixUnitaire();
+                $sousTotalItem = $item->sousTotal();
+                $commissionItem = $sousTotalItem * $commissionTaux;
+                $netItem = $sousTotalItem - $commissionItem;
+
                 CommandeItem::create([
-                    'commande_id'    => $commande->id,
-                    'annonce_id'     => $item->annonce_id,
-                    'fournisseur_id' => $annonce->user_id,
-                    'quantite'       => $item->quantite,
-                    'prix_unitaire'  => $annonce->type_offre === 'don' ? 0 : $annonce->prix,
-                    'statut'         => 'en_attente',
+                    'commande_id'        => $commande->id,
+                    'annonce_id'         => $item->annonce_id,
+                    'fournisseur_id'     => $annonce->user_id,
+                    'quantite'           => $item->quantite,
+                    'prix_unitaire'      => $prixUnitaire,
+                    'commission_montant' => $commissionItem,
+                    'montant_net'        => $netItem,
+                    'statut'             => 'en_attente',
                 ]);
             }
 

@@ -215,6 +215,17 @@ class AuthController extends Controller
                 $kgSauves       = $reservationsCompletes->sum('quantite_demandee');
                 $co2Evite       = round($kgSauves * 2.5, 1);
                 $revenusGeneres = $reservationsCompletes->sum(fn($r) => $r->annonce ? $r->annonce->prix * $r->quantite_demandee : 0);
+                
+                // Nouveaux calculs avec la commission de 5%
+                $revenusNets = \App\Models\CommandeItem::where('fournisseur_id', $user->id)
+                    ->whereHas('commande', fn($q) => $q->whereIn('statut', ['confirmée', 'livrée']))
+                    ->sum('montant_net');
+
+                $offresEnAttente = \App\Models\Offre::with(['annonce', 'acheteur', 'fournisseur'])
+                    ->where('fournisseur_id', $user->id)
+                    ->where('statut', 'en_attente')
+                    ->latest()
+                    ->get();
 
                 $annonceIds = $annonces->pluck('id');
                 $reservationsParJour = \App\Models\Reservation::whereIn('annonce_id', $annonceIds)
@@ -229,6 +240,8 @@ class AuthController extends Controller
                     'kgSauves'              => $kgSauves,
                     'co2Evite'              => $co2Evite,
                     'revenusGeneres'        => $revenusGeneres,
+                    'revenusNets'           => $revenusNets,
+                    'offresEnAttente'       => $offresEnAttente,
                     'stats' => [
                         'annonces_actives'   => $annonces->where('statut', 'disponible')->count(),
                         'reservations_att'   => \App\Models\Reservation::whereHas('annonce', fn($q) => $q->where('user_id', $user->id))->where('statut', 'en_attente')->count(),
@@ -255,11 +268,14 @@ class AuthController extends Controller
             $kgSauves              = $dashData['kgSauves'];
             $co2Evite              = $dashData['co2Evite'];
             $revenusGeneres        = $dashData['revenusGeneres'];
+            $revenusNets           = $dashData['revenusNets'];
+            $offresEnAttente       = $dashData['offresEnAttente'];
             $stats                 = $dashData['stats'];
             $impact = [
                 'kg_sauves'      => round($kgSauves, 1),
                 'co2_evite'      => $co2Evite,
                 'revenus_generes'=> number_format($revenusGeneres, 0, ',', ' '),
+                'revenus_nets'   => number_format($revenusNets, 0, ',', ' '),
                 'repas_equiv'    => round($kgSauves / 0.5),
             ];
             $dernieresReservations = $dashData['dernieresReservations'];
@@ -267,7 +283,7 @@ class AuthController extends Controller
             $chartLabels           = $dashData['chartLabels'];
             $chartData             = $dashData['chartData'];
 
-            return view('dashboard.fournisseur', compact('user', 'stats', 'impact', 'dernieresReservations', 'dernieresAnnonces', 'chartLabels', 'chartData'));
+            return view('dashboard.fournisseur', compact('user', 'stats', 'impact', 'dernieresReservations', 'dernieresAnnonces', 'chartLabels', 'chartData', 'offresEnAttente'));
         }
 
         // Acheteur — cache 5 minutes

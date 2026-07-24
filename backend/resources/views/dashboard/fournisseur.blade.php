@@ -295,8 +295,9 @@
             <div style="font-size:.75rem;opacity:.8;margin-top:4px;">🍽️ Repas équivalents</div>
         </div>
         <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;">
-            <div style="font-size:1.8rem;font-weight:900;color:#6ee7b7;">{{ $impact['revenus_generes'] }} F</div>
-            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">💰 Revenus générés</div>
+            <div style="font-size:1.8rem;font-weight:900;color:#6ee7b7;">{{ $impact['revenus_nets'] }} F</div>
+            <div style="font-size:.75rem;opacity:.8;margin-top:4px;">💰 Revenus nets</div>
+            <div style="font-size:.6rem;opacity:.6;margin-top:2px;">(-5% frais de plateforme)</div>
         </div>
     </div>
 </div>
@@ -339,17 +340,6 @@
 </div>
 
 {{-- ── OFFRES EN ATTENTE (Négociation de prix) ── --}}
-@php
-    $offresEnAttente = \Illuminate\Support\Facades\Schema::hasTable('offres')
-        ? \App\Models\Offre::where('fournisseur_id', auth()->id())
-              ->where('statut', 'en_attente')
-              ->where('est_contre_offre', false)
-              ->with(['annonce', 'acheteur', 'conversation'])
-              ->latest()
-              ->take(5)
-              ->get()
-        : collect();
-@endphp
 
 @if($offresEnAttente->count() > 0)
 <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 20px 22px; margin-bottom: 24px;">

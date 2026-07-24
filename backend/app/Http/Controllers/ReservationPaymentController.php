@@ -88,26 +88,36 @@ class ReservationPaymentController extends Controller
             $total        = $prixUnitaire * (float) $reservation->quantite_demandee;
             $reference    = 'AGC-NEG-' . strtoupper(Str::random(6));
 
+            // Calcul de la commission de 5%
+            $commissionTaux = 0.05;
+            $montantCommission = $total * $commissionTaux;
+            $montantNetFournisseur = $total - $montantCommission;
+
             $commande = Commande::create([
-                'user_id'            => $reservation->user_id,
-                'statut'             => 'confirmée',
-                'montant_total'      => $total,
-                'adresse_livraison'  => null,
-                'message'            => 'Commande issue d\'une négociation de prix. Offre acceptée.',
-                'mode_paiement'      => $request->mode_paiement,
-                'telephone_paiement' => $request->telephone,
-                'reference_paiement' => $reference,
-                'statut_paiement'    => $total > 0 ? 'payé' : 'gratuit',
+                'user_id'                 => $reservation->user_id,
+                'statut'                  => 'confirmée',
+                'montant_total'           => $total,
+                'commission_taux'         => $commissionTaux,
+                'montant_commission'      => $montantCommission,
+                'montant_net_fournisseur' => $montantNetFournisseur,
+                'adresse_livraison'       => null,
+                'message'                 => 'Commande issue d\'une négociation de prix. Offre acceptée.',
+                'mode_paiement'           => $request->mode_paiement,
+                'telephone_paiement'      => $request->telephone,
+                'reference_paiement'      => $reference,
+                'statut_paiement'         => $total > 0 ? 'payé' : 'gratuit',
             ]);
 
-            // CommandeItem au prix négocié (pas annonce->prix)
+            // CommandeItem au prix négocié
             CommandeItem::create([
-                'commande_id'    => $commande->id,
-                'annonce_id'     => $reservation->annonce_id,
-                'fournisseur_id' => $reservation->annonce->user_id,
-                'quantite'       => $reservation->quantite_demandee,
-                'prix_unitaire'  => $prixUnitaire,   // ← prix négocié ici
-                'statut'         => 'en_attente',
+                'commande_id'        => $commande->id,
+                'annonce_id'         => $reservation->annonce_id,
+                'fournisseur_id'     => $reservation->annonce->user_id,
+                'quantite'           => $reservation->quantite_demandee,
+                'prix_unitaire'      => $prixUnitaire,
+                'commission_montant' => $montantCommission,
+                'montant_net'        => $montantNetFournisseur,
+                'statut'             => 'en_attente',
             ]);
 
             // Marquer la réservation comme acceptée/payée

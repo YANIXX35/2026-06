@@ -191,13 +191,13 @@
 
                     {{-- Négociation de prix --}}
                     @if($annonce->type_offre === 'vente')
-                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card border-0 shadow-sm rounded-3 mb-4" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1.5px solid #86efac !important;">
                         <div class="card-body p-4 text-center">
-                            <i class="fas fa-hand-holding-usd text-primary fs-3 mb-2"></i>
-                            <h6 class="fw-semibold mb-2">Envie de négocier le prix ?</h6>
-                            <p class="text-muted small mb-3">Proposez un montant directement dans la messagerie de l'application — c'est la seule façon pour AntiGaspiCI de pouvoir vous protéger en cas de litige.</p>
-                            <a href="{{ route('messages.ouvrir', ['user' => $annonce->user_id, 'annonce_id' => $annonce->id]) }}" class="btn btn-outline-primary rounded-pill px-4">
-                                Proposer un prix
+                            <i class="fas fa-handshake text-success fs-3 mb-2"></i>
+                            <h6 class="fw-bold text-success mb-2">🤝 Négocier le prix</h6>
+                            <p class="text-success small mb-3 opacity-75">Proposez un montant directement au fournisseur. Si votre offre est acceptée, vous pourrez l'ajouter au panier au prix réduit !</p>
+                            <a href="{{ route('messages.ouvrir', ['user' => $annonce->user_id, 'annonce_id' => $annonce->id]) }}" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                                <i class="fas fa-comments me-2"></i>Faire une offre
                             </a>
                         </div>
                     </div>

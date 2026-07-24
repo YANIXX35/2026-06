@@ -19,29 +19,16 @@ class OffreAcceptee extends Notification
         $prixPropose  = number_format($this->offre->prix_propose, 0, ',', ' ');
         $titreAnnonce = $this->offre->annonce->titre ?? 'annonce';
 
-        // Trouver la réservation créée lors de l'acceptation pour pointer
-        // directement vers la page de paiement AU PRIX NÉGOCIÉ.
-        $reservation  = $this->offre->annonce
-            ?->reservations()
-            ->where('user_id', $this->offre->acheteur_id)
-            ->where('offre_id', $this->offre->id)
-            ->latest()
-            ->first();
-
-        // Si on a la réservation → parcours négocié (prix réduit)
-        // Sinon → repli sur la liste des réservations
-        $urlCible = $reservation
-            ? route('paiement.reservation.show', $reservation)
-            : route('reservations.mes-reservations');
+        $urlCible = $this->offre->annonce ? route('annonces.show', $this->offre->annonce) : url('/');
 
         return [
             'type'        => 'offre_acceptee',
             'icone'       => '✅',
             'titre'       => 'Votre offre a été acceptée !',
-            'message'     => 'Votre offre à ' . $prixPropose . ' FCFA pour « ' . $titreAnnonce . ' » a été acceptée. Finalisez votre achat au prix négocié.',
+            'message'     => 'Votre offre à ' . $prixPropose . ' FCFA pour « ' . $titreAnnonce . ' » a été acceptée. Ajoutez l\'article à votre panier pour finaliser l\'achat.',
             'url'         => $urlCible,
             'annonce_id'  => $this->offre->annonce_id,
-            'cta'         => 'Payer ' . $prixPropose . ' FCFA',
+            'cta'         => 'Ajouter au panier',
         ];
     }
 }

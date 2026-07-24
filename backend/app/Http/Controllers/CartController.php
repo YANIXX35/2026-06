@@ -34,21 +34,29 @@ class CartController extends Controller
             return back()->with('error', 'Vous ne pouvez pas ajouter votre propre annonce au panier.');
         }
 
-        $existing = CartItem::where('user_id', Auth::id())
+        $cartItem = CartItem::where('user_id', Auth::id())
             ->where('annonce_id', $annonce->id)
             ->first();
 
-        if ($existing) {
-            $existing->update(['quantite' => min($request->quantite + $existing->quantite, $annonce->quantite)]);
+        if ($cartItem) {
+            $cartItem->update(['quantite' => min($request->quantite + $cartItem->quantite, $annonce->quantite)]);
         } else {
-            CartItem::create([
+            $cartItem = CartItem::create([
                 'user_id'    => Auth::id(),
                 'annonce_id' => $annonce->id,
                 'quantite'   => $request->quantite,
             ]);
         }
 
-        return back()->with('cart_success', '« ' . $annonce->titre . ' » ajouté au panier !');
+        $prixUnitaire = $cartItem->prixUnitaire();
+        $isNegocie = $prixUnitaire < $annonce->prix;
+
+        $msg = '« ' . $annonce->titre . ' » ajouté au panier !';
+        if ($isNegocie) {
+            $msg = '« ' . $annonce->titre . ' » ajouté au panier à votre prix négocié (' . number_format($prixUnitaire, 0, ',', ' ') . ' FCFA) !';
+        }
+
+        return back()->with('cart_success', $msg);
     }
 
     public function mettreAJour(Request $request, CartItem $cartItem)

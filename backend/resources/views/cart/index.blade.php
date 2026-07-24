@@ -129,7 +129,12 @@
                         @endif
                     </div>
                     @if($item->annonce->type_offre !== 'don')
-                    <div style="font-size:.7rem;color:#bbb;margin-top:2px;">{{ number_format($item->annonce->prix, 0, ',', ' ') }} F / {{ $item->annonce->unite }}</div>
+                        @if($item->prixUnitaire() < $item->annonce->prix)
+                        <div style="font-size:.7rem;color:#16a34a;margin-top:2px;font-weight:700;"><i class="fas fa-handshake"></i> Prix négocié appliqué</div>
+                        <div style="font-size:.65rem;color:#bbb;text-decoration:line-through;">{{ number_format($item->annonce->prix, 0, ',', ' ') }} F</div>
+                        @else
+                        <div style="font-size:.7rem;color:#bbb;margin-top:2px;">{{ number_format($item->annonce->prix, 0, ',', ' ') }} F / {{ $item->annonce->unite }}</div>
+                        @endif
                     @endif
 
                     <form action="{{ route('cart.remove', $item) }}" method="POST" class="mt-2">
