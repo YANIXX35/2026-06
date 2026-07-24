@@ -232,6 +232,12 @@
                                                     <i class="fas fa-times me-1"></i>Refuser
                                                 </button>
                                             </form>
+                                            <form action="{{ route('offres.maintenir', $offre) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                                    <i class="fas fa-thumbtack me-1"></i>Maintenir le prix initial
+                                                </button>
+                                            </form>
                                             <button class="btn-contre-offre-toggle" onclick="toggleContreOffre({{ $offre->id }})">
                                                 <i class="fas fa-reply me-1"></i>Proposer un autre prix
                                             </button>

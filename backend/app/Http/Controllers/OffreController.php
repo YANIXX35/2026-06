@@ -31,6 +31,25 @@ use Illuminate\Support\Facades\Schema;
  */
 class OffreController extends Controller
 {
+    // ─── ACHETEUR : affiche la page dédiée de négociation ───────────────────
+    public function creerNegociation(\App\Models\Annonce $annonce)
+    {
+        $userId = Auth::id();
+        if ($annonce->user_id === $userId) {
+            return back()->with('error', 'Vous ne pouvez pas négocier votre propre annonce.');
+        }
+        if ($annonce->type_offre !== 'vente') {
+            return back()->with('error', 'La négociation de prix n\'est disponible que pour les annonces en vente.');
+        }
+        if ($annonce->statut !== 'disponible') {
+            return back()->with('error', 'Cette annonce n\'est plus disponible.');
+        }
+
+        $annonce->load(['photoPrincipale', 'user']);
+
+        return view('annonces.negocier', compact('annonce'));
+    }
+
     // ─── ACHETEUR : propose un prix (directement depuis l'annonce) ──────────
     public function storeDirect(Request $request, \App\Models\Annonce $annonce)
     {
@@ -89,7 +108,7 @@ class OffreController extends Controller
         $offre->load('annonce', 'acheteur');
         $annonce->user->notify(new NouvelleOffre($offre));
 
-        return back()->with('success', 'Votre offre a été envoyée au fournisseur. Vous serez notifié dès qu\'il aura répondu.');
+        return redirect()->route('annonces.show', $annonce)->with('success', 'Votre offre a été envoyée au fournisseur. Vous serez notifié dès qu\'il aura répondu.');
     }
 
     // ─── ACHETEUR : propose un prix (depuis la messagerie) ──────────────────
@@ -288,5 +307,28 @@ class OffreController extends Controller
         }
 
         return back()->with('success', 'Offre refusée. La conversation reste ouverte pour continuer à négocier.');
+    }
+
+    // ─── FOURNISSEUR : maintient le prix initial ───────────────────────────
+    public function maintenirPrix(Offre $offre)
+    {
+        $userId = Auth::id();
+
+        // Seul le fournisseur de l'annonce peut choisir de maintenir le prix
+        if ($offre->fournisseur_id !== $userId) abort(403);
+
+        if ($offre->statut !== 'en_attente') {
+            return back()->with('error', 'Cette offre n\'est plus en attente.');
+        }
+
+        // Mettre à jour l'offre avec un statut spécifique ou la marquer comme refusée avec maintien
+        $offre->update(['statut' => 'refusee']);
+
+        $offre->load('annonce', 'acheteur');
+
+        // Notifier l'acheteur que le prix initial est maintenu
+        $offre->acheteur->notify(new \App\Notifications\OffrePrixMaintenu($offre));
+
+        return back()->with('success', 'Vous avez choisi de maintenir le prix initial. L\'acheteur a été notifié.');
     }
 }

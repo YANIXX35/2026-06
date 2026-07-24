@@ -196,9 +196,9 @@
                             <i class="fas fa-handshake text-success fs-3 mb-2"></i>
                             <h6 class="fw-bold text-success mb-2">🤝 Négocier le prix</h6>
                             <p class="text-success small mb-3 opacity-75">Proposez un montant directement au fournisseur. Si votre offre est acceptée, vous pourrez l'ajouter au panier au prix réduit !</p>
-                            <button type="button" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#negociationModal">
+                            <a href="{{ route('annonces.negocier.page', $annonce) }}" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
                                 <i class="fas fa-handshake me-2"></i>Faire une offre
-                            </button>
+                            </a>
                         </div>
                     </div>
                     @endif

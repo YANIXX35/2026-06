@@ -414,15 +414,9 @@
                                 <i class="fas fa-comment"></i> Contacter
                             </a>
                             @if($annonce->type_offre === 'vente')
-                            <button type="button" class="btn-ann-primary bg-success border-success text-white" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#globalNegociationModal"
-                                    data-id="{{ $annonce->id }}"
-                                    data-prix="{{ $annonce->prix }}"
-                                    data-quantite="{{ $annonce->quantite }}"
-                                    data-unite="{{ $annonce->unite }}">
+                            <a href="{{ route('annonces.negocier.page', $annonce) }}" class="btn-ann-primary bg-success border-success text-white">
                                 <i class="fas fa-handshake"></i> Négocier
-                            </button>
+                            </a>
                             @endif
                             @endif
                         @endauth
@@ -500,93 +494,7 @@
     </div>
 </section>
 
-<!-- Modal Négociation Globale -->
-<div class="modal fade" id="globalNegociationModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4">
-      <div class="modal-header bg-success text-white border-0 rounded-top-4">
-        <h5 class="modal-title fw-bold">
-            <i class="fas fa-handshake me-2"></i>Faire une offre
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-4">
-        <form id="globalNegociationForm" method="POST">
-            @csrf
-            <div class="alert alert-success bg-light text-success border-success border-start border-4 mb-4" style="font-size:.85rem;">
-                Proposez un prix au vendeur. S'il accepte, vous pourrez acheter l'article à ce prix directement depuis votre panier.
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label fw-bold">Prix proposé (FCFA)</label>
-                <div class="input-group input-group-lg">
-                    <span class="input-group-text bg-white"><i class="fas fa-tag text-success"></i></span>
-                    <input type="number" name="prix_propose" id="modal_prix_propose" class="form-control fw-bold text-success" 
-                           min="1" required>
-                    <span class="input-group-text bg-light">FCFA</span>
-                </div>
-                <div class="form-text" id="modal_prix_public_text"></div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold" id="modal_quantite_label">Pour quelle quantité ?</label>
-                <input type="number" name="quantite" id="modal_quantite" class="form-control" step="0.01" min="0.01" required>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Petit message (optionnel)</label>
-                <textarea name="message" class="form-control" rows="2" placeholder="Bonjour, je suis très intéressé par..."></textarea>
-            </div>
-
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold">
-                    <i class="fas fa-paper-plane me-2"></i>Envoyer mon offre
-                </button>
-                <button type="button" class="btn btn-light rounded-pill fw-semibold" data-bs-dismiss="modal">Annuler</button>
-            </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-@endsection
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const globalModal = document.getElementById('globalNegociationModal');
-        if(globalModal) {
-            globalModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                if (!button) return;
-                
-                const annonceId = button.getAttribute('data-id');
-                const prixPublic = parseFloat(button.getAttribute('data-prix'));
-                const maxQuantite = parseFloat(button.getAttribute('data-quantite'));
-                const unite = button.getAttribute('data-unite');
-                
-                const form = document.getElementById('globalNegociationForm');
-                if (form) form.action = `/annonces/${annonceId}/negocier`;
-
-                const suggestedPrice = Math.floor(prixPublic * 0.8);
-                const inputPrix = document.getElementById('modal_prix_propose');
-                if (inputPrix) inputPrix.placeholder = `Ex: ${suggestedPrice}`;
-                
-                const textPrix = document.getElementById('modal_prix_public_text');
-                if (textPrix) textPrix.innerText = `Prix public : ${new Intl.NumberFormat('fr-FR').format(prixPublic)} FCFA`;
-                
-                const labelQte = document.getElementById('modal_quantite_label');
-                if (labelQte) labelQte.innerText = `Pour quelle quantité ? (${unite})`;
-                
-                const qteInput = document.getElementById('modal_quantite');
-                if (qteInput) {
-                    qteInput.max = maxQuantite;
-                    qteInput.value = Math.min(1, maxQuantite);
-                }
-            });
-        }
-    });
-</script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ── Quantité +/- ──
