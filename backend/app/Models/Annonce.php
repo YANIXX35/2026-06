@@ -178,4 +178,29 @@ class Annonce extends Model
         // Image culinaire / nourriture générale de très haute qualité
         return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
     }
+
+    /**
+     * Surcharge dynamique du prix pour l'utilisateur actuellement authentifié.
+     * Si l'utilisateur connecté a une négociation acceptée ou en attente pour cette annonce,
+     * on lui affiche son prix négocié, sinon le prix public de base.
+     */
+    public function getPrixAttribute($value)
+    {
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $userId = \Illuminate\Support\Facades\Auth::id();
+            
+            // Rechercher s'il y a une réservation (négociation) active liée à cet acheteur pour ce produit
+            $reservation = $this->reservations()
+                ->where('user_id', $userId)
+                ->whereIn('statut', ['en_attente', 'acceptée'])
+                ->whereNotNull('prix_negocie')
+                ->first();
+
+            if ($reservation) {
+                return $reservation->prix_negocie;
+            }
+        }
+
+        return $value;
+    }
 }
