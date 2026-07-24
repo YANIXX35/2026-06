@@ -415,8 +415,12 @@
                             </a>
                             @if($annonce->type_offre === 'vente')
                             <button type="button" class="btn-ann-primary bg-success border-success text-white" 
-                                    data-bs-toggle="modal" data-bs-target="#globalNegociationModal"
-                                    onclick="openNegociationModal({{ $annonce->id }}, {{ $annonce->prix }}, {{ $annonce->quantite }}, '{{ $annonce->unite }}')">
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#globalNegociationModal"
+                                    data-id="{{ $annonce->id }}"
+                                    data-prix="{{ $annonce->prix }}"
+                                    data-quantite="{{ $annonce->quantite }}"
+                                    data-unite="{{ $annonce->unite }}">
                                 <i class="fas fa-handshake"></i> Négocier
                             </button>
                             @endif
@@ -551,21 +555,36 @@
 </div>
 
 <script>
-    function openNegociationModal(annonceId, prixPublic, maxQuantite, unite) {
-        // Mettre à jour l'action du formulaire
-        const form = document.getElementById('globalNegociationForm');
-        form.action = `/annonces/${annonceId}/negocier`;
+    document.addEventListener('DOMContentLoaded', function() {
+        const globalModal = document.getElementById('globalNegociationModal');
+        if(globalModal) {
+            globalModal.addEventListener('show.bs.modal', function (event) {
+                // Le bouton qui a déclenché la modale
+                const button = event.relatedTarget;
+                if (!button) return;
+                
+                // Extraire les infos
+                const annonceId = button.getAttribute('data-id');
+                const prixPublic = parseFloat(button.getAttribute('data-prix'));
+                const maxQuantite = parseFloat(button.getAttribute('data-quantite'));
+                const unite = button.getAttribute('data-unite');
+                
+                // Mettre à jour l'action du formulaire
+                const form = document.getElementById('globalNegociationForm');
+                form.action = `/annonces/${annonceId}/negocier`;
 
-        // Mettre à jour les champs
-        const suggestedPrice = Math.floor(prixPublic * 0.8);
-        document.getElementById('modal_prix_propose').placeholder = `Ex: ${suggestedPrice}`;
-        document.getElementById('modal_prix_public_text').innerText = `Prix public : ${new Intl.NumberFormat('fr-FR').format(prixPublic)} FCFA`;
-        
-        document.getElementById('modal_quantite_label').innerText = `Pour quelle quantité ? (${unite})`;
-        const qteInput = document.getElementById('modal_quantite');
-        qteInput.max = maxQuantite;
-        qteInput.value = Math.min(1, maxQuantite);
-    }
+                // Mettre à jour les champs
+                const suggestedPrice = Math.floor(prixPublic * 0.8);
+                document.getElementById('modal_prix_propose').placeholder = `Ex: ${suggestedPrice}`;
+                document.getElementById('modal_prix_public_text').innerText = `Prix public : ${new Intl.NumberFormat('fr-FR').format(prixPublic)} FCFA`;
+                
+                document.getElementById('modal_quantite_label').innerText = `Pour quelle quantité ? (${unite})`;
+                const qteInput = document.getElementById('modal_quantite');
+                qteInput.max = maxQuantite;
+                qteInput.value = Math.min(1, maxQuantite);
+            });
+        }
+    });
 </script>
 @endsection
 
