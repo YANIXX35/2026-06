@@ -500,10 +500,6 @@
     </div>
 </section>
 
-@endsection
-
-@section('scripts')
-@parent
 <!-- Modal Négociation Globale -->
 <div class="modal fade" id="globalNegociationModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -553,42 +549,44 @@
     </div>
   </div>
 </div>
+@endsection
 
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const globalModal = document.getElementById('globalNegociationModal');
         if(globalModal) {
             globalModal.addEventListener('show.bs.modal', function (event) {
-                // Le bouton qui a déclenché la modale
                 const button = event.relatedTarget;
                 if (!button) return;
                 
-                // Extraire les infos
                 const annonceId = button.getAttribute('data-id');
                 const prixPublic = parseFloat(button.getAttribute('data-prix'));
                 const maxQuantite = parseFloat(button.getAttribute('data-quantite'));
                 const unite = button.getAttribute('data-unite');
                 
-                // Mettre à jour l'action du formulaire
                 const form = document.getElementById('globalNegociationForm');
-                form.action = `/annonces/${annonceId}/negocier`;
+                if (form) form.action = `/annonces/${annonceId}/negocier`;
 
-                // Mettre à jour les champs
                 const suggestedPrice = Math.floor(prixPublic * 0.8);
-                document.getElementById('modal_prix_propose').placeholder = `Ex: ${suggestedPrice}`;
-                document.getElementById('modal_prix_public_text').innerText = `Prix public : ${new Intl.NumberFormat('fr-FR').format(prixPublic)} FCFA`;
+                const inputPrix = document.getElementById('modal_prix_propose');
+                if (inputPrix) inputPrix.placeholder = `Ex: ${suggestedPrice}`;
                 
-                document.getElementById('modal_quantite_label').innerText = `Pour quelle quantité ? (${unite})`;
+                const textPrix = document.getElementById('modal_prix_public_text');
+                if (textPrix) textPrix.innerText = `Prix public : ${new Intl.NumberFormat('fr-FR').format(prixPublic)} FCFA`;
+                
+                const labelQte = document.getElementById('modal_quantite_label');
+                if (labelQte) labelQte.innerText = `Pour quelle quantité ? (${unite})`;
+                
                 const qteInput = document.getElementById('modal_quantite');
-                qteInput.max = maxQuantite;
-                qteInput.value = Math.min(1, maxQuantite);
+                if (qteInput) {
+                    qteInput.max = maxQuantite;
+                    qteInput.value = Math.min(1, maxQuantite);
+                }
             });
         }
     });
 </script>
-@endsection
-
-@push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ── Quantité +/- ──
