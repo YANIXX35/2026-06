@@ -15,6 +15,7 @@ use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReservationPaymentController;
 
 // ─── PAGE D'ACCUEIL ────────────────────────────────────────────
 Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('home');
@@ -93,11 +94,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/panier/{cartItem}', [CartController::class, 'supprimer'])->name('cart.remove');
     Route::delete('/panier', [CartController::class, 'vider'])->name('cart.vider');
 
-    // Paiement
+    // Paiement — parcours panier classique
     Route::post('/paiement/initier', [PaymentController::class, 'initier'])->name('paiement.initier');
     Route::get('/paiement', [PaymentController::class, 'show'])->name('paiement.show');
     Route::post('/paiement/confirmer', [PaymentController::class, 'confirmer'])->name('paiement.confirmer');
     Route::get('/paiement/succes/{commande}', [PaymentController::class, 'succes'])->name('paiement.succes');
+
+    // Paiement — parcours prix négocié (séparé du panier)
+    // Prix utilisé = reservation->prix_negocie, pas annonce->prix
+    Route::get('/paiement/reservation/{reservation}', [ReservationPaymentController::class, 'show'])->name('paiement.reservation.show');
+    Route::post('/paiement/reservation/{reservation}/confirmer', [ReservationPaymentController::class, 'confirmer'])->name('paiement.reservation.confirmer');
+    Route::get('/paiement/reservation/{reservation}/succes', [ReservationPaymentController::class, 'succes'])->name('paiement.reservation.succes');
 
     // Commandes
     Route::get('/commandes', [CommandeController::class, 'index'])->name('commandes.index');
