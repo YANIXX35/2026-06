@@ -126,6 +126,14 @@ class PaymentController extends Controller
                     'montant_net'        => $netItem,
                     'statut'             => 'en_attente',
                 ]);
+
+                // Déduction du stock de l'annonce
+                $nouvelleQuantite = max(0, (float) $annonce->quantite - (float) $item->quantite);
+                $nouveauStatut = $nouvelleQuantite <= 0 ? 'reservé' : 'disponible';
+                $annonce->update([
+                    'quantite' => $nouvelleQuantite,
+                    'statut'   => $nouveauStatut,
+                ]);
             }
 
             foreach ($parFournisseur as $fournisseurId => $fournisseurItems) {

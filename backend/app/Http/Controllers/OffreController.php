@@ -259,8 +259,14 @@ class OffreController extends Controller
                 'offre_id'          => $offre->id,
             ]);
 
-            if ($offre->annonce->statut === 'disponible') {
-                $offre->annonce->update(['statut' => 'reservé']);
+            // Calculer la quantité restante après réservation
+            $quantiteRestante = (float) $offre->annonce->quantite - (float) $offre->quantite;
+
+            // L'annonce ne passe à 'reservé' (ou 'indisponible') que si la totalité du stock disponible est réservée.
+            if ($quantiteRestante <= 0) {
+                $offre->annonce->update([
+                    'statut' => 'reservé'
+                ]);
             }
 
             $offre->update(['statut' => 'acceptee']);

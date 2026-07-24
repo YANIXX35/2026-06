@@ -120,6 +120,15 @@ class ReservationPaymentController extends Controller
                 'statut'             => 'en_attente',
             ]);
 
+            // Déduction du stock de l'annonce suite à la négociation payée
+            $annonce = $reservation->annonce;
+            $nouvelleQuantite = max(0, (float) $annonce->quantite - (float) $reservation->quantite_demandee);
+            $nouveauStatut = $nouvelleQuantite <= 0 ? 'reservé' : 'disponible';
+            $annonce->update([
+                'quantite' => $nouvelleQuantite,
+                'statut'   => $nouveauStatut,
+            ]);
+
             // Marquer la réservation comme acceptée/payée
             $reservation->update(['statut' => 'acceptée']);
 
