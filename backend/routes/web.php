@@ -119,6 +119,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/{conversation}/offres', [\App\Http\Controllers\OffreController::class, 'store'])->name('offres.store');
     Route::post('/offres/{offre}/accepter', [\App\Http\Controllers\OffreController::class, 'accepter'])->name('offres.accepter');
     Route::post('/offres/{offre}/refuser', [\App\Http\Controllers\OffreController::class, 'refuser'])->name('offres.refuser');
+    Route::post('/offres/{offre}/contre-offrir', [\App\Http\Controllers\OffreController::class, 'contreOffrir'])->name('offres.contre-offrir');
+
 
     // Avis
     Route::post('/reservations/{reservation}/avis', [AvisController::class, 'store'])->name('avis.store');

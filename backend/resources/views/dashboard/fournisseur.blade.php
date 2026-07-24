@@ -338,6 +338,67 @@
     </div>
 </div>
 
+{{-- ── OFFRES EN ATTENTE (Négociation de prix) ── --}}
+@php
+    $offresEnAttente = \Illuminate\Support\Facades\Schema::hasTable('offres')
+        ? \App\Models\Offre::where('fournisseur_id', auth()->id())
+              ->where('statut', 'en_attente')
+              ->where('est_contre_offre', false)
+              ->with(['annonce', 'acheteur', 'conversation'])
+              ->latest()
+              ->take(5)
+              ->get()
+        : collect();
+@endphp
+
+@if($offresEnAttente->count() > 0)
+<div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 20px 22px; margin-bottom: 24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:#fbbf24;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
+                🤝
+            </div>
+            <div>
+                <div style="font-weight:800;font-size:.95rem;color:#1a1a2e;">Offres de prix en attente</div>
+                <div style="font-size:.76rem;color:#92400e;">{{ $offresEnAttente->count() }} acheteur(s) attendent votre réponse</div>
+            </div>
+        </div>
+        <a href="{{ route('messages.index') }}" style="font-size:.76rem;font-weight:600;color:#92400e;text-decoration:none;background:rgba(251,191,36,.3);padding:5px 14px;border-radius:50px;">
+            Voir tous les messages →
+        </a>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+        @foreach($offresEnAttente as $offreDash)
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#3b82f6;font-size:.85rem;">
+                    {{ strtoupper(substr($offreDash->acheteur->prenom ?? '?', 0, 1)) }}
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:.83rem;color:#1a1a2e;">
+                        {{ $offreDash->acheteur->prenom ?? '—' }} propose
+                        <strong style="color:#0c4a6e;">{{ number_format($offreDash->prix_propose, 0, ',', ' ') }} FCFA</strong>
+                    </div>
+                    <div style="font-size:.73rem;color:#64748b;">
+                        {{ Str::limit($offreDash->annonce->titre ?? '—', 40) }} ·
+                        {{ $offreDash->created_at->diffForHumans() }}
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+                @if($offreDash->conversation)
+                <a href="{{ route('messages.show', $offreDash->conversation) }}" class="btn btn-sm btn-warning rounded-pill px-3 fw-semibold" style="font-size:.76rem;">
+                    <i class="fas fa-reply me-1"></i>Répondre
+                </a>
+                @endif
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 {{-- ── RECENT ACTIVITY ── --}}
 <div class="card">
     <div class="section-header">

@@ -16,13 +16,24 @@ class OffreAcceptee extends Notification
 
     public function toArray(object $notifiable): array
     {
+        $prixPropose  = number_format($this->offre->prix_propose, 0, ',', ' ');
+        $titreAnnonce = $this->offre->annonce->titre ?? 'annonce';
+
+        // Pointer directement vers le paiement si la réservation a été créée
+        // et que l'annonce est de type vente (pas de paiement pour un don).
+        $urlCible = route('reservations.mes-reservations');
+        if ($this->offre->annonce && $this->offre->annonce->type_offre === 'vente') {
+            $urlCible = route('paiement.show');
+        }
+
         return [
-            'type'       => 'offre_acceptee',
-            'icone'      => '✅',
-            'titre'      => 'Votre offre a été acceptée',
-            'message'    => 'Votre offre à ' . number_format($this->offre->prix_propose, 0, ',', ' ') . ' FCFA pour « ' . $this->offre->annonce->titre . ' » a été acceptée. Une réservation a été créée.',
-            'url'        => route('reservations.mes-reservations'),
-            'annonce_id' => $this->offre->annonce_id,
+            'type'        => 'offre_acceptee',
+            'icone'       => '✅',
+            'titre'       => 'Votre offre a été acceptée !',
+            'message'     => 'Votre offre à ' . $prixPropose . ' FCFA pour « ' . $titreAnnonce . ' » a été acceptée. Finalisez votre achat maintenant.',
+            'url'         => $urlCible,
+            'annonce_id'  => $this->offre->annonce_id,
+            'cta'         => 'Payer maintenant',
         ];
     }
 }

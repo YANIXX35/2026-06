@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\Offre;
 use App\Models\Reservation;
+use App\Notifications\ContreOffre;
 use App\Notifications\NouvelleOffre;
 use App\Notifications\OffreAcceptee;
 use App\Notifications\OffreRefusee;
@@ -20,12 +21,18 @@ use Illuminate\Support\Facades\Schema;
  * dans un message texte libre ou un échange hors plateforme dont la
  * plateforme ne pourrait pas témoigner en cas de litige.
  *
- * Simplification assumée : seul l'acheteur propose un prix, seul le
- * fournisseur accepte/refuse (pas de contre-offre du fournisseur dans cette
- * première version).
+ * Cycle de négociation :
+ *   1. Acheteur propose        → store()
+ *   2. Fournisseur contre-propose → contreOffrir()
+ *      OU accepte              → accepter()
+ *      OU refuse               → refuser()
+ *   3. Acheteur peut accepter/refuser la contre-offre → accepter()/refuser()
+ *      (seul le destinataire peut accepter/refuser à chaque étape)
  */
 class OffreController extends Controller
 {
+    // ─── ACHETEUR : propose un prix ─────────────────────────────────────────
+
     public function store(Request $request, Conversation $conversation)
     {
         if (!Schema::hasTable('offres')) {
@@ -61,26 +68,100 @@ class OffreController extends Controller
             $conversation->offres()->enAttente()->update(['statut' => 'remplacee']);
 
             $offre = Offre::create([
-                'annonce_id'      => $annonce->id,
-                'conversation_id' => $conversation->id,
-                'acheteur_id'     => $userId,
-                'fournisseur_id'  => $annonce->user_id,
-                'prix_propose'    => $request->prix_propose,
-                'quantite'        => $request->quantite,
-                'message'         => $request->message,
-                'statut'          => 'en_attente',
+                'annonce_id'       => $annonce->id,
+                'conversation_id'  => $conversation->id,
+                'acheteur_id'      => $userId,
+                'fournisseur_id'   => $annonce->user_id,
+                'proposeur_id'     => $userId,
+                'prix_propose'     => $request->prix_propose,
+                'quantite'         => $request->quantite,
+                'message'          => $request->message,
+                'statut'           => 'en_attente',
+                'est_contre_offre' => false,
             ]);
         });
 
         $offre->load('annonce', 'acheteur');
         $annonce->user->notify(new NouvelleOffre($offre));
 
-        return redirect()->route('messages.show', $conversation)->with('success', 'Votre offre a été envoyée.');
+        return redirect()->route('messages.show', $conversation)
+            ->with('success', 'Votre offre a été envoyée. Le fournisseur sera notifié.');
     }
+
+    // ─── FOURNISSEUR : contre-propose un prix ───────────────────────────────
+
+    /**
+     * Le fournisseur peut répondre à une offre reçue par une contre-offre,
+     * au lieu de simplement accepter ou refuser.
+     * La contre-offre invalide l'offre précédente (statut → 'remplacee') et
+     * crée une nouvelle offre avec est_contre_offre = true.
+     * L'acheteur reçoit alors une notification et peut à son tour accepter,
+     * refuser, ou re-proposer (via store()).
+     */
+    public function contreOffrir(Request $request, Offre $offrePrecedente)
+    {
+        $userId = Auth::id();
+
+        // Seul le fournisseur de l'offre initiale peut contre-proposer
+        if ($offrePrecedente->fournisseur_id !== $userId) abort(403);
+
+        if ($offrePrecedente->statut !== 'en_attente') {
+            return back()->with('error', 'Cette offre n\'est plus en attente, vous ne pouvez pas y répondre.');
+        }
+
+        $annonce = $offrePrecedente->annonce;
+        if (!$annonce || $annonce->statut !== 'disponible') {
+            return back()->with('error', 'Cette annonce n\'est plus disponible.');
+        }
+
+        $request->validate([
+            'prix_propose' => 'required|numeric|min:1',
+            'message'      => 'nullable|string|max:500',
+        ]);
+
+        $nouvelleOffre = null;
+
+        DB::transaction(function () use ($request, $offrePrecedente, $annonce, $userId, &$nouvelleOffre) {
+            // Invalider l'offre précédente
+            $offrePrecedente->update(['statut' => 'remplacee']);
+
+            // Créer la contre-offre (même quantité que l'offre initiale)
+            $nouvelleOffre = Offre::create([
+                'annonce_id'       => $annonce->id,
+                'conversation_id'  => $offrePrecedente->conversation_id,
+                'acheteur_id'      => $offrePrecedente->acheteur_id,
+                'fournisseur_id'   => $userId,
+                'proposeur_id'     => $userId,
+                'prix_propose'     => $request->prix_propose,
+                'quantite'         => $offrePrecedente->quantite,
+                'message'          => $request->message,
+                'statut'           => 'en_attente',
+                'est_contre_offre' => true,
+            ]);
+        });
+
+        $nouvelleOffre->load('annonce', 'fournisseur', 'acheteur');
+        // Notifier l'acheteur de la contre-offre
+        $nouvelleOffre->acheteur->notify(new ContreOffre($nouvelleOffre));
+
+        return redirect()
+            ->route('messages.show', $offrePrecedente->conversation_id)
+            ->with('success', 'Votre contre-offre a été envoyée à l\'acheteur.');
+    }
+
+    // ─── FOURNISSEUR (ou acheteur sur contre-offre) : accepte ───────────────
 
     public function accepter(Offre $offre)
     {
-        if ($offre->fournisseur_id !== Auth::id()) abort(403);
+        $userId = Auth::id();
+
+        // Sur une offre initiale    → seul le fournisseur peut accepter.
+        // Sur une contre-offre      → seul l'acheteur peut accepter.
+        $peutAccepter = $offre->est_contre_offre
+            ? $offre->acheteur_id === $userId
+            : $offre->fournisseur_id === $userId;
+
+        if (!$peutAccepter) abort(403);
 
         if (!$offre->peutEtreAcceptee()) {
             return back()->with('error', 'Cette offre ne peut plus être acceptée (annonce indisponible ou offre déjà traitée).');
@@ -105,21 +186,45 @@ class OffreController extends Controller
             $offre->update(['statut' => 'acceptee']);
         });
 
-        $offre->load('annonce', 'acheteur');
-        $offre->acheteur->notify(new OffreAcceptee($offre));
+        $offre->load('annonce', 'acheteur', 'fournisseur');
 
-        return redirect()->route('reservations.mes-reservations')->with('success', 'Offre acceptée, réservation créée.');
+        // Notifier l'autre partie
+        if ($offre->est_contre_offre) {
+            // L'acheteur vient d'accepter la contre-offre du fournisseur
+            $offre->fournisseur->notify(new OffreAcceptee($offre));
+            return redirect()->route('paiement.show')
+                ->with('success', 'Offre acceptée ! Vous pouvez maintenant finaliser le paiement.');
+        }
+
+        // Le fournisseur vient d'accepter l'offre initiale de l'acheteur
+        $offre->acheteur->notify(new OffreAcceptee($offre));
+        return redirect()->route('reservations.mes-reservations')
+            ->with('success', 'Offre acceptée, réservation créée. L\'acheteur a été notifié.');
     }
+
+    // ─── FOURNISSEUR (ou acheteur sur contre-offre) : refuse ────────────────
 
     public function refuser(Offre $offre)
     {
-        if ($offre->fournisseur_id !== Auth::id()) abort(403);
+        $userId = Auth::id();
+
+        $peutRefuser = $offre->est_contre_offre
+            ? $offre->acheteur_id === $userId
+            : $offre->fournisseur_id === $userId;
+
+        if (!$peutRefuser) abort(403);
 
         $offre->update(['statut' => 'refusee']);
 
-        $offre->load('annonce', 'acheteur');
-        $offre->acheteur->notify(new OffreRefusee($offre));
+        $offre->load('annonce', 'acheteur', 'fournisseur');
 
-        return back()->with('success', 'Offre refusée.');
+        // Notifier l'autre partie
+        if ($offre->est_contre_offre) {
+            $offre->fournisseur->notify(new OffreRefusee($offre));
+        } else {
+            $offre->acheteur->notify(new OffreRefusee($offre));
+        }
+
+        return back()->with('success', 'Offre refusée. La conversation reste ouverte pour continuer à négocier.');
     }
 }
