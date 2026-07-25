@@ -645,10 +645,10 @@
             </div>
             <div class="hero-proof">
                 <div class="proof-avs">
-                    <div class="proof-av" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">👨🏿‍🌾</div>
-                    <div class="proof-av" style="background:linear-gradient(135deg,#dc2626,#f87171)">👩🏾‍🍳</div>
-                    <div class="proof-av" style="background:linear-gradient(135deg,#2563eb,#60a5fa)">🧑🏽‍💼</div>
-                    <div class="proof-av" style="background:linear-gradient(135deg,#d97706,#fbbf24)">👩🏿</div>
+                    <div class="proof-av" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;"><i class="fas fa-tractor"></i></div>
+                    <div class="proof-av" style="background:linear-gradient(135deg,#dc2626,#f87171);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;"><i class="fas fa-utensils"></i></div>
+                    <div class="proof-av" style="background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;"><i class="fas fa-store"></i></div>
+                    <div class="proof-av" style="background:linear-gradient(135deg,#d97706,#fbbf24);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;"><i class="fas fa-user"></i></div>
                 </div>
                 <div class="proof-txt">
                     <strong>+500 membres</strong> déjà actifs<br>en Côte d'Ivoire
@@ -658,7 +658,7 @@
 
         <div class="hero-right">
             <div class="notif-float">
-                <div class="nf-ico">🎉</div>
+                <div class="nf-ico" style="color:#eab308;"><i class="fas fa-bell"></i></div>
                 <div>
                     <div class="nf-title">Nouvelle réservation</div>
                     <div class="nf-sub">Mangues · Adjamé</div>
@@ -668,7 +668,7 @@
                 <div class="phone-notch"></div>
                 <div class="pcard">
                     <div class="pcard-top">
-                        <div class="pcard-ico" style="background:#dcfce7">🍎</div>
+                        <div class="pcard-ico" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-apple-alt"></i></div>
                         <span class="pbadge don">Don gratuit</span>
                     </div>
                     <div class="pcard-title">Cageots de mangues fraîches</div>
@@ -680,7 +680,7 @@
                 </div>
                 <div class="pcard">
                     <div class="pcard-top">
-                        <div class="pcard-ico" style="background:#fef9c3">🍞</div>
+                        <div class="pcard-ico" style="background:#fef9c3;color:#ca8a04;"><i class="fas fa-bread-slice"></i></div>
                         <span class="pbadge vente">Vente</span>
                     </div>
                     <div class="pcard-title">Pain invendu du jour</div>
@@ -692,7 +692,7 @@
                 </div>
                 <div class="pcard">
                     <div class="pcard-top">
-                        <div class="pcard-ico" style="background:#ffe4e6">🥛</div>
+                        <div class="pcard-ico" style="background:#ffe4e6;color:#e11d48;"><i class="fas fa-glass-martini-alt"></i></div>
                         <span class="pbadge urgent"><i class="fas fa-fire"></i> Urgent · 3h</span>
                     </div>
                     <div class="pcard-title">Lait frais excédentaire</div>
@@ -704,7 +704,7 @@
                 </div>
             </div>
             <div class="impact-pill">
-                <div class="ip-ico">🌱</div>
+                <div class="ip-ico" style="color:#22c55e;"><i class="fas fa-seedling"></i></div>
                 <div class="ip-txt">
                     <strong>{{ number_format($co2EviteTonnes, 1, ',', ' ') }} tonnes</strong>de CO2 évité au total
                 </div>
@@ -728,22 +728,22 @@
     @php /* stats injectees par WelcomeController */ @endphp
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-ico">📦</div>
+            <div class="stat-ico" style="color:#22c55e;"><i class="fas fa-boxes"></i></div>
             <div class="stat-num" data-target="{{ $nbAnnonces }}">{{ $nbAnnonces }}</div>
             <div class="stat-lbl">Annonces actives</div>
         </div>
         <div class="stat-card">
-            <div class="stat-ico">🏪</div>
+            <div class="stat-ico" style="color:#3b82f6;"><i class="fas fa-store"></i></div>
             <div class="stat-num" data-target="{{ $nbFournisseurs }}">{{ $nbFournisseurs }}</div>
             <div class="stat-lbl">Fournisseurs inscrits</div>
         </div>
         <div class="stat-card">
-            <div class="stat-ico">🤝</div>
+            <div class="stat-ico" style="color:#eab308;"><i class="fas fa-handshake"></i></div>
             <div class="stat-num" data-target="{{ $nbEchanges }}">{{ $nbEchanges }}</div>
             <div class="stat-lbl">Échanges réalisés</div>
         </div>
         <div class="stat-card">
-            <div class="stat-ico">🗂️</div>
+            <div class="stat-ico" style="color:#a855f7;"><i class="fas fa-tags"></i></div>
             <div class="stat-num" data-target="{{ $nbCategories }}">{{ $nbCategories }}</div>
             <div class="stat-lbl">Catégories</div>
         </div>
@@ -930,13 +930,13 @@
         </div>
         <div class="impact-grid">
             @foreach([
-                ['e'=>'⚖️','n'=>number_format($co2EviteTonnes, 1, ',', ' ').' t','l'=>'de CO2 évité (estimation)'],
-                ['e'=>'🌾','n'=>number_format($kgSauves, 0, ',', ' ').' kg','l'=>'d\'aliments sauvés'],
-                ['e'=>'🍽️','n'=>number_format($repasEquivalents, 0, ',', ' '),'l'=>'repas équivalents (estimation)'],
-                ['e'=>'💰','n'=>number_format($fcfaEconomises, 0, ',', ' ').' F','l'=>'valorisés en FCFA'],
+                ['e'=>'<i class="fas fa-balance-scale"></i>','n'=>number_format($co2EviteTonnes, 1, ',', ' ').' t','l'=>'de CO2 évité (estimation)'],
+                ['e'=>'<i class="fas fa-seedling"></i>','n'=>number_format($kgSauves, 0, ',', ' ').' kg','l'=>'d\'aliments sauvés'],
+                ['e'=>'<i class="fas fa-utensils"></i>','n'=>number_format($repasEquivalents, 0, ',', ' '),'l'=>'repas équivalents (estimation)'],
+                ['e'=>'<i class="fas fa-wallet"></i>','n'=>number_format($fcfaEconomises, 0, ',', ' ').' F','l'=>'valorisés en FCFA'],
             ] as $imp)
             <div class="imp-card reveal">
-                <div class="imp-em">{{ $imp['e'] }}</div>
+                <div class="imp-em">{!! $imp['e'] !!}</div>
                 <div class="imp-num">{{ $imp['n'] }}</div>
                 <div class="imp-lbl">{{ $imp['l'] }}</div>
             </div>
@@ -958,7 +958,7 @@
                 <div class="t-stars">@for($i=0;$i<5;$i++)<i class="fas fa-star"></i>@endfor</div>
                 <p class="t-quote">"Grâce à AntiGaspiCI, je valorise mes invendus du soir au lieu de les jeter. En 3 mois, j'ai économisé plus de 80 000 FCFA et touché de nouveaux clients."</p>
                 <div class="t-author">
-                    <div class="t-av">👩🏾‍🍳</div>
+                    <div class="t-av"><i class="fas fa-user-tie"></i></div>
                     <div>
                         <div class="t-name">Aya Konan</div>
                         <div class="t-role">Restauratrice · Plateau, Abidjan</div>
@@ -969,7 +969,7 @@
                 <div class="t-stars">@for($i=0;$i<5;$i++)<i class="fas fa-star"></i>@endfor</div>
                 <p class="t-quote">"Je trouve chaque semaine des surplus de légumes frais pour mon association. Les familles que nous accompagnons bénéficient de vrais repas équilibrés."</p>
                 <div class="t-author">
-                    <div class="t-av" style="background:linear-gradient(135deg,#2563eb,#60a5fa)">🧑🏾‍💼</div>
+                    <div class="t-av" style="background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;display:flex;align-items:center;justify-content:center;"><i class="fas fa-user"></i></div>
                     <div>
                         <div class="t-name">Kouassi Mensah</div>
                         <div class="t-role">Directeur ONG · Yopougon</div>
@@ -980,7 +980,7 @@
                 <div class="t-stars">@for($i=0;$i<5;$i++)<i class="fas fa-star"></i>@endfor</div>
                 <p class="t-quote">"Mes céréales invendues après la récolte alimentent maintenant 3 élevages de la région. Avant, je perdais tout. Maintenant j'ai un revenu complémentaire fiable."</p>
                 <div class="t-author">
-                    <div class="t-av" style="background:linear-gradient(135deg,#d97706,#fbbf24)">👨🏿‍🌾</div>
+                    <div class="t-av" style="background:linear-gradient(135deg,#d97706,#fbbf24);color:#fff;display:flex;align-items:center;justify-content:center;"><i class="fas fa-tractor"></i></div>
                     <div>
                         <div class="t-name">Moussa Coulibaly</div>
                         <div class="t-role">Agriculteur · Bouaké</div>
