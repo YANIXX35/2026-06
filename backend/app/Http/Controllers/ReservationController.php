@@ -96,6 +96,9 @@ class ReservationController extends Controller
             $reservation->update(['statut' => 'complétée']);
         });
 
+        // Invalider le cache de la page d'accueil pour recalculer l'impact
+        \Illuminate\Support\Facades\Cache::forget('welcome_impact');
+
         $reservation->acheteur->notify(new ReservationCompletee($reservation));
 
         return back()->with('success', 'Échange complété !');

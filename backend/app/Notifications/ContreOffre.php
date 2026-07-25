@@ -4,13 +4,17 @@ namespace App\Notifications;
 
 use App\Models\Offre;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 
 /**
  * Notifie l'acheteur qu'une contre-offre a été faite par le fournisseur.
  * Utilisée uniquement quand est_contre_offre = true.
  */
-class ContreOffre extends Notification
+class ContreOffre extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(public Offre $offre) {}
 
     public function via(object $notifiable): array

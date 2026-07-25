@@ -4,9 +4,13 @@ namespace App\Notifications;
 
 use App\Models\Reservation;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 
-class ReservationAcceptee extends Notification
+class ReservationAcceptee extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(public Reservation $reservation) {}
 
     public function via(object $notifiable): array

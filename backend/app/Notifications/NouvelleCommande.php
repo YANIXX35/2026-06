@@ -4,9 +4,13 @@ namespace App\Notifications;
 
 use App\Models\Commande;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 
-class NouvelleCommande extends Notification
+class NouvelleCommande extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(
         public Commande $commande,
         public array $annonces = []

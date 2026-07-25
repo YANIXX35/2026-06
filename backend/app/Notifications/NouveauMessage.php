@@ -5,9 +5,13 @@ namespace App\Notifications;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 
-class NouveauMessage extends Notification
+class NouveauMessage extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(public User $expediteur, public Message $message) {}
 
     public function via(object $notifiable): array

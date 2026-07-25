@@ -31,12 +31,16 @@ class CartItem extends Model
             return 0;
         }
 
-        // Vérifier si l'utilisateur a une réservation acceptée (négociation) pour cette annonce
-        $reservation = \App\Models\Reservation::where('user_id', $this->user_id)
-            ->where('annonce_id', $this->annonce_id)
-            ->where('statut', 'acceptée')
-            ->whereNotNull('prix_negocie')
-            ->first();
+        // Utiliser la relation déjà chargée si possible pour éviter une requête N+1
+        $reservation = $this->annonce->relationLoaded('reservations')
+            ? $this->annonce->reservations->first(function ($r) {
+                return $r->user_id === $this->user_id && $r->statut === 'acceptée' && $r->prix_negocie !== null;
+              })
+            : \App\Models\Reservation::where('user_id', $this->user_id)
+                ->where('annonce_id', $this->annonce_id)
+                ->where('statut', 'acceptée')
+                ->whereNotNull('prix_negocie')
+                ->first();
 
         if ($reservation) {
             return (float) $reservation->prix_negocie;

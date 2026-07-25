@@ -11,7 +11,7 @@ class CartController extends Controller
 {
     public function index()
     {
-        $items = CartItem::with(['annonce.photoPrincipale', 'annonce.user'])
+        $items = CartItem::with(['annonce.photoPrincipale', 'annonce.user', 'annonce.reservations'])
             ->where('user_id', Auth::id())
             ->get();
 
