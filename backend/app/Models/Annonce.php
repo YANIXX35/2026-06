@@ -190,9 +190,10 @@ class Annonce extends Model
             $userId = \Illuminate\Support\Facades\Auth::id();
             
             // Rechercher s'il y a une réservation (négociation) active liée à cet acheteur pour ce produit
+            // qui n'a pas encore été payée/finalisée (donc statut 'en_attente')
             $reservation = $this->reservations()
                 ->where('user_id', $userId)
-                ->whereIn('statut', ['en_attente', 'acceptée'])
+                ->where('statut', 'en_attente')
                 ->whereNotNull('prix_negocie')
                 ->first();
 
